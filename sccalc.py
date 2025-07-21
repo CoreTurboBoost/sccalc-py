@@ -588,15 +588,18 @@ if len(sys.argv) > 1:
                 continue
             i += 1
         skip_till_if_end_count = 0
+        skip_till_while_end_count = 0
         skip_expression_count = 0
         for expressioni, (expression, line_index) in enumerate(contents):
             if skip_expression_count > 0:
                 skip_expression_count -= 1
                 continue
-            if skip_till_if_end_count > 0:
+            if skip_till_if_end_count > 0 || skip_till_while_end_count > 0:
                 expression_split = parse_input_for_args(expression)
                 if len(expression_split[0]) > 0 and expression_split[0] == "!endif":
                     skip_till_if_end_count -= 1
+                if len(expression_split[0]) > 0 and expression_split[0] == "!endwhile":
+                    skip_till_while_end_count -= 1
                 continue
             expression_split = parse_input_for_args(expression)
             if len(expression_split[0]) > 0 and expression_split[0][0] == "!":
@@ -724,6 +727,8 @@ if len(sys.argv) > 1:
                     else:
                         if not if_condition_true:
                             skip_till_if_end_count += 1
+                if expression_split[0] == "!while":
+                    pass
                 continue
             lex_tokens = lex(expression)
             lex_error_count = print_lex_errors(lex_tokens, f"{line_index+1}: ")
