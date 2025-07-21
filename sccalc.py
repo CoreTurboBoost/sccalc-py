@@ -409,6 +409,7 @@ def eval_lex_tokens(tokens : typing.List[Token]):
         if (token.type == Token.TYPE_NUMBER):
             numbers_stack.append(decimal.Decimal(token.lexeame))
         if (token.type == Token.TYPE_VAR):
+            console_output_debug_msg(f"Adding variable token {token} to the numbers stack")
             numbers_stack.append(token.lexeame)
         elif (is_operator(token.type)):
             if (len(numbers_stack) < 1):
