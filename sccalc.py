@@ -44,6 +44,8 @@ class TokenError:
     def __init__(self):
         self.string = ""
         self.type = TokenError.TYPE_NONE
+    def __str__(self):
+        return f"TokenError(string: {self.string}, type: {self.type})"
 
 class Token:
     TYPE_BAD = -1
@@ -103,6 +105,8 @@ class Token:
         self.error_object = error_object
     def get_type_str(self):
         return Token.get_str_from_type_enum(self.type)
+    def __str__(self):
+        return f"Token(lexeame: {self.lexeame}, type: {self.get_type_str()}, char_index: {self.char_index}, error_object: {self.error_object})"
 
 def lex(expression : str):
     skip_char_count = 0
