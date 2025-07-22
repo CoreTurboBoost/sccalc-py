@@ -621,14 +621,37 @@ if len(sys.argv) > 1:
                 contents.pop(i)
                 continue
             i += 1
+
+        class WhileEmbed:
+            def __init__(self, start_index: int):
+                self.start_index = start_index
+                self.end_index = None
+            def is_end_set(self) -> bool:
+                return self.end_index != None
+        while_embed_objects: list[WhileEmbed] = []
+        dont_inc_expression_this_iteration = False
+        skip_till_next_while_end_count = 0
         skip_till_if_end_count = 0
         skip_expression_count = 0
-        for expressioni, (expression, line_index) in enumerate(contents):
+        expressioni = -1
+        while expressioni+1 < len(contents):
+            if not dont_inc_expression_this_iteration:
+                expressioni += 1
+            else:
+                dont_inc_expression_this_iteration = False
+            (expression, line_index) = contents[expressioni]
+        #for expressioni, (expression, line_index) in enumerate(contents):
+            console_output_debug_msg(f"loop: expressioni:{expressioni} content:{contents[expressioni]}")
             if skip_expression_count > 0:
                 skip_expression_count -= 1
                 continue
-            if skip_till_if_end_count > 0:
+            if skip_till_if_end_count > 0 or skip_till_next_while_end_count > 0:
                 expression_split = parse_input_for_args(expression)
+                if skip_till_next_while_end_count > 0:
+                    if len(expression_split[0]) > 0 and expression_split[0] == "!endwhile":
+                        skip_till_next_while_end_count -= 1
+                    if len(expression_split[0]) > 0 and expression_split[0] == "!while":
+                        skip_till_next_while_end_count += 1
                 if len(expression_split[0]) > 0 and expression_split[0] == "!endif":
                     if skip_till_if_end_count == 0:
                         output_error(line_index, "ifend: Unmatched endif")
@@ -636,6 +659,16 @@ if len(sys.argv) > 1:
                     skip_till_if_end_count -= 1
                 continue
             expression_split = parse_input_for_args(expression)
+            if len(expression_split[0]) > 0 and expression_split[0] == "!endwhile":
+                if len(while_embed_objects) == 0:
+                    output_error(line_index, f"endwhile: unmatched !endwhile")
+                    continue
+                while_object = while_embed_objects.pop()
+                start_index = while_object.start_index
+                expressioni = start_index
+                dont_inc_expression_this_iteration = True
+                console_output_debug_msg(f"[{line_index+1}] Found !endwhile. Now jumping back to line {start_index+1}  expressioni:{expressioni}")
+                continue
             if len(expression_split[0]) > 0 and expression_split[0][0] == "!":
                 if expression_split[0] == "!strict":
                     exit_on_fail = True
@@ -761,6 +794,27 @@ if len(sys.argv) > 1:
                             for error in eval_errors:
                                 print(f"{line_index+1} Error: repeat: {error}")
                             sys.exit(f"{line_index+1} Eval error(s) in repeat statement")
+                if expression_split[0] == "!while":
+                    if len(expression_split) < 4:
+                        sys.exit(f"{line_index+1} Error: while: Incorrect while statement format, expected '!while <NUMBER|VAR> <OP> <NUMBER|VAR>'")
+                    left_operand = get_literal_or_var(expression_split[1])
+                    cmp_operator = expression_split[2]
+                    right_operand = get_literal_or_var(expression_split[3])
+                    if left_operand == None:
+                        output_error(line_index, f"while: Unrecognised variable name {expression_split[1]}")
+                        continue
+                    if right_operand == None:
+                        output_error(line_index, f"while: Unrecognised variable name {expression_split[3]}")
+                        continue
+                    condition_true = apply_condition_operator(left_operand, right_operand, cmp_operator)
+                    if condition_true == None:
+                        output_error(line_index, f"while: Unrecognised comparison operator {cmp_operator}")
+                        continue
+                    if not condition_true:
+                        console_output_debug_msg(f"[{line_index+1}] While condition unmet. skipping to next endwhile")
+                        skip_till_next_while_end_count = 1
+                    else:
+                        while_embed_objects.append(WhileEmbed(expressioni))
                 continue
             lex_tokens = lex(expression)
             lex_error_count = print_lex_errors(lex_tokens, f"{line_index+1}: ")
