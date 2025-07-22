@@ -584,6 +584,7 @@ if len(sys.argv) > 1:
             try:
                 return float(literal_or_var)
             except ValueError:
+                console_output_debug_msg(f"get_literal_or_var: Failed to convert {literal_or_var} to float")
                 var_val = variables.get(literal_or_var)
                 return var_val
         def apply_condition_operator(left: float, right: float, operator: str) -> bool or None:
