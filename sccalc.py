@@ -654,7 +654,7 @@ if len(sys.argv) > 1:
                         skip_till_next_while_end_count += 1
                 if len(expression_split[0]) > 0 and expression_split[0] == "!endif":
                     if skip_till_if_end_count == 0:
-                        output_error(line_index, "ifend: Unmatched endif")
+                        output_error(line_index, "endif: Unmatched endif")
                         continue
                     skip_till_if_end_count -= 1
                 continue
