@@ -646,7 +646,7 @@ if len(sys.argv) > 1:
                     elif expression_split[1] == "toggle":
                         ENABLED_DEBUG_OUTPUT = not ENABLED_DEBUG_OUTPUT
                     else:
-                        output_error(line_index, "Error: Invalid value for debug option")
+                        output_error(line_index, "debug: Invalid value for debug option")
                     continue
                 if expression_split[0] == "!echo":
                     if len(expression_split) <= 1:
@@ -659,7 +659,7 @@ if len(sys.argv) > 1:
                     elif expression_split[1] == "toggle":
                         echo_enabled = not echo_enabled
                     else:
-                        output_error(line_index, "Error: Invalid value for echo option")
+                        output_error(line_index, "echo: Invalid value for echo option")
                 if expression_split[0] == "!input":
                     prompt = ""
                     if len(expression_split) == 1:
