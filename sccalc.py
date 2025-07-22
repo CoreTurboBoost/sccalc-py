@@ -584,6 +584,7 @@ if len(sys.argv) > 1:
         exit_on_fail = False
         errors_count = 0
         def output_error(line_index: int, message: str) -> None:
+            global errors_count
             errors_count += 1
             err_msg = f"[{line_index+1}] Error: {message}"
             if exit_on_fail:
