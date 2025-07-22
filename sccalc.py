@@ -22,6 +22,14 @@ def sec(x):
 def cot(x):
     return 1/math.tan(x)
 
+def product(array: list) -> decimal.Decimal:
+    if len(array) == 0:
+        return 0
+    val = 1
+    for a in array:
+        val *= a
+    return val
+
 KNOWN_CONSTS = {"pi": math.pi, "e": math.e, "deg2rad": (math.pi/180), "rad2deg": (180/math.pi)}
 '''
 NOTE: These functions take a single decimal.Decimal as input and returns a single Decimal.Decimal
