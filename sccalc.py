@@ -574,7 +574,9 @@ if len(sys.argv) > 1:
         # NOTE: This scope is the scripting system. Everything here is only for the scripting part
         echo_enabled = True
         exit_on_fail = False
+        errors_count = 0
         def output_error(line_index: int, message: str) -> None:
+            errors_count += 1
             err_msg = f"[{line_index+1}] Error: {message}"
             if exit_on_fail:
                 sys.exit(err_msg)
@@ -602,7 +604,6 @@ if len(sys.argv) > 1:
             elif operator == "<":
                 return left < right
             return None
-        errors_count = 0
         fh = open(sys.argv[1])
         contents = fh.read().split("\n")
         contents = list(zip(contents, range(0, len(contents))))
