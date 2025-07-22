@@ -729,13 +729,12 @@ if len(sys.argv) > 1:
                         if_condition_true = False
                     console_output_debug_msg(f"if: condition is {if_left_val} {if_operator} {if_right_val} = {if_condition_true}")
                     if len(expression_split) >= 6:
-                        set_var_name = None
-                        set_val = 0
+                        console_output_debug_msg(f"ifset: got set_var: {expression_split[4]}:{type(expression_split[4])}, set_val: {expression_split[5]}:{type(expression_split[5])}")
                         set_var_name = expression_split[4]
-                        set_val = get_literal_or_var(expression[5])
+                        set_val = get_literal_or_var(expression_split[5])
+                        console_output_debug_msg(f"ifset: have been given set_var: {set_var_name}, set_val: {set_val}")
                         if set_val == None:
                             output_error(line_index, f"if: Unrecognised variable name {expression_split[5]}")
-                        console_output_debug_msg(f"ifset: have been given set_var: {set_var_name}, set_val: {set_val}")
                         if if_condition_true:
                             variables[set_var_name] = set_val
                     else:
