@@ -580,6 +580,27 @@ if len(sys.argv) > 1:
                 sys.exit(err_msg)
             else:
                 print(err_msg)
+        def get_literal_or_var(literal_or_var: str) -> float or None:
+            try:
+                return float(literal_or_var)
+            except ValueError:
+                var_val = variables.get(literal_or_var)
+                return var_val
+        def apply_condition_operator(left: float, right: float, operator: str) -> bool or None:
+            condition_true = False
+            if operator == "==":
+                return left == right
+            elif operator == "!=":
+                return left != right
+            elif operator == ">=":
+                return left >= right
+            elif operator == "<=":
+                return left <= right
+            elif operator == ">":
+                return left > right
+            elif operator == "<":
+                return left < right
+            return None
         errors_count = 0
         fh = open(sys.argv[1])
         contents = fh.read().split("\n")
