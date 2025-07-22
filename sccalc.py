@@ -709,7 +709,7 @@ if len(sys.argv) > 1:
                     sys.exit(exit_code)
                 if expression_split[0] == "!if":
                     if len(expression_split) < 4:
-                        sys.exit(f"[{line_index+1}] Error: Incorrect if statement format, expected '!if <NUMBER|VAR> <OP> <NUMBER|VAR> [<VAR> <NUMBER|VAR>]")
+                        sys.exit(f"[{line_index+1}] Error: Incorrect if statement format, expected '!if <NUMBER|VAR> <OP> <NUMBER|VAR> [<VAR> <NUMBER|VAR>]'")
                     if_left_val = 0
                     if_right_val = 0
                     if_operator = None
@@ -745,7 +745,7 @@ if len(sys.argv) > 1:
                             skip_till_if_end_count += 1
                 if expression_split[0] == "!repeat":
                     if len(expression_split) < 3:
-                        sys.exit(f"[{line_index+1}] Error: Incorrect repeat statement format, expected '!repeat <NUMBER|VAR> <EXPRESSION>")
+                        sys.exit(f"[{line_index+1}] Error: Incorrect repeat statement format, expected '!repeat <NUMBER|VAR> <EXPRESSION>'")
                     iteration_count = int(get_literal_or_var(expression_split[1]))
                     if iteration_count == None:
                         output_error(line_index, f"repeat: Unrecognised variable name {expression_split[1]}")
