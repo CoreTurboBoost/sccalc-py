@@ -709,56 +709,55 @@ if len(sys.argv) > 1:
                     if_left_val = 0
                     if_right_val = 0
                     if_operator = None
-                    try:
-                        if_left_val = float(expression_split[1])
-                    except:
-                        if_left_val = variables.get(expression_split[1])
-                        if if_left_val == None:
-                            output_error(line_index, f"if: Unrecognised variable name {expression_split[1]}")
+                    if_left_val = get_literal_or_var(expression_split[1])
+                    if if_left_val == None:
+                        output_error(line_index, f"if: Unrecognised variable name {expression_split[1]}")
+                        continue
                     console_output_debug_msg(f"if: found left val {if_left_val}")
-                    try:
-                        if_right_val = float(expression_split[3])
-                    except:
-                        if_right_val = variables.get(expression_split[3])
-                        if if_right_val == None:
-                            output_error(line_index, f"if: Unrecognised variable name {expression_split[3]}")
-
+                    if_right_val = get_literal_or_var(expression_split[3])
+                    if if_right_val == None:
+                        output_error(line_index, f"if: Unrecognised variable name {expression_split[3]}")
+                        continue
+                    console_output_debug_msg(f"if: found right val {if_right_val}")
                     if_operator = expression_split[2]
 
-                    console_output_debug_msg(f"if: found right val {if_right_val}")
 
-                    if_condition_true = False
-                    if if_operator == "==":
-                        if_condition_true = if_left_val == if_right_val
-                    elif if_operator == "!=":
-                        if_condition_true = if_left_val != if_right_val
-                    elif if_operator == ">=":
-                        if_condition_true = if_left_val >= if_right_val
-                    elif if_operator == "<=":
-                        if_condition_true = if_left_val <= if_right_val
-                    elif if_operator == ">":
-                        if_condition_true = if_left_val > if_right_val
-                    elif if_operator == "<":
-                        if_condition_true = if_left_val < if_right_val
+                    if_condition_true = apply_condition_operator(if_left_val, if_right_val, if_operator)
+                    if if_condition_true == None:
+                        output_error(line_index, f"if: unrecognised condition operator {if_operator}")
+                        if_condition_true = False
                     console_output_debug_msg(f"if: condition is {if_left_val} {if_operator} {if_right_val} = {if_condition_true}")
                     if len(expression_split) >= 6:
                         set_var_name = None
                         set_val = 0
                         set_var_name = expression_split[4]
-                        try:
-                            set_val = float(expression_split[5])
-                        except:
-                            set_val = variables.get(expression_split[5])
-                            if set_val == None:
-                                output_error(line_index, f"if: Unrecognised variable name {expression_split[5]}")
+                        set_val = get_literal_or_var(expression[5])
+                        if set_val == None:
+                            output_error(line_index, f"if: Unrecognised variable name {expression_split[5]}")
                         console_output_debug_msg(f"ifset: have been given set_var: {set_var_name}, set_val: {set_val}")
                         if if_condition_true:
                             variables[set_var_name] = set_val
                     else:
                         if not if_condition_true:
                             skip_till_if_end_count += 1
-                if expression_split[0] == "!while":
-                    pass
+                if expression_split[0] == "!repeat":
+                    if len(expression_split) < 3:
+                        sys.exit(f"[{line_index+1}] Error: Incorrect repeat statement format, expected '!repeat <NUMBER|VAR> <EXPRESSION>")
+                    iteration_count = int(get_literal_or_var(expression_split[1]))
+                    if iteration_count == None:
+                        output_error(line_index, f"repeat: Unrecognised variable name {expression_split[1]}")
+                        iteration_count = 0
+                    repeat_expression = expression_split[2]
+                    for _ in range(iteration_count):
+                        lex_tokens = lex(repeat_expression) # Only need to do this to update the variabels (as they get subsituted here, if that is moved, then only need to call once before the whole loop)
+                        lex_tokens_error_count = print_lex_errors(lex_tokens, f"{line_index+1} in repeat: ")
+                        if lex_tokens_error_count > 0:
+                            sys.exit(f"{line_index+1} Lexer error(s) in repeat statement")
+                        evaluated_value, eval_errors = eval_lex_tokens(lex_tokens)
+                        if len(eval_errors) > 0:
+                            for error in eval_errors:
+                                print(f"{line_index+1} Error: repeat: {error}")
+                            sys.exit(f"{line_index+1} Eval error(s) in repeat statement")
                 continue
             lex_tokens = lex(expression)
             lex_error_count = print_lex_errors(lex_tokens, f"{line_index+1}: ")
