@@ -630,6 +630,9 @@ if len(sys.argv) > 1:
             if skip_till_if_end_count > 0:
                 expression_split = parse_input_for_args(expression)
                 if len(expression_split[0]) > 0 and expression_split[0] == "!endif":
+                    if skip_till_if_end_count == 0:
+                        output_error(line_index, "ifend: Unmatched endif")
+                        continue
                     skip_till_if_end_count -= 1
                 continue
             expression_split = parse_input_for_args(expression)
