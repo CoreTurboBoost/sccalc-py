@@ -213,7 +213,7 @@ def get_lex_error_count(tokens : typing.List[Token]):
             error_count += 1
     return error_count
 
-def print_lex_errors(tokens : typing.List[Token], heading:str=""):
+def print_lex_errors(tokens : typing.List[Token], heading:str="") -> int:
     error_count = 0
     for token in tokens:
         if (token.type == Token.TYPE_BAD):
