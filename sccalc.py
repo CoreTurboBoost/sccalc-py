@@ -189,6 +189,13 @@ class Token:
 def lex(expression : str):
     skip_char_count = 0
     tokens = []
+    def append_unknown_char_token(char: str, char_index: int) -> None:
+        error_object = TokenError()
+        error_object.type = TokenError.TYPE_UNKNOWN_CHAR
+        print_char = f"\'{char}\'" if char.isprintable() else f"{ord(char)}"
+        error_object.string = f"Unknown char {print_char}"
+        cur_token = Token("", Token.TYPE_BAD, char_index, error_object)
+        tokens.append(cur_token)
     for char_index, char in enumerate(expression):
         if (skip_char_count > 0):
             skip_char_count -= 1
