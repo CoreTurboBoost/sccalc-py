@@ -614,6 +614,19 @@ if len(sys.argv) > 1:
             elif operator == "<":
                 return left < right
             return None
+        def enforce_command_required_parameters(command_name: str, required_arguments: list[str], optional_arguments: list[str], expression_split_count: int) -> None:
+            if expression_split_count < len(required_arguments):
+                required_arguments_str = ""
+                optional_arguments_str = ""
+                for i, required_arg in enumerate(required_arguments):
+                    if i != 0:
+                        required_arguments_str += " "
+                    required_arguments_str += f"<required_arg>"
+                for i, optional_arg in enumerate(optional_arguments):
+                    if i != 0:
+                        optional_arguments_str += " "
+                    optional_arguments_str += f"[optional_arg]"
+                sys.exit(f"Error: {command_name}: Missing required arguments, expected '!{command_name} {required_arguments_str} {optional_arguments_str}")
         fh = open(sys.argv[1])
         contents = fh.read().split("\n")
         contents = list(zip(contents, range(0, len(contents))))
