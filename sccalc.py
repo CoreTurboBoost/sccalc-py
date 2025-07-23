@@ -9,7 +9,7 @@ import typing
 import os
 import string
 
-APP_VERSION_MAJOR = 1
+APP_VERSION_MAJOR = 2
 APP_VERSION_MINOR = 0
 
 def log10(x):
