@@ -990,6 +990,8 @@ if len(sys.argv) > 1:
                         output_error(line_index, f"product: Iterator '{iterator_name}' is not defined")
                         continue
                     variables[variable_name] = product(iterator)
+                elif expression_split[0] == "!endif":
+                    console_output_debug_msg(f"[{line_index+1}] ignoring an endif command")
                 else:
                     output_error(line_index, f"Command: unrecognised command '{expression_split[0]}'")
                     continue
