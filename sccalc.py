@@ -614,7 +614,7 @@ if len(sys.argv) > 1:
             elif operator == "<":
                 return left < right
             return None
-        def enforce_command_required_parameters(command_name: str, required_arguments: list[str], required_args_repeat: bool, optional_arguments: list[str], optional_args_repeat: bool, expression_split_count: int, line_index: int) -> None:
+        def enforce_command_parameters(command_name: str, required_arguments: list[str], required_args_repeat: bool, optional_arguments: list[str], optional_args_repeat: bool, expression_split_count: int, line_index: int) -> None:
             if expression_split_count < len(required_arguments):
                 required_arguments_str = ""
                 optional_arguments_str = ""
