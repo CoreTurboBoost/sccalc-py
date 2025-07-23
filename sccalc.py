@@ -631,6 +631,14 @@ if len(sys.argv) > 1:
                 if optional_args_repeat:
                     optional_arguments_str += "..."
                 sys.exit(f"[{line_index+1}] Error: {command_name}: Missing required arguments, expected '!{command_name} {required_arguments_str} {optional_arguments_str}'")
+        def match_and_enforce_command(command_name: str, required_arguments: list[str], required_args_repeat: bool, optional_arguments: list[str], optional_args_repeat: bool, expression_list: list[str], line_index: int) -> bool:
+            expression_list_len = len(expression_split)
+            if expression_list_len < 1:
+                return False
+            if expression_list[0] == f"!{command_name}":
+                enforce_command_parameters(command_name, required_arguments, required_args_repeat, optional_arguments, optional_args_repeat, expression_list_len, line_index)
+                return True
+            return False
         fh = open(sys.argv[1])
         contents = fh.read().split("\n")
         contents = list(zip(contents, range(0, len(contents))))
