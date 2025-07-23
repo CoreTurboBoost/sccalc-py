@@ -776,8 +776,7 @@ if len(sys.argv) > 1:
                             if var_val != None:
                                 exit_code = int(var_val)
                     sys.exit(exit_code)
-                elif expression_split[0] == "!if":
-                    enforce_command_parameters("if", ["NUMBER|VAR", "OP", "NUMBER|VAR"], False, ["<VAR> <NUMBER|VAR>"], False, len(expression_split), line_index)
+                elif match_and_enforce_command("if", ["NUMBER|VAR", "OP", "NUMBER|VAR"], False, ["<VAR> <NUMBER|VAR>"], False, expression_split, line_index):
                     if_left_val = 0
                     if_right_val = 0
                     if_operator = None
@@ -811,8 +810,7 @@ if len(sys.argv) > 1:
                     else:
                         if not if_condition_true:
                             skip_till_if_end_count += 1
-                elif expression_split[0] == "!repeat":
-                    enforce_command_parameters("repeat", ["NUMBER|VAR", "EXPRESSION"], False, [], False, len(expression_split), line_index)
+                elif match_and_enforce_command("repeat", ["NUMBER|VAR", "EXPRESSION"], False, [], False, expression_split, line_index):
                     iteration_count = int(get_literal_or_var(expression_split[1]))
                     if iteration_count == None:
                         output_error(line_index, f"repeat: Unrecognised variable name {expression_split[1]}")
@@ -828,8 +826,7 @@ if len(sys.argv) > 1:
                             for error in eval_errors:
                                 print(f"{line_index+1} Error: repeat: {error}")
                             sys.exit(f"{line_index+1} Eval error(s) in repeat statement")
-                elif expression_split[0] == "!while":
-                    enforce_command_parameters("while", ["NUMBER|VAR", "OP", "NUMBER|VAR"], False, [], False, len(expression_split), line_index)
+                elif match_and_enforce_command("while", ["NUMBER|VAR", "OP", "NUMBER|VAR"], False, [], False, expression_split, line_index):
                     left_operand = get_literal_or_var(expression_split[1])
                     cmp_operator = expression_split[2]
                     right_operand = get_literal_or_var(expression_split[3])
@@ -848,8 +845,7 @@ if len(sys.argv) > 1:
                         skip_till_next_while_end_count = 1
                     else:
                         while_embed_objects.append(WhileEmbed(expressioni))
-                elif expression_split[0] == "!yield":
-                    enforce_command_parameters("yield", ["ITER", "NUMBER|VAR"], False, [], False, len(expression_split), line_index)
+                elif match_and_enforce_command("yield", ["ITER", "NUMBER|VAR"], False, [], False, expression_split, line_index):
                     iterator_name = expression_split[1]
                     new_append_value = get_literal_or_var(expression_split[2])
                     if new_append_value == None:
@@ -859,13 +855,11 @@ if len(sys.argv) > 1:
                         iterator_arrays[iterator_name] = []
                     iterator_arrays[iterator_name].append(new_append_value)
                     console_output_debug_msg(f"Yielded {new_append_value} into iterator {iterator_name}, new_iterator {iterator_arrays[iterator_name]}")
-                elif expression_split[0] == "!clear":
-                    enforce_command_parameters("clear", ["ITER"], False, [], False, len(expression_split), line_index)
+                elif match_and_enforce_command("clear", ["ITER"], False, [], False, expression_split, line_index):
                     iterator_name = expression_split[1]
                     iterator_arrays[iterator_name] = []
                     console_output_debug_msg(f"Cleared iterator {iterator_name}")
-                elif expression_split[0] == "!dup":
-                    enforce_command_parameters("dup", ["OUT-ITER", "IN-ITER"], False, [], False, len(expression_split), line_index)
+                elif match_and_enforce_command("dup", ["OUT-ITER", "IN-ITER"], False, [], False, expression_split, line_index):
                     out_iterator_name = expression_split[1]
                     in_iterator_name = expression_split[2]
                     in_iterator = iterator_arrays.get(in_iterator_name)
@@ -874,8 +868,7 @@ if len(sys.argv) > 1:
                         continue
                     iterator_arrays[out_iterator_name] = in_iterator.copy()
                     console_output_debug_msg(f"Duplicated iterator {in_iterator_name}:{in_iterator} to {out_iterator_name}:{iterator_arrays[out_iterator_name]}")
-                elif expression_split[0] == "!count":
-                    enforce_command_parameters("count", ["ITER", "VAR"], False, [], False, len(expression_split), line_index)
+                elif match_and_enforce_command("count", ["ITER", "VAR"], False, [], False, expression_split, line_index):
                     iterator_name = expression_split[1]
                     iterator = iterator_arrays.get(iterator_name)
                     output_variable_name = expression_split[2]
@@ -883,8 +876,7 @@ if len(sys.argv) > 1:
                         output_error(line_index, f"count: Iterator '{iterator_name}' is not defined")
                         continue
                     variables[output_variable_name] = len(iterator_arrays[iterator_name])
-                elif expression_split[0] == "!map":
-                    enforce_command_parameters("map", ["ITER", "EXPRESSION"], False, [], False, len(expression_split), line_index)
+                elif match_and_enforce_command("map", ["ITER", "EXPRESSION"], False, [], False, expression_split, line_index):
                     iterator_name = expression_split[1]
                     map_expression = expression_split[2]
                     iterator = iterator_arrays.get(iterator_name)
@@ -906,10 +898,9 @@ if len(sys.argv) > 1:
                             output_error(line_index, f"map: {len(eval_errors)} eval errors occured")
                             continue
                         iterator_arrays[iterator_name][i] = evaluated_value
-                elif expression_split[0] == "!filter":
+                elif match_and_enforce_command("filter", ["ITER", "NUMBER|VAR", "CMP_OP", "NUMBER|VAR"], False, [], False, expression_split, line_index):
                     #if len(expression_split) < 3:
                         #sys.exit(f"[{line_index+1}] filter: Incorrect filter statement, expected '!filter <ITER> <COMPARISON-EXPRESSION>")
-                    enforce_command_parameters("filter", ["ITER", "NUMBER|VAR", "CMP_OP", "NUMBER|VAR"], False, [], False, len(expression_split), line_index)
                     iterator_name = expression_split[1]
                     iterator = iterator_arrays.get(iterator_name)
                     left_val = get_literal_or_var(expression_split[2])
@@ -957,8 +948,7 @@ if len(sys.argv) > 1:
                     #    if evaluated_value:
                     #        filtered_array.append(cur_elm)
                     #iterator_arrays[iterator_name] = filtered_array
-                elif expression_split[0] == "!next":
-                    enforce_command_parameters("next", ["ITER"], False, [], False, len(expression_split), line_index)
+                elif match_and_enforce_command("next", ["ITER"], False, [], False, expression_split, line_index):
                     iterator_name = expression_split[1]
                     iterator = iterator_arrays.get(iterator_name)
                     if iterator == None:
@@ -968,8 +958,7 @@ if len(sys.argv) > 1:
                         continue # If the iterator is empty, dont update any variables
                     cur_val = iterator_arrays[iterator_name].pop(0)
                     variables[iterator_name] = decimal.Decimal(cur_val)
-                elif expression_split[0] == "!sum":
-                    enforce_command_parameters("sum", ["ITER", "VAR"], False, [], False, len(expression_split), line_index)
+                elif match_and_enforce_command("sum", ["ITER", "VAR"], False, [], False, expression_split, line_index):
                     iterator_name = expression_split[1]
                     variable_name = expression_split[2]
                     iterator = iterator_arrays.get(iterator_name)
@@ -977,8 +966,7 @@ if len(sys.argv) > 1:
                         output_error(line_index, f"sum: Iterator '{iterator_name}' is not defined")
                         continue
                     variables[variable_name] = sum(iterator)
-                elif expression_split[0] == "!product":
-                    enforce_command_parameters("product", ["ITER", "VAR"], False, [], False, len(expression_split), line_index)
+                elif match_and_enforce_command("product", ["ITER", "VAR"], False, [], False, expression_split, line_index):
                     iterator_name = expression_split[1]
                     variable_name = expression_split[2]
                     iterator = iterator_arrays.get(iterator_name)
