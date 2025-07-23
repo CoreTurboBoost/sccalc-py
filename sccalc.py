@@ -9,7 +9,7 @@ import typing
 import os
 
 APP_VERSION_MAJOR = 0
-APP_VERSION_MINOR = 6
+APP_VERSION_MINOR = 7
 
 def log10(x):
     return math.log(x, 10)
