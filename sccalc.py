@@ -246,17 +246,17 @@ def lex(expression : str):
                 #cur_token.error_object.type = TokenError.TYPE_UNKNOWN_IDENTIFIER
                 #cur_token.error_object.string = f"Unknown constant or function \'{cur_token.lexeame}\'"
             tokens.append(cur_token)
-        elif char in binary_function_names:
-            for b_fn in BINARY_FUNCTIONS.values():
-                if char == b_fn.lexeame:
-                    tokens.append(Token(b_fn.lexeame, Token.TYPE_BINARY_FUNCTION, char_index, None))
-                    break
         elif (char == '('):
             tokens.append(Token('(', Token.TYPE_OPEN_BRACKET, char_index, None))
         elif (char == ')'):
             tokens.append(Token(')', Token.TYPE_CLOSE_BRACKET, char_index, None))
         elif (char == '='):
             tokens.append(Token('=', Token.TYPE_ASSIGNMENT, char_index, None))
+        elif char in binary_function_names:
+            for b_fn in BINARY_FUNCTIONS.values():
+                if char == b_fn.lexeame:
+                    tokens.append(Token(b_fn.lexeame, Token.TYPE_BINARY_FUNCTION, char_index, None))
+                    break
         else:
             error_object = TokenError()
             error_object.type = TokenError.TYPE_UNKNOWN_CHAR
