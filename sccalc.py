@@ -112,6 +112,7 @@ BINARY_FUNCTIONS = {"+": BinaryFunction('+', 10, lambda a,b: a+b, None),
         "<": BinaryFunction('<', 5, lambda a,b: decimal.Decimal(a<b), None)}
 
 binary_function_names = BINARY_FUNCTIONS.keys()
+binary_functions_max_name_len = max(map(lambda a: len(a), BINARY_FUNCTIONS.keys()))
 
 LOWEST_PRECEDENCE_VALUE = 0
 ASSIGNMENT_PRECEDENCE_VALUE = 1
@@ -257,23 +258,35 @@ def lex(expression : str):
             tokens.append(Token('(', Token.TYPE_OPEN_BRACKET, char_index, None))
         elif (char == ')'):
             tokens.append(Token(')', Token.TYPE_CLOSE_BRACKET, char_index, None))
-        elif (char == '='):
-            tokens.append(Token('=', Token.TYPE_ASSIGNMENT, char_index, None))
-        elif char in binary_function_names:
-            for b_fn in BINARY_FUNCTIONS.values():
-                if char == b_fn.lexeame:
-                    tokens.append(Token(b_fn.lexeame, Token.TYPE_BINARY_FUNCTION, char_index, None))
+        elif is_punct(char):
+            trial_function = f"{char}"
+            for sub_char_index, sub_char in enumerate(expression[char_index+1:]):
+                if not is_punct(sub_char):
                     break
+                sub_char_index += char_index
+                trial_function += sub_char
+                found_name = None
+                skip_char_count += 1
+                if len(trial_function) == binary_functions_max_name_len:
+                    break
+            while len(trial_function) > 0:
+                matched_binary_fn = False
+                for binary_fn in binary_function_names:
+                    if trial_function == binary_fn:
+                        tokens.append(Token(trial_function, Token.TYPE_BINARY_FUNCTION, char_index, None))
+                        matched_binary_fn = True
+                        break
+                if matched_binary_fn:
+                    break
+                if (trial_function == '='):
+                    tokens.append(Token('=', Token.TYPE_ASSIGNMENT, char_index, None))
+                    break
+                skip_char_count -= 1
+                trial_function = trial_function[:len(trial_function)-1]
+            if len(trial_function) == 0:
+                append_unknown_char_token(char, char_index)
         else:
-            error_object = TokenError()
-            error_object.type = TokenError.TYPE_UNKNOWN_CHAR
-            if (char.isprintable()):
-                print_char = f"\'{char}\'"
-            else:
-                print_char = f"{ord(char)}"
-            error_object.string = f"Unknown char {print_char}"
-            cur_token = Token("", Token.TYPE_BAD, char_index, error_object)
-            tokens.append(cur_token)
+            append_unknown_char_token(char, char_index)
     return tokens
 
 def get_lex_error_count(tokens : typing.List[Token]):
