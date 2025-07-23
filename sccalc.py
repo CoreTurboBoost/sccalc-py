@@ -37,6 +37,7 @@ NOTE: These functions take a single decimal.Decimal as input and returns a singl
 KNOWN_FUNCTIONS = {"sqrt": math.sqrt, "log10": log10, "log2": log2, "cos": math.cos, "sin": math.sin, "tan": math.tan, "cosec": cosec, "sec": sec, "cot": cot, "acos": math.acos, "asin": math.asin, "atan": math.atan}
 
 variables = {}
+iterator_arrays = {}
 
 previous_answer = 0
 
@@ -825,6 +826,140 @@ if len(sys.argv) > 1:
                         skip_till_next_while_end_count = 1
                     else:
                         while_embed_objects.append(WhileEmbed(expressioni))
+                if expression_split[0] == "!yield":
+                    if len(expression_split) < 3:
+                        sys.exit(f"[{line_index+1}] Error: yield: Incorrect yield format statement, expected '!yield <ITER> <NUMBER|VAR>'")
+                    iterator_name = expression_split[1]
+                    new_append_value = get_literal_or_var(expression_split[2])
+                    if new_append_value == None:
+                        output_error(line_index, f"yield: variable '{expression_split[2]}' is not defined")
+                        continue
+                    if iterator_arrays.get(iterator_name) == None:
+                        iterator_arrays[iterator_name] = []
+                    iterator_arrays[iterator_name].append(new_append_value)
+                if expression_split[0] == "!clear":
+                    if len(expression_split) < 2:
+                        sys.exit(f"[{line_index+1}] Error: clear: Incorrect clear format statement, expected '!clear <ITER>'")
+                    iterator_name = expression_split[1]
+                    iterator_arrays[iterator_name] = []
+                if expression_split[0] == "!count":
+                    if len(expression_split) < 3:
+                        sys.exit(f"[{line_index+1}] Error: count: Incorrect count format statement, expected '!count <ITER> <VAR>'")
+                    iterator_name = expression_split[1]
+                    iterator = iterator_arrays.get(iterator_name)
+                    output_variable_name = expression_split[2]
+                    if iterator == None:
+                        output_error(line_index, f"count: Iterator '{iterator_name}' is not defined")
+                        continue
+                    variables[output_variable_name] = len(iterator_arrays[iterator_name])
+                if expression_split[0] == "!map":
+                    if len(expression_split) < 3:
+                        sys.exit(f"[{line_index+1}] Error: map: Incorrect map format statement, expected '!map <ITER> <EXPRESSION>")
+                    iterator_name = expression_split[1]
+                    map_expression = expression_split[2]
+                    iterator = iterator_arrays.get(iterator_name)
+                    if iterator == None:
+                        output_error(line_index, f"map: Iterator '{iterator_name}' is not defined")
+                        continue
+                    iter_len = len(iterator)
+                    for i in range(iter_len):
+                        cur_elm = iterator_arrays[iterator_name][i]
+                        variables[iterator_name] = decimal.Decimal(cur_elm)
+                        lex_tokens = lex(map_expression)
+                        lex_error_count = print_lex_errors(lex_tokens, f"[{line_index+1}] map: ")
+                        if lex_error_count > 0:
+                            sys.exit(f"[{line_index+1}] map: {lex_error_count} lexer errors")
+                        evaluated_value, eval_errors = eval_lex_tokens(lex_tokens)
+                        if len(eval_errors) > 0:
+                            for error in eval_errors:
+                                print(f"[{line_index+1}] map: eval error {error}")
+                            output_error(line_index, f"map: {len(eval_errors)} eval errors occured")
+                            continue
+                        iterator_arrays[iterator_name][i] = evaluated_value
+                if expression_split[0] == "!filter":
+                    #if len(expression_split) < 3:
+                        #sys.exit(f"[{line_index+1}] filter: Incorrect filter statement, expected '!filter <ITER> <COMPARISON-EXPRESSION>")
+                    if len(expression_split) < 5:
+                        sys.exit(f"[{line_index+1}] filter: Incorrect filter statement, expected '!filter <ITER> <NUMBER|VAR> <CMP_OP> <NUMBER|VAR>")
+                    iterator_name = expression_split[1]
+                    iterator = iterator_arrays.get(iterator_name)
+                    left_val = get_literal_or_var(expression_split[2])
+                    right_val = get_literal_or_var(expression_split[4])
+                    if left_val == None:
+                        output_error(line_index, f"filter: Variable '{expression_split[2]}' is not defined")
+                        continue
+                    if right_val == None:
+                        output_error(line_index, f"filter: Variable '{expression_split[4]}' is not defined")
+                        continue
+                    operator = expression_split[3]
+                    condition_true = apply_condition_operator(left_val, right_val, operator)
+                    if condition_true == None:
+                        output_error(line_index, f"filter: Operator '{expression_split[3]}' is not recognised")
+                        continue
+                    if iterator == None:
+                        output_error(line_index, f"filter: Iterator '{iterator_name}' is not defined")
+                        continue
+                    iter_len = len(iterator)
+                    filtered_array = []
+                    for i in range(iter_len):
+                        cur_elm = iterator_arrays[iterator_name][i]
+                        variables[iterator_name] = decimal.Decimal(cur_elm)
+                        left_val = get_literal_or_var(expression_split[2])
+                        right_val = get_literal_or_var(expression_split[4])
+                        condition_true = apply_condition_operator(left_val, right_val, operator)
+                        if condition_true:
+                            filtered_array.append(cur_elm)
+                    iterator_arrays[iterator_name] = filtered_array
+
+                    #filtered_array = []
+                    #for i in range(iter_len):
+                    #    cur_elm = iterator_arrays[iterator_name][i]
+                    #    variables[iterator_name] = decimal.Decimal(cur_elm)
+                    #    lex_tokens = lex(map_expression)
+                    #    lex_error_count = print_lex_errors(lex_tokens, f"[{line_index+1}] map: ")
+                    #    if lex_error_count > 0:
+                    #        sys.exit(f"[{line_index+1}] map: {lex_error_count} lexer errors")
+                    #    evaluated_value, eval_errors = eval_lex_tokens(lex_tokens)
+                    #    if len(eval_errors) > 0:
+                    #        for error in eval_errors:
+                    #            print(f"[{line_index+1}] map: eval error {error}")
+                    #        output_error(line_index, f"map: {len(eval_errors)} eval errors occured")
+                    #        continue
+                    #    if evaluated_value:
+                    #        filtered_array.append(cur_elm)
+                    #iterator_arrays[iterator_name] = filtered_array
+                if expression_split[0] == "!next":
+                    if len(expression_split) < 2:
+                        sys.exit(f"[{line_index+1}] Error: next: Incorrect next command format, expected '!next <ITER>'")
+                    iterator_name = expression_split[1]
+                    iterator = iterator_arrays.get(iterator_name)
+                    if iterator == None:
+                        output_error(line_index, f"next: Iterator '{iterator_name}' is not defined")
+                        continue
+                    if len(iterator) == 0:
+                        continue # If the iterator is empty, dont update any variables
+                    cur_val = iterator_arrays[iterator_name].pop(0)
+                    variables[iterator_name] = decimal.Decimal(cur_val)
+                if expression_split[0] == "!sum":
+                    if len(expression_split) < 3:
+                        sys.exit(f"[{line_index+1}] Error: sum: Incorrect sum command format, expected '!sum <ITER> <VAR>'")
+                    iterator_name = expression_split[1]
+                    variable_name = expression_split[2]
+                    iterator = iterator_arrays.get(iterator_name)
+                    if iterator == None:
+                        output_error(line_index, f"sum: Iterator '{iterator_name}' is not defined")
+                        continue
+                    variables[variable_name] = sum(iterator)
+                if expression_split[0] == "!product":
+                    if len(expression_split) < 3:
+                        sys.exit(f"[{line_index+1}] Error: product: Incorrect product command format, expected '!product <ITER> <VAR>'")
+                    iterator_name = expression_split[1]
+                    variable_name = expression_split[2]
+                    iterator = iterator_arrays.get(iterator_name)
+                    if iterator == None:
+                        output_error(line_index, f"product: Iterator '{iterator_name}' is not defined")
+                        continue
+                    variables[variable_name] = product(iterator)
                 continue
             lex_tokens = lex(expression)
             lex_error_count = print_lex_errors(lex_tokens, f"{line_index+1}: ")
