@@ -630,7 +630,7 @@ if len(sys.argv) > 1:
                     optional_arguments_str += f"[optional_arg]"
                 if optional_args_repeat:
                     optional_arguments_str += "..."
-                sys.exit(f"Error: {command_name}: Missing required arguments, expected '!{command_name} {required_arguments_str} {optional_arguments_str}")
+                sys.exit(f"Error: {command_name}: Missing required arguments, expected '!{command_name} {required_arguments_str} {optional_arguments_str}'")
         fh = open(sys.argv[1])
         contents = fh.read().split("\n")
         contents = list(zip(contents, range(0, len(contents))))
