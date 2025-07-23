@@ -22,6 +22,9 @@ def sec(x):
 def cot(x):
     return 1/math.tan(x)
 
+def negate(x):
+    return -x
+
 def product(array: list) -> decimal.Decimal:
     if len(array) == 0:
         return 0
@@ -34,7 +37,7 @@ KNOWN_CONSTS = {"pi": math.pi, "e": math.e, "deg2rad": (math.pi/180), "rad2deg":
 '''
 NOTE: These functions take a single decimal.Decimal as input and returns a single Decimal.Decimal
 '''
-KNOWN_FUNCTIONS = {"sqrt": math.sqrt, "log10": log10, "log2": log2, "cos": math.cos, "sin": math.sin, "tan": math.tan, "cosec": cosec, "sec": sec, "cot": cot, "acos": math.acos, "asin": math.asin, "atan": math.atan}
+KNOWN_FUNCTIONS = {"negate": negate, "sqrt": math.sqrt, "log10": log10, "log2": log2, "cos": math.cos, "sin": math.sin, "tan": math.tan, "cosec": cosec, "sec": sec, "cot": cot, "acos": math.acos, "asin": math.asin, "atan": math.atan}
 
 class BinaryFunction:
     def __init__(self, lexeame: str, precedence: int, callback: typing.Callable, pre_condition_fn: typing.Callable or None):
