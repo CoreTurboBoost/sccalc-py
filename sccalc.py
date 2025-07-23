@@ -28,7 +28,7 @@ NOTE: These functions take a single decimal.Decimal as input and returns a singl
 '''
 KNOWN_FUNCTIONS = {"sqrt": math.sqrt, "log10": log10, "log2": log2, "cos": math.cos, "sin": math.sin, "tan": math.tan, "cosec": cosec, "sec": sec, "cot": cot, "acos": math.acos, "asin": math.asin, "atan": math.atan}
 
-variables = {}
+variables = {"script_version": 0}
 
 previous_answer = 0
 
