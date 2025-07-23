@@ -683,7 +683,7 @@ if len(sys.argv) > 1:
             if len(expression_split[0]) > 0 and expression_split[0][0] == "!":
                 if expression_split[0] == "!strict":
                     exit_on_fail = True
-                if expression_split[0] == "!debug":
+                elif expression_split[0] == "!debug":
                     if len(expression_split) <= 1:
                         ENABLED_DEBUG_OUTPUT = not ENABLED_DEBUG_OUTPUT
                         print("ENABLED DEBUG OUTPUT" if ENABLED_DEBUG_OUTPUT else "DISABLED DEBUG OUTPUT")
@@ -696,7 +696,7 @@ if len(sys.argv) > 1:
                     else:
                         output_error(line_index, "debug: Invalid value for debug option")
                     continue
-                if expression_split[0] == "!echo":
+                elif expression_split[0] == "!echo":
                     if len(expression_split) <= 1:
                         echo_enabled = not echo_enabled
                         print("ENABLED ECHO OUTPUT" if echo_enabled else "DISABLED ECHO OUTPUT")
@@ -708,7 +708,7 @@ if len(sys.argv) > 1:
                         echo_enabled = not echo_enabled
                     else:
                         output_error(line_index, "echo: Invalid value for echo option")
-                if expression_split[0] == "!input":
+                elif expression_split[0] == "!input":
                     prompt = ""
                     if len(expression_split) == 1:
                         prompt = "INPUT >> "
@@ -718,7 +718,7 @@ if len(sys.argv) > 1:
                                 prompt += " "
                             prompt += text
                     variables["input"] = decimal.Decimal(get_user_number_input(prompt))
-                if expression_split[0] == "!print":
+                elif expression_split[0] == "!print":
                     output = ""
                     if len(expression_split) >= 1:
                         for i, text in enumerate(expression_split[1:]):
@@ -726,7 +726,7 @@ if len(sys.argv) > 1:
                                 output += " "
                             output += text
                     print(output)
-                if expression_split[0] == "!varout":
+                elif expression_split[0] == "!varout":
                     if len(expression_split) > 1:
                         var_name = expression_split[1]
                         var_val = variables.get(var_name)
@@ -741,7 +741,7 @@ if len(sys.argv) > 1:
                             output_error(line_index, f"varout: variable '{var_name}' is not defined")
                         else:
                             print(var_output)
-                if expression_split[0] == "!exit":
+                elif expression_split[0] == "!exit":
                     exit_code = 0
                     if len(expression_split) > 1:
                         try:
@@ -751,7 +751,7 @@ if len(sys.argv) > 1:
                             if var_val != None:
                                 exit_code = int(var_val)
                     sys.exit(exit_code)
-                if expression_split[0] == "!if":
+                elif expression_split[0] == "!if":
                     if len(expression_split) < 4:
                         sys.exit(f"[{line_index+1}] Error: Incorrect if statement format, expected '!if <NUMBER|VAR> <OP> <NUMBER|VAR> [<VAR> <NUMBER|VAR>]'")
                     if_left_val = 0
@@ -787,7 +787,7 @@ if len(sys.argv) > 1:
                     else:
                         if not if_condition_true:
                             skip_till_if_end_count += 1
-                if expression_split[0] == "!repeat":
+                elif expression_split[0] == "!repeat":
                     if len(expression_split) < 3:
                         sys.exit(f"[{line_index+1}] Error: Incorrect repeat statement format, expected '!repeat <NUMBER|VAR> <EXPRESSION>'")
                     iteration_count = int(get_literal_or_var(expression_split[1]))
@@ -805,7 +805,7 @@ if len(sys.argv) > 1:
                             for error in eval_errors:
                                 print(f"{line_index+1} Error: repeat: {error}")
                             sys.exit(f"{line_index+1} Eval error(s) in repeat statement")
-                if expression_split[0] == "!while":
+                elif expression_split[0] == "!while":
                     if len(expression_split) < 4:
                         sys.exit(f"{line_index+1} Error: while: Incorrect while statement format, expected '!while <NUMBER|VAR> <OP> <NUMBER|VAR>'")
                     left_operand = get_literal_or_var(expression_split[1])
@@ -826,7 +826,7 @@ if len(sys.argv) > 1:
                         skip_till_next_while_end_count = 1
                     else:
                         while_embed_objects.append(WhileEmbed(expressioni))
-                if expression_split[0] == "!yield":
+                elif expression_split[0] == "!yield":
                     if len(expression_split) < 3:
                         sys.exit(f"[{line_index+1}] Error: yield: Incorrect yield format statement, expected '!yield <ITER> <NUMBER|VAR>'")
                     iterator_name = expression_split[1]
@@ -838,13 +838,13 @@ if len(sys.argv) > 1:
                         iterator_arrays[iterator_name] = []
                     iterator_arrays[iterator_name].append(new_append_value)
                     console_output_debug_msg(f"Yielded {new_append_value} into iterator {iterator_name}, new_iterator {iterator_arrays[iterator_name]}")
-                if expression_split[0] == "!clear":
+                elif expression_split[0] == "!clear":
                     if len(expression_split) < 2:
                         sys.exit(f"[{line_index+1}] Error: clear: Incorrect clear format statement, expected '!clear <ITER>'")
                     iterator_name = expression_split[1]
                     iterator_arrays[iterator_name] = []
                     console_output_debug_msg(f"Cleared iterator {iterator_name}")
-                if expression_split[0] == "!dup":
+                elif expression_split[0] == "!dup":
                     if len(expression_split) < 3:
                         sys.exit(f"[{line_index+1}] Error: dup: Incorrect dup format statement, expected '!dup <OUT-ITER> <IN-ITER>'")
                     out_iterator_name = expression_split[1]
@@ -855,7 +855,7 @@ if len(sys.argv) > 1:
                         continue
                     iterator_arrays[out_iterator_name] = in_iterator.copy()
                     console_output_debug_msg(f"Duplicated iterator {in_iterator_name}:{in_iterator} to {out_iterator_name}:{iterator_arrays[out_iterator_name]}")
-                if expression_split[0] == "!count":
+                elif expression_split[0] == "!count":
                     if len(expression_split) < 3:
                         sys.exit(f"[{line_index+1}] Error: count: Incorrect count format statement, expected '!count <ITER> <VAR>'")
                     iterator_name = expression_split[1]
@@ -865,7 +865,7 @@ if len(sys.argv) > 1:
                         output_error(line_index, f"count: Iterator '{iterator_name}' is not defined")
                         continue
                     variables[output_variable_name] = len(iterator_arrays[iterator_name])
-                if expression_split[0] == "!map":
+                elif expression_split[0] == "!map":
                     if len(expression_split) < 3:
                         sys.exit(f"[{line_index+1}] Error: map: Incorrect map format statement, expected '!map <ITER> <EXPRESSION>")
                     iterator_name = expression_split[1]
@@ -889,7 +889,7 @@ if len(sys.argv) > 1:
                             output_error(line_index, f"map: {len(eval_errors)} eval errors occured")
                             continue
                         iterator_arrays[iterator_name][i] = evaluated_value
-                if expression_split[0] == "!filter":
+                elif expression_split[0] == "!filter":
                     #if len(expression_split) < 3:
                         #sys.exit(f"[{line_index+1}] filter: Incorrect filter statement, expected '!filter <ITER> <COMPARISON-EXPRESSION>")
                     if len(expression_split) < 5:
@@ -941,7 +941,7 @@ if len(sys.argv) > 1:
                     #    if evaluated_value:
                     #        filtered_array.append(cur_elm)
                     #iterator_arrays[iterator_name] = filtered_array
-                if expression_split[0] == "!next":
+                elif expression_split[0] == "!next":
                     if len(expression_split) < 2:
                         sys.exit(f"[{line_index+1}] Error: next: Incorrect next command format, expected '!next <ITER>'")
                     iterator_name = expression_split[1]
@@ -953,7 +953,7 @@ if len(sys.argv) > 1:
                         continue # If the iterator is empty, dont update any variables
                     cur_val = iterator_arrays[iterator_name].pop(0)
                     variables[iterator_name] = decimal.Decimal(cur_val)
-                if expression_split[0] == "!sum":
+                elif expression_split[0] == "!sum":
                     if len(expression_split) < 3:
                         sys.exit(f"[{line_index+1}] Error: sum: Incorrect sum command format, expected '!sum <ITER> <VAR>'")
                     iterator_name = expression_split[1]
@@ -963,7 +963,7 @@ if len(sys.argv) > 1:
                         output_error(line_index, f"sum: Iterator '{iterator_name}' is not defined")
                         continue
                     variables[variable_name] = sum(iterator)
-                if expression_split[0] == "!product":
+                elif expression_split[0] == "!product":
                     if len(expression_split) < 3:
                         sys.exit(f"[{line_index+1}] Error: product: Incorrect product command format, expected '!product <ITER> <VAR>'")
                     iterator_name = expression_split[1]
@@ -973,6 +973,9 @@ if len(sys.argv) > 1:
                         output_error(line_index, f"product: Iterator '{iterator_name}' is not defined")
                         continue
                     variables[variable_name] = product(iterator)
+                else:
+                    output_error(line_index, f"Command: unrecognised command '{expression_split[0]}'")
+                    continue
                 continue
             lex_tokens = lex(expression)
             lex_error_count = print_lex_errors(lex_tokens, f"{line_index+1}: ")
