@@ -100,7 +100,9 @@ BINARY_FUNCTIONS = {"+": BinaryFunction('+', 10, lambda a,b: a+b, None),
         "-": BinaryFunction('-', 10, lambda a,b: a-b, None), 
         "*": BinaryFunction('*', 20, lambda a,b: a*b, None),
         "/": BinaryFunction('/', 20, lambda a,b: a/b, lambda left,right: ["Division by zero"] if right==0 else []),
-        "^": BinaryFunction('^', 30, lambda a,b: math.pow(a,b), None)}
+        "^": BinaryFunction('^', 30, lambda a,b: decimal.Decimal(math.pow(a,b)), None),
+        ">": BinaryFunction('>', 5, lambda a,b: decimal.Decimal(a>b), None),
+        "<": BinaryFunction('<', 5, lambda a,b: decimal.Decimal(a<b), None)}
 
 binary_function_names = BINARY_FUNCTIONS.keys()
 
