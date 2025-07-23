@@ -7,6 +7,7 @@ import decimal
 import sys
 import typing
 import os
+import string
 
 APP_VERSION_MAJOR = 1
 APP_VERSION_MINOR = 0
@@ -32,6 +33,9 @@ def product(array: list) -> decimal.Decimal:
     for a in array:
         val *= a
     return val
+
+def is_punct(input_str: str) -> bool:
+    return all(char in string.punctuation for char in input_str)
 
 KNOWN_CONSTS = {"pi": math.pi, "e": math.e, "deg2rad": (math.pi/180), "rad2deg": (180/math.pi)}
 '''
