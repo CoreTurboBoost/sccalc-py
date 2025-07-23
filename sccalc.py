@@ -76,6 +76,8 @@ class BinaryFunction:
             raise TypeError("lexeame must be of type chr")
         if len(lexeame) != 1:
             raise ValueError("lexeame must be of length 1")
+        if not is_punct(lexeame):
+            raise ValueError("lexeame must be made strictly from punctuation characters")
         self._lexeame = lexeame
 
     @property
