@@ -101,7 +101,7 @@ class BinaryFunction:
         return (return_val, [])
 
 
-# NOTE: Can only be single characters
+# NOTE: Can only be single character punctuation
 BINARY_FUNCTIONS = {"+": BinaryFunction('+', 10, lambda a,b: a+b, None), 
         "-": BinaryFunction('-', 10, lambda a,b: a-b, None), 
         "*": BinaryFunction('*', 20, lambda a,b: a*b, None),
