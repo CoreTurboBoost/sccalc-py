@@ -111,7 +111,7 @@ LOWEST_PRECEDENCE_VALUE = 0
 ASSIGNMENT_PRECEDENCE_VALUE = 1
 UNARY_FUNCTION_PRECEDENCE_VALUE = 50
 
-variables = {"script_version": 2}
+variables = {"script_version": 3}
 iterator_arrays = {}
 
 previous_answer = 0
