@@ -837,11 +837,13 @@ if len(sys.argv) > 1:
                     if iterator_arrays.get(iterator_name) == None:
                         iterator_arrays[iterator_name] = []
                     iterator_arrays[iterator_name].append(new_append_value)
+                    console_output_debug_msg(f"Yielded {new_append_value} into iterator {iterator_name}, new_iterator {iterator_arrays[iterator_name]}")
                 if expression_split[0] == "!clear":
                     if len(expression_split) < 2:
                         sys.exit(f"[{line_index+1}] Error: clear: Incorrect clear format statement, expected '!clear <ITER>'")
                     iterator_name = expression_split[1]
                     iterator_arrays[iterator_name] = []
+                    console_output_debug_msg(f"Cleared iterator {iterator_name}")
                 if expression_split[0] == "!dup":
                     if len(expression_split) < 3:
                         sys.exit(f"[{line_index+1}] Error: dup: Incorrect dup format statement, expected '!dup <OUT-ITER> <IN-ITER>'")
@@ -852,6 +854,7 @@ if len(sys.argv) > 1:
                         output_error(line_index, f"dup: Iterator '{in_iterator_name}' is not defined")
                         continue
                     iterator_arrays[out_iterator_name] = in_iterator.copy()
+                    console_output_debug_msg(f"Duplicated iterator {in_iterator_name}:{in_iterator} to {out_iterator_name}:{iterator_arrays[out_iterator_name]}")
                 if expression_split[0] == "!count":
                     if len(expression_split) < 3:
                         sys.exit(f"[{line_index+1}] Error: count: Incorrect count format statement, expected '!count <ITER> <VAR>'")
