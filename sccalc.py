@@ -267,16 +267,6 @@ def lex(expression : str):
             error_object.string = f"Unknown char {print_char}"
             cur_token = Token("", Token.TYPE_BAD, char_index, error_object)
             tokens.append(cur_token)
-    for i, token in enumerate(tokens):
-        if token.type == Token.TYPE_VAR:
-            next_is_assignment = False
-            if i+1 < len(tokens):
-                next_token = tokens[i+1]
-                if next_token.type == Token.TYPE_ASSIGNMENT:
-                    next_is_assignment = True
-            if (token.lexeame in variables.keys() and not next_is_assignment):
-                tokens[i].type = Token.TYPE_NUMBER
-                tokens[i].lexeame = str(variables[token.lexeame])
     return tokens
 
 def get_lex_error_count(tokens : typing.List[Token]):
@@ -324,6 +314,17 @@ def eval_lex_tokens(tokens : typing.List[Token]):
         if (token_type == Token.TYPE_ASSIGNMENT):
             return True
         return False
+
+    for i, token in enumerate(tokens):
+        if token.type == Token.TYPE_VAR:
+            next_is_assignment = False
+            if i+1 < len(tokens):
+                next_token = tokens[i+1]
+                if next_token.type == Token.TYPE_ASSIGNMENT:
+                    next_is_assignment = True
+            if (token.lexeame in variables.keys() and not next_is_assignment):
+                tokens[i].type = Token.TYPE_NUMBER
+                tokens[i].lexeame = str(variables[token.lexeame])
 
     errors = []
     evaluated_value = 0
