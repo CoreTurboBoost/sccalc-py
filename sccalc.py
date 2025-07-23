@@ -842,6 +842,16 @@ if len(sys.argv) > 1:
                         sys.exit(f"[{line_index+1}] Error: clear: Incorrect clear format statement, expected '!clear <ITER>'")
                     iterator_name = expression_split[1]
                     iterator_arrays[iterator_name] = []
+                if expression_split[0] == "!dup":
+                    if len(expression_split) < 3:
+                        sys.exit(f"[{line_index+1}] Error: dup: Incorrect dup format statement, expected '!dup <OUT-ITER> <IN-ITER>'")
+                    out_iterator_name = expression_split[1]
+                    in_iterator_name = expression_split[2]
+                    in_iterator = iterator_arrays.get(in_iterator_name)
+                    if in_iterator == None:
+                        output_error(line_index, f"dup: Iterator '{in_iterator_name}' is not defined")
+                        continue
+                    iterator_arrays[out_iterator_name] = in_iterator.copy()
                 if expression_split[0] == "!count":
                     if len(expression_split) < 3:
                         sys.exit(f"[{line_index+1}] Error: count: Incorrect count format statement, expected '!count <ITER> <VAR>'")
