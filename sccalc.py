@@ -104,6 +104,10 @@ BINARY_FUNCTIONS = {"+": BinaryFunction('+', 10, lambda a,b: a+b, None),
 
 binary_function_names = BINARY_FUNCTIONS.keys()
 
+LOWEST_PRECEDENCE_VALUE = 0
+ASSIGNMENT_PRECEDENCE_VALUE = 1
+UNARY_FUNCTION_PRECEDENCE_VALUE = 50
+
 variables = {"script_version": 2}
 iterator_arrays = {}
 
@@ -289,15 +293,18 @@ def eval_lex_tokens(tokens : typing.List[Token]):
     '''
     tokens = tokens.copy()
     def get_op_precedence(token : Token):
+        '''
+        get_precedence of operators
+        '''
         # larger number greater precedence
         if token.type == token.TYPE_BINARY_FUNCTION:
             return BINARY_FUNCTIONS[token.lexeame].precedence
         if (token.type == Token.TYPE_NONE or token.type == Token.TYPE_OPEN_BRACKET):
-            return 0
+            return LOWEST_PRECEDENCE_VALUE
         if (token.type == Token.TYPE_ASSIGNMENT):
-            return 1
+            return ASSIGNMENT_PRECEDENCE_VALUE
         if (token.type == Token.TYPE_FUNCTION):
-            return 5
+            return UNARY_FUNCTION_PRECEDENCE_VALUE
         console_output_debug_msg(f"get_precedence fn param not recognised token_type:{token_type}")
         return -1
     def is_operator(token_type : Token):
