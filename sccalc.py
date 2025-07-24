@@ -10,6 +10,7 @@ import os
 
 APP_VERSION_MAJOR = 0
 APP_VERSION_MINOR = 8
+APP_SCRIPT_VERSION = 1
 
 def log10(x):
     return math.log(x, 10)
@@ -36,7 +37,7 @@ NOTE: These functions take a single decimal.Decimal as input and returns a singl
 '''
 KNOWN_FUNCTIONS = {"sqrt": math.sqrt, "log10": log10, "log2": log2, "cos": math.cos, "sin": math.sin, "tan": math.tan, "cosec": cosec, "sec": sec, "cot": cot, "acos": math.acos, "asin": math.asin, "atan": math.atan}
 
-variables = {"script_version": 1}
+variables = {"script_version": APP_SCRIPT_VERSION}
 iterator_arrays = {}
 
 previous_answer = 0
