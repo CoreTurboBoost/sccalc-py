@@ -11,6 +11,7 @@ import string
 
 APP_VERSION_MAJOR = 2
 APP_VERSION_MINOR = 0
+APP_SCRIPT_VERSION = 3
 
 def log10(x):
     return math.log(x, 10)
@@ -127,7 +128,7 @@ LOWEST_PRECEDENCE_VALUE = 0
 ASSIGNMENT_PRECEDENCE_VALUE = 1
 UNARY_FUNCTION_PRECEDENCE_VALUE = 50
 
-variables = {"script_version": 3}
+variables = {"script_version": APP_SCRIPT_VERSION}
 iterator_arrays = {}
 
 previous_answer = 0
@@ -641,6 +642,7 @@ if len(sys.argv) > 1:
         sys.exit()
     if (sys.argv[1] == "--version" or sys.argv[1] == "-v"):
         print(f"VERSION: {APP_VERSION_MAJOR}.{APP_VERSION_MINOR}")
+        print(f"SCRIPT_VERSION: {APP_SCRIPT_VERSION}")
         sys.exit()
     if (sys.argv[1] == "__VERSION__"):
         print(f"{APP_VERSION_MAJOR}.{APP_VERSION_MINOR}")
