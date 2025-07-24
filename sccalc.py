@@ -7,10 +7,11 @@ import decimal
 import sys
 import typing
 import os
+import string
 
-APP_VERSION_MAJOR = 1
+APP_VERSION_MAJOR = 2
 APP_VERSION_MINOR = 0
-APP_SCRIPT_VERSION = 1
+APP_SCRIPT_VERSION = 3
 
 def log10(x):
     return math.log(x, 10)
@@ -23,6 +24,9 @@ def sec(x):
 def cot(x):
     return 1/math.tan(x)
 
+def negate(x):
+    return -x
+
 def product(array: list) -> decimal.Decimal:
     if len(array) == 0:
         return 0
@@ -31,11 +35,98 @@ def product(array: list) -> decimal.Decimal:
         val *= a
     return val
 
+def is_punct(input_str: str) -> bool:
+    return all(char in string.punctuation for char in input_str)
+
 KNOWN_CONSTS = {"pi": math.pi, "e": math.e, "deg2rad": (math.pi/180), "rad2deg": (180/math.pi)}
 '''
 NOTE: These functions take a single decimal.Decimal as input and returns a single Decimal.Decimal
 '''
-KNOWN_FUNCTIONS = {"sqrt": math.sqrt, "log10": log10, "log2": log2, "cos": math.cos, "sin": math.sin, "tan": math.tan, "cosec": cosec, "sec": sec, "cot": cot, "acos": math.acos, "asin": math.asin, "atan": math.atan}
+KNOWN_FUNCTIONS = {"negate": negate, "sqrt": math.sqrt, "log10": log10, "log2": log2, "cos": math.cos, "sin": math.sin, "tan": math.tan, "cosec": cosec, "sec": sec, "cot": cot, "acos": math.acos, "asin": math.asin, "atan": math.atan}
+
+class BinaryFunction:
+    def __init__(self, lexeame: str, precedence: int, callback: typing.Callable, pre_condition_fn: typing.Callable or None):
+        self._lexeame = None
+        self.lexeame = lexeame
+        if not isinstance(precedence, int):
+            raise TypeError("precedence must be of type int")
+        if not isinstance(callback, typing.Callable):
+            raise TypeError("callback must be of type callable")
+        if pre_condition_fn == None:
+            pre_condition_fn = lambda a, b: []
+        if not isinstance(pre_condition_fn, typing.Callable):
+            raise TypeError("pre_condition_fn must be of type callable")
+        self._precedence = precedence
+        self._callback = callback
+        self._pre_condition_fn = pre_condition_fn
+    def __str__(self) -> str:
+        return f"BinaryFunction({self.lexeame=}, {self.precedence=}, {self.callback=})"
+
+    def handle_precondition(self, left_operand: decimal.Decimal, right_operand: decimal.Decimal) -> list[str]:
+        '''
+        Return a list of strings representing errors
+        '''
+        return self._pre_condition_fn(left_operand, right_operand)
+
+    @property
+    def lexeame(self) -> chr:
+        return self._lexeame
+    @lexeame.setter
+    def lexeame(self, lexeame: chr) -> None:
+        if not isinstance(lexeame, str):
+            raise TypeError("lexeame must be of type chr")
+        if len(lexeame) < 1:
+            raise ValueError("lexeame must be at least of length 1")
+        if not is_punct(lexeame):
+            raise ValueError("lexeame must be made strictly from punctuation characters")
+        self._lexeame = lexeame
+
+    @property
+    def precedence(self) -> int:
+        return self._precedence
+    
+    @property
+    def callback(self) -> typing.Callable:
+        return self._callback
+
+    def call_callback(self, left_operand: decimal.Decimal, right_operand: decimal.Decimal) -> (decimal.Decimal, list[str]):
+        precondition_errors = self.handle_precondition(left_operand, right_operand)
+        if len(precondition_errors) > 0:
+            return (None, precondition_errors)
+        try:
+            return_val = self._callback(left_operand, right_operand)
+        except (ValueError, ZeroDivisionError):
+            return (None, [f"binary callback function failure, {sys.exc_info()[1]}"])
+        if not isinstance(return_val, decimal.Decimal):
+            raise TypeError("callback does not return the correct type, expected type decimal.Decimal")
+        return (return_val, [])
+
+
+# NOTE: Can only be single character punctuation
+BINARY_FUNCTIONS = {"+": BinaryFunction('+', 10, lambda a,b: a+b, None), 
+        "-": BinaryFunction('-', 10, lambda a,b: a-b, None), 
+        "*": BinaryFunction('*', 20, lambda a,b: a*b, None),
+        "/": BinaryFunction('/', 20, lambda a,b: a/b, lambda left,right: ["Division by zero"] if right==0 else []),
+        "%": BinaryFunction('%', 20, lambda a,b: a%b, lambda left,right: ["Division by zero"] if right==0 else []),
+        "^": BinaryFunction('^', 30, lambda a,b: decimal.Decimal(math.pow(a,b)), None),
+        ">": BinaryFunction('>', 5, lambda a,b: decimal.Decimal(a>b), None),
+        "<": BinaryFunction('<', 5, lambda a,b: decimal.Decimal(a<b), None),
+        ">=": BinaryFunction('>=', 5, lambda a,b: decimal.Decimal(a>=b), None),
+        "<=": BinaryFunction('<=', 5, lambda a,b: decimal.Decimal(a<=b), None),
+        "==": BinaryFunction('==', 5, lambda a,b: decimal.Decimal(a==b), None),
+        "!=": BinaryFunction('!=', 5, lambda a,b: decimal.Decimal(a!=b), None),
+        "&&": BinaryFunction('&&', 5, lambda a,b: decimal.Decimal(a and b), None),
+        "||": BinaryFunction('||', 5, lambda a,b: decimal.Decimal(a or b), None), }
+
+if not all(map(lambda a: a[0] == a[1].lexeame, zip(BINARY_FUNCTIONS.keys(), BINARY_FUNCTIONS.values()))):
+        raise ValueError("Binary function lexeame and BINARY_FUNCTIONS key do not match")
+
+binary_function_names = BINARY_FUNCTIONS.keys()
+binary_functions_max_name_len = max(map(lambda a: len(a), BINARY_FUNCTIONS.keys()))
+
+LOWEST_PRECEDENCE_VALUE = 0
+ASSIGNMENT_PRECEDENCE_VALUE = 1
+UNARY_FUNCTION_PRECEDENCE_VALUE = 50
 
 variables = {"script_version": APP_SCRIPT_VERSION}
 iterator_arrays = {}
@@ -63,11 +154,7 @@ class Token:
     TYPE_IDENTIFIER = 1
     TYPE_CONST = 2
     TYPE_NUMBER = 3
-    TYPE_ADDITION = 4
-    TYPE_SUBTRACTION = 5
-    TYPE_MULTIPLICATION = 6
-    TYPE_DIVISION = 7
-    TYPE_EXPONENT = 8
+    TYPE_BINARY_FUNCTION = 4
     TYPE_OPEN_BRACKET = 9
     TYPE_CLOSE_BRACKET = 10
     TYPE_FUNCTION = 11
@@ -84,16 +171,8 @@ class Token:
             return "Const"
         elif (enum_type == Token.TYPE_NUMBER):
             return "Number"
-        elif (enum_type == Token.TYPE_ADDITION):
-            return "Addition"
-        elif (enum_type == Token.TYPE_SUBTRACTION):
-            return "Subtraction"
-        elif (enum_type == Token.TYPE_MULTIPLICATION):
-            return "Multiplication"
-        elif (enum_type == Token.TYPE_DIVISION):
-            return "Division"
-        elif (enum_type == Token.TYPE_EXPONENT):
-            return "Exponent"
+        elif (enum_type == Token.TYPE_BINARY_FUNCTION):
+            return "Binary Function"
         elif (enum_type == Token.TYPE_OPEN_BRACKET):
             return "Open bracket"
         elif (enum_type == Token.TYPE_CLOSE_BRACKET):
@@ -121,6 +200,13 @@ class Token:
 def lex(expression : str):
     skip_char_count = 0
     tokens = []
+    def append_unknown_char_token(char: str, char_index: int) -> None:
+        error_object = TokenError()
+        error_object.type = TokenError.TYPE_UNKNOWN_CHAR
+        print_char = f"\'{char}\'" if char.isprintable() else f"{ord(char)}"
+        error_object.string = f"Unknown char {print_char}"
+        cur_token = Token("", Token.TYPE_BAD, char_index, error_object)
+        tokens.append(cur_token)
     for char_index, char in enumerate(expression):
         if (skip_char_count > 0):
             skip_char_count -= 1
@@ -178,42 +264,39 @@ def lex(expression : str):
                 #cur_token.error_object.type = TokenError.TYPE_UNKNOWN_IDENTIFIER
                 #cur_token.error_object.string = f"Unknown constant or function \'{cur_token.lexeame}\'"
             tokens.append(cur_token)
-        elif (char == '+'):
-            tokens.append(Token('+', Token.TYPE_ADDITION, char_index, None))
-        elif (char == '-'):
-            tokens.append(Token('-', Token.TYPE_SUBTRACTION, char_index, None))
-        elif (char == '*'):
-            tokens.append(Token('*', Token.TYPE_MULTIPLICATION, char_index, None))
-        elif (char == '/'):
-            tokens.append(Token('/', Token.TYPE_DIVISION, char_index, None))
-        elif (char == '^'):
-            tokens.append(Token('^', Token.TYPE_EXPONENT, char_index, None))
         elif (char == '('):
             tokens.append(Token('(', Token.TYPE_OPEN_BRACKET, char_index, None))
         elif (char == ')'):
             tokens.append(Token(')', Token.TYPE_CLOSE_BRACKET, char_index, None))
-        elif (char == '='):
-            tokens.append(Token('=', Token.TYPE_ASSIGNMENT, char_index, None))
+        elif is_punct(char):
+            trial_function = f"{char}"
+            for sub_char_index, sub_char in enumerate(expression[char_index+1:]):
+                if not is_punct(sub_char):
+                    break
+                sub_char_index += char_index
+                trial_function += sub_char
+                found_name = None
+                skip_char_count += 1
+                if len(trial_function) == binary_functions_max_name_len:
+                    break
+            while len(trial_function) > 0:
+                matched_binary_fn = False
+                for binary_fn in binary_function_names:
+                    if trial_function == binary_fn:
+                        tokens.append(Token(trial_function, Token.TYPE_BINARY_FUNCTION, char_index, None))
+                        matched_binary_fn = True
+                        break
+                if matched_binary_fn:
+                    break
+                if (trial_function == '='):
+                    tokens.append(Token('=', Token.TYPE_ASSIGNMENT, char_index, None))
+                    break
+                skip_char_count -= 1
+                trial_function = trial_function[:len(trial_function)-1]
+            if len(trial_function) == 0:
+                append_unknown_char_token(char, char_index)
         else:
-            error_object = TokenError()
-            error_object.type = TokenError.TYPE_UNKNOWN_CHAR
-            if (char.isprintable()):
-                print_char = f"\'{char}\'"
-            else:
-                print_char = f"{ord(char)}"
-            error_object.string = f"Unknown char {print_char}"
-            cur_token = Token("", Token.TYPE_BAD, char_index, error_object)
-            tokens.append(cur_token)
-    for i, token in enumerate(tokens):
-        if token.type == Token.TYPE_VAR:
-            next_is_assignment = False
-            if i+1 < len(tokens):
-                next_token = tokens[i+1]
-                if next_token.type == Token.TYPE_ASSIGNMENT:
-                    next_is_assignment = True
-            if (token.lexeame in variables.keys() and not next_is_assignment):
-                tokens[i].type = Token.TYPE_NUMBER
-                tokens[i].lexeame = str(variables[token.lexeame])
+            append_unknown_char_token(char, char_index)
     return tokens
 
 def get_lex_error_count(tokens : typing.List[Token]):
@@ -238,34 +321,40 @@ def eval_lex_tokens(tokens : typing.List[Token]):
        errors : list[str], empty list on success.
     '''
     tokens = tokens.copy()
-    def get_op_precedence(token_type : Token):
+    def get_op_precedence(token : Token):
+        '''
+        get_precedence of operators
+        '''
         # larger number greater precedence
-        if (token_type == Token.TYPE_NONE or token_type == Token.TYPE_OPEN_BRACKET):
-            return 0
-        if (token_type == Token.TYPE_ASSIGNMENT):
-            return 1
-        if (token_type == Token.TYPE_ADDITION or token_type == Token.TYPE_SUBTRACTION):
-            return 2
-        if (token_type == Token.TYPE_MULTIPLICATION or token_type == Token.TYPE_DIVISION):
-            return 3
-        if (token_type == Token.TYPE_EXPONENT):
-            return 4
-        if (token_type == Token.TYPE_FUNCTION):
-            return 5
+        if token.type == token.TYPE_BINARY_FUNCTION:
+            return BINARY_FUNCTIONS[token.lexeame].precedence
+        if (token.type == Token.TYPE_NONE or token.type == Token.TYPE_OPEN_BRACKET):
+            return LOWEST_PRECEDENCE_VALUE
+        if (token.type == Token.TYPE_ASSIGNMENT):
+            return ASSIGNMENT_PRECEDENCE_VALUE
+        if (token.type == Token.TYPE_FUNCTION):
+            return UNARY_FUNCTION_PRECEDENCE_VALUE
         console_output_debug_msg(f"get_precedence fn param not recognised token_type:{token_type}")
         return -1
     def is_operator(token_type : Token):
-        if (token_type == Token.TYPE_ADDITION or token_type == Token.TYPE_SUBTRACTION):
-            return True
-        if (token_type == Token.TYPE_MULTIPLICATION or token_type == Token.TYPE_DIVISION):
-            return True
-        if (token_type == Token.TYPE_EXPONENT):
+        if (token_type == Token.TYPE_BINARY_FUNCTION):
             return True
         if (token_type == Token.TYPE_FUNCTION):
             return True
         if (token_type == Token.TYPE_ASSIGNMENT):
             return True
         return False
+
+    for i, token in enumerate(tokens):
+        if token.type == Token.TYPE_VAR:
+            next_is_assignment = False
+            if i+1 < len(tokens):
+                next_token = tokens[i+1]
+                if next_token.type == Token.TYPE_ASSIGNMENT:
+                    next_is_assignment = True
+            if (token.lexeame in variables.keys() and not next_is_assignment):
+                tokens[i].type = Token.TYPE_NUMBER
+                tokens[i].lexeame = str(variables[token.lexeame])
 
     errors = []
     evaluated_value = 0
@@ -298,7 +387,7 @@ def eval_lex_tokens(tokens : typing.List[Token]):
     cur_token = None
     while (cur_token_index < len(tokens)):
         cur_token = tokens[cur_token_index]
-        if (cur_token.type == Token.TYPE_SUBTRACTION):
+        if (cur_token.type == Token.TYPE_BINARY_FUNCTION and cur_token.lexeame == "-"): # Special case for the '-' sign (to attempt to keep compatibility with older program versions)
             if (cur_token_index == 0):
                 if (len(tokens) > 1):
                     console_output_debug_msg(f"cur_token_index:{cur_token_index} next token type:\'{Token.get_str_from_type_enum(tokens[cur_token_index+1].type)}\'")
@@ -358,24 +447,24 @@ def eval_lex_tokens(tokens : typing.List[Token]):
             if (len(operators_stack) > 0):
                 operators_stack.pop() 
         elif (is_operator(token.type) and token.type == Token.TYPE_FUNCTION):
-            cur_func_prec = get_op_precedence(token.type)
+            cur_func_prec = get_op_precedence(token)
             if len(operators_stack) > 0:
-                stack_top_op_precedence = get_op_precedence(operators_stack[-1].type)
+                stack_top_op_precedence = get_op_precedence(operators_stack[-1])
                 while stack_top_op_precedence >= cur_func_prec and operators_stack[-1].type != Token.TYPE_FUNCTION:
                     post_fix_token_list.append(operators_stack.pop())
                     if (len(operators_stack) > 0):
-                        stack_top_op_precedence = get_op_precedence(operators_stack[-1].type)
+                        stack_top_op_precedence = get_op_precedence(operators_stack[-1])
                     else:
                         break
             operators_stack.append(token)
 
         elif (is_operator(token.type)):
             console_output_debug_msg(f"[{token_index}] Considered token as an operator, {token}")
-            cur_op_precedence = get_op_precedence(token.type)
+            cur_op_precedence = get_op_precedence(token)
             if (len(operators_stack) > 0):
-                stack_top_op_precedence = get_op_precedence(operators_stack[-1].type)
+                stack_top_op_precedence = get_op_precedence(operators_stack[-1])
             else:
-                stack_top_op_precedence = get_op_precedence(Token.TYPE_NONE)
+                stack_top_op_precedence = get_op_precedence(Token())
             console_output_debug_msg(f"[{token_index}] both precedences (cur, stack_top): ({cur_op_precedence}, {stack_top_op_precedence})")
             if (cur_op_precedence > stack_top_op_precedence):
                 console_output_debug_msg(f"[{token_index}] Added {token.lexeame} to op stack")
@@ -384,9 +473,9 @@ def eval_lex_tokens(tokens : typing.List[Token]):
                 console_output_debug_msg(f"[{token_index}] Adding operator to post-fix list ({operators_stack[-1].lexeame}) then added another operator to operators_stack ({token.lexeame})")
                 post_fix_token_list.append(operators_stack.pop())
                 if (len(operators_stack) > 0):
-                    stack_top_op_precedence = get_op_precedence(operators_stack[-1].type)
+                    stack_top_op_precedence = get_op_precedence(operators_stack[-1])
                 else:
-                    stack_top_op_precedence = get_op_precedence(Token.TYPE_NONE)
+                    stack_top_op_precedence = get_op_precedence(Token())
             operators_stack.append(token)
         else:
             error_string = f"[char_index:{token.char_index}] Token list contains unknown or bad token type"
@@ -448,38 +537,15 @@ def eval_lex_tokens(tokens : typing.List[Token]):
                 errors.append("1 Too many operators, for the number of operands")
                 break
             operand_b = numbers_stack.pop()
-            if (token.type == Token.TYPE_ADDITION):
-                if not (is_number(operand_a) and is_number(operand_b)):
+            if token.type == Token.TYPE_BINARY_FUNCTION:
+                if not(is_number(operand_a) and is_number(operand_b)):
                     errors.append(f"{[token.char_index+1]} Expecting a number, not a variable")
                     break
-                numbers_stack.append(operand_a + operand_b)
-            if (token.type == Token.TYPE_SUBTRACTION):
-                if not (is_number(operand_a) and is_number(operand_b)):
-                    errors.append(f"{[token.char_index+1]} Expecting a number, not a variable")
-                    break
-                numbers_stack.append(operand_b - operand_a)
-            if (token.type == Token.TYPE_MULTIPLICATION):
-                if not (is_number(operand_a) and is_number(operand_b)):
-                    errors.append(f"{[token.char_index+1]} Expecting a number, not a variable")
-                    break
-                numbers_stack.append(operand_a * operand_b)
-            if (token.type == Token.TYPE_DIVISION):
-                if not (is_number(operand_a) and is_number(operand_b)):
-                    errors.append(f"{[token.char_index+1]} Expecting a number, not a variable")
-                    break
-                if (operand_a == 0):
-                    errors.append(f"[{token.char_index+1}] Division by zero")
-                    break
-                numbers_stack.append(operand_b / operand_a)
-            if (token.type == Token.TYPE_EXPONENT):
-                if not (is_number(operand_a) and is_number(operand_b)):
-                    errors.append(f"{[token.char_index+1]} Expecting a number, not a variable")
-                    break
-                console_output_debug_msg(f"exponent operation: {operand_b}^{operand_a}")
-                try:
-                    numbers_stack.append(decimal.Decimal(math.pow(operand_b, operand_a)))
-                except:
-                    errors.append(f"[{token.char_index+1}] expression: \'{operand_b}^({operand_a})\' failed, {sys.exc_info()[1]}")
+                binary_object = BINARY_FUNCTIONS[token.lexeame]
+                evaluated_num, eval_errors = binary_object.call_callback(operand_b, operand_a)
+                errors.extend(eval_errors)
+                if len(eval_errors) == 0:
+                    numbers_stack.append(evaluated_num)
             if (token.type == Token.TYPE_ASSIGNMENT):
                 if not is_number(operand_a):
                     errors.append(f"{[token.char_index+1]} Expecting a number, not a variable")
