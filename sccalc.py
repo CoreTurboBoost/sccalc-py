@@ -576,6 +576,7 @@ if len(sys.argv) > 1:
         sys.exit()
     if (sys.argv[1] == "--version" or sys.argv[1] == "-v"):
         print(f"VERSION: {APP_VERSION_MAJOR}.{APP_VERSION_MINOR}")
+        print(f"SCRIPT_VERSION: {APP_SCRIPT_VERSION}")
         sys.exit()
     if (sys.argv[1] == "__VERSION__"):
         print(f"{APP_VERSION_MAJOR}.{APP_VERSION_MINOR}")
