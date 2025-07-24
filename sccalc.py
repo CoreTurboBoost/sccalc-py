@@ -8,8 +8,8 @@ import sys
 import typing
 import os
 
-APP_VERSION_MAJOR = 0
-APP_VERSION_MINOR = 8
+APP_VERSION_MAJOR = 1
+APP_VERSION_MINOR = 0
 APP_SCRIPT_VERSION = 1
 
 def log10(x):
