@@ -10,8 +10,8 @@ import os
 import string
 
 APP_VERSION_MAJOR = 2
-APP_VERSION_MINOR = 0
-APP_SCRIPT_VERSION = 3
+APP_VERSION_MINOR = 1
+APP_SCRIPT_VERSION = 4
 
 def log10(x):
     return math.log(x, 10)
@@ -42,7 +42,7 @@ KNOWN_CONSTS = {"pi": math.pi, "e": math.e, "deg2rad": (math.pi/180), "rad2deg":
 '''
 NOTE: These functions take a single decimal.Decimal as input and returns a single Decimal.Decimal
 '''
-KNOWN_FUNCTIONS = {"negate": negate, "sqrt": math.sqrt, "log10": log10, "log2": log2, "cos": math.cos, "sin": math.sin, "tan": math.tan, "cosec": cosec, "sec": sec, "cot": cot, "acos": math.acos, "asin": math.asin, "atan": math.atan}
+KNOWN_FUNCTIONS = {"negate": negate, "ceil": math.ceil, "floor": math.floor, "round": round, "sqrt": math.sqrt, "log10": log10, "log2": log2, "cos": math.cos, "sin": math.sin, "tan": math.tan, "cosec": cosec, "sec": sec, "cot": cot, "acos": math.acos, "asin": math.asin, "atan": math.atan}
 
 class BinaryFunction:
     def __init__(self, lexeame: str, precedence: int, callback: typing.Callable, pre_condition_fn: typing.Callable or None):
