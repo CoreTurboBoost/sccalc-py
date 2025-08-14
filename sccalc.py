@@ -852,26 +852,6 @@ class CommandProcessTree:
     def get_str(self) -> str:
         return f"!{self.name} {self.root_node.get_str()}"
 
-'''
- EXAMPLE of the new declarative system
-Command("if", lambda a: , OPIONAL([XOR([LITERAL(), VAR()]), OP(), XOR([LITERAL(), VAR()])], [VAR(), XOR([LITERAL(), VAR])]))
-
-match_and_enforce_command("if", ["NUMBER|VAR", "OP", "NUMBER|VAR"], False, ["<VAR> <NUMBER|VAR>"], False, expression_split, line_index):
-
-if <NUMBER|VAR> <OP> <NUMBER|VAR> [<VAR> <NUMBER|VAR>]
-if <NUMBER|VAR> OP <NUMBER|VAR> [VAR <NUMBER|VAR>]
-    
-'''
-
-test_if_command_tree = CommandProcessTree("if", CommandProcessAddition(CommandProcessRequiredGroup([CommandProcessXOR([CommandProcessLiteralNumber("lval"), CommandProcessVariable(IOType.IOT_IN, "lval", False)]), CommandProcessCmpOperator("op"), CommandProcessXOR([CommandProcessLiteralNumber("lval"), CommandProcessVariable(IOType.IOT_IN, "lval", False)])]), CommandProcessRequiredGroup([CommandProcessVariable(IOType.IOT_OUT, "ifset-out-var", False), CommandProcessXOR([CommandProcessLiteralNumber("ifset-get"), CommandProcessVariable(IOType.IOT_IN, "ifset-get", False)])])))
-print(f"test_if_command_tree: {test_if_command_tree.get_str()}")
-test_phrases = ["!if", "5", "<", "2"]
-on_success = lambda a,b: print(f"test_if_command_tree successful match with values:{a} tags:{b} {a[1](a[0], a[2])=}")
-if_command_match_and_run_return = test_if_command_tree.match_and_run(test_phrases, 0, on_success)
-print(f"test_if_command_tree.match_and_run() {if_command_match_and_run_return}")
-test_if_statement = input("Enter an if command expression as a test: ").strip().split()
-console_output_debug_msg("\n\n")
-console_output_debug_msg(test_if_command_tree.match_and_run(test_if_statement, 0, on_success))
 
 class BinaryFunction:
     def __init__(self, lexeame: str, precedence: int, callback: typing.Callable, pre_condition_fn: typing.Callable or None):
@@ -1016,9 +996,6 @@ command_tree_while = CommandProcessTree("while",
     ])
 )
 
-data = command_tree_while.match_and_run(["!while", "1", "<", "2"], 0, None)
-console_output_debug_msg(f"while test: {data=}")
-
 command_tree_exit = CommandProcessTree("exit",
     CommandProcessOptional(
         CommandProcessXOR([
@@ -1027,15 +1004,6 @@ command_tree_exit = CommandProcessTree("exit",
         ])
     )
 )
-
-variables["test"] = 3
-data = command_tree_exit.match_and_run(["!exit"], 0, lambda a,b: print("Exit with code ", "0" if not ("code" in b) else str(a[0])))
-print("exit command: {data=}")
-data = command_tree_exit.match_and_run(["!exit"], 0, lambda a,b: print("Exit with code ", "0" if not ("code" in b) else str(a[0])))
-print("exit 1 command: {data=}")
-data = command_tree_exit.match_and_run(["!exit"], 0, lambda a,b: print("Exit with code ", "0" if not ("code" in b) else str(a[0])))
-print("exit test command: {data=}")
-
 
 command_tree_input = CommandProcessTree("input",
     CommandProcessOptional(
@@ -1053,9 +1021,6 @@ def command_process_callback_input(values: list, tags: list[str]) -> None:
         prompt = "INPUT >> "
     variables["input"] = decimal.Decimal(get_user_number_input(prompt))
 
-command_tree_input.match_and_run(["!input"], 0, command_process_callback_input)
-command_tree_input.match_and_run(["!input", "Enter", "a number: "], 0, command_process_callback_input)
-
 command_tree_print = CommandProcessTree("print",
      CommandProcessOptional(
         CommandProcessRepeat(
@@ -1063,11 +1028,6 @@ command_tree_print = CommandProcessTree("print",
         )
     )
 )
-
-data = command_tree_print.match_and_run(["!print", "Hello", "from", "script", ". Some  extra  text  after  ."], 0, lambda vals,tags: print(" ".join(vals) if "text" in tags else ""))
-console_output_debug_msg(f"command_tree_print: match_and_run: {data=}")
-data = command_tree_print.match_and_run(["!print"], 0, lambda vals,tags: print(" ".join(vals) if "text" in tags else ""))
-console_output_debug_msg(f"command_tree_print: {data=}")
 
 def command_process_callback_print(values: list, tags: list[str]) -> None:
     output = ""
@@ -1088,7 +1048,6 @@ def command_process_callback_varout(values: list, tags: list[str]) -> None:
     output = f"{values[0]}=" if "name" in tags else ""
     output += str(variables[values[0]]) if "var" in tags else ""
     if "var" in tags: print(output)
-command_tree_varout.match_and_run(["!varout", "test"], 0, command_process_callback_varout)
 
 command_tree_repeat = CommandProcessTree("repeat",
      CommandProcessRequiredGroup([
@@ -1106,8 +1065,6 @@ def command_process_callback_repeat(values: list, tags: list[str]) -> list[str]:
         value, errors = eval_expression(values[1])
         if len(errors) > 0:
             return errors
-
-repeat_match_data = command_tree_repeat.match_and_run(["!repeat", "test", "test1=test1+1"], 0, command_process_callback_repeat)
 
 command_tree_yield = CommandProcessTree("yield",
     CommandProcessRequiredGroup([
