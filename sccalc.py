@@ -9,9 +9,12 @@ import typing
 import os
 import string
 
-APP_VERSION_MAJOR = 2
-APP_VERSION_MINOR = 1
-APP_SCRIPT_VERSION = 4
+APP_VERSION_MAJOR = 3
+APP_VERSION_MINOR = 0
+APP_SCRIPT_VERSION = 5
+
+variables = {"script_version": APP_SCRIPT_VERSION}
+iterator_arrays = {} # {str: list[decimal.Decimal]}
 
 def log10(x):
     return math.log(x, 10)
@@ -35,103 +38,12 @@ def product(array: list) -> decimal.Decimal:
         val *= a
     return val
 
+comparison_operators = {"==": lambda a,b: a==b, "!=": lambda a,b: a!=b,
+        ">=": lambda a,b: a>=b, "<=": lambda a,b: a<=b,
+        ">": lambda a,b: a>b, "<": lambda a,b: a<b}
+
 def is_punct(input_str: str) -> bool:
     return all(char in string.punctuation for char in input_str)
-
-KNOWN_CONSTS = {"pi": math.pi, "e": math.e, "deg2rad": (math.pi/180), "rad2deg": (180/math.pi)}
-'''
-NOTE: These functions take a single decimal.Decimal as input and returns a single Decimal.Decimal
-'''
-KNOWN_FUNCTIONS = {"negate": negate, "ceil": math.ceil, "floor": math.floor, "round": round, "sqrt": math.sqrt, "log10": log10, "log2": log2, "cos": math.cos, "sin": math.sin, "tan": math.tan, "cosec": cosec, "sec": sec, "cot": cot, "acos": math.acos, "asin": math.asin, "atan": math.atan}
-
-class BinaryFunction:
-    def __init__(self, lexeame: str, precedence: int, callback: typing.Callable, pre_condition_fn: typing.Callable or None):
-        self._lexeame = None
-        self.lexeame = lexeame
-        if not isinstance(precedence, int):
-            raise TypeError("precedence must be of type int")
-        if not isinstance(callback, typing.Callable):
-            raise TypeError("callback must be of type callable")
-        if pre_condition_fn == None:
-            pre_condition_fn = lambda a, b: []
-        if not isinstance(pre_condition_fn, typing.Callable):
-            raise TypeError("pre_condition_fn must be of type callable")
-        self._precedence = precedence
-        self._callback = callback
-        self._pre_condition_fn = pre_condition_fn
-    def __str__(self) -> str:
-        return f"BinaryFunction({self.lexeame=}, {self.precedence=}, {self.callback=})"
-
-    def handle_precondition(self, left_operand: decimal.Decimal, right_operand: decimal.Decimal) -> list[str]:
-        '''
-        Return a list of strings representing errors
-        '''
-        return self._pre_condition_fn(left_operand, right_operand)
-
-    @property
-    def lexeame(self) -> chr:
-        return self._lexeame
-    @lexeame.setter
-    def lexeame(self, lexeame: chr) -> None:
-        if not isinstance(lexeame, str):
-            raise TypeError("lexeame must be of type chr")
-        if len(lexeame) < 1:
-            raise ValueError("lexeame must be at least of length 1")
-        if not is_punct(lexeame):
-            raise ValueError("lexeame must be made strictly from punctuation characters")
-        self._lexeame = lexeame
-
-    @property
-    def precedence(self) -> int:
-        return self._precedence
-    
-    @property
-    def callback(self) -> typing.Callable:
-        return self._callback
-
-    def call_callback(self, left_operand: decimal.Decimal, right_operand: decimal.Decimal) -> (decimal.Decimal, list[str]):
-        precondition_errors = self.handle_precondition(left_operand, right_operand)
-        if len(precondition_errors) > 0:
-            return (None, precondition_errors)
-        try:
-            return_val = self._callback(left_operand, right_operand)
-        except (ValueError, ZeroDivisionError):
-            return (None, [f"binary callback function failure, {sys.exc_info()[1]}"])
-        if not isinstance(return_val, decimal.Decimal):
-            raise TypeError("callback does not return the correct type, expected type decimal.Decimal")
-        return (return_val, [])
-
-
-# NOTE: Can only be single character punctuation
-BINARY_FUNCTIONS = {"+": BinaryFunction('+', 10, lambda a,b: a+b, None), 
-        "-": BinaryFunction('-', 10, lambda a,b: a-b, None), 
-        "*": BinaryFunction('*', 20, lambda a,b: a*b, None),
-        "/": BinaryFunction('/', 20, lambda a,b: a/b, lambda left,right: ["Division by zero"] if right==0 else []),
-        "%": BinaryFunction('%', 20, lambda a,b: a%b, lambda left,right: ["Division by zero"] if right==0 else []),
-        "^": BinaryFunction('^', 30, lambda a,b: decimal.Decimal(math.pow(a,b)), None),
-        ">": BinaryFunction('>', 5, lambda a,b: decimal.Decimal(a>b), None),
-        "<": BinaryFunction('<', 5, lambda a,b: decimal.Decimal(a<b), None),
-        ">=": BinaryFunction('>=', 5, lambda a,b: decimal.Decimal(a>=b), None),
-        "<=": BinaryFunction('<=', 5, lambda a,b: decimal.Decimal(a<=b), None),
-        "==": BinaryFunction('==', 5, lambda a,b: decimal.Decimal(a==b), None),
-        "!=": BinaryFunction('!=', 5, lambda a,b: decimal.Decimal(a!=b), None),
-        "&&": BinaryFunction('&&', 5, lambda a,b: decimal.Decimal(a and b), None),
-        "||": BinaryFunction('||', 5, lambda a,b: decimal.Decimal(a or b), None), }
-
-if not all(map(lambda a: a[0] == a[1].lexeame, zip(BINARY_FUNCTIONS.keys(), BINARY_FUNCTIONS.values()))):
-        raise ValueError("Binary function lexeame and BINARY_FUNCTIONS key do not match")
-
-binary_function_names = BINARY_FUNCTIONS.keys()
-binary_functions_max_name_len = max(map(lambda a: len(a), BINARY_FUNCTIONS.keys()))
-
-LOWEST_PRECEDENCE_VALUE = 0
-ASSIGNMENT_PRECEDENCE_VALUE = 1
-UNARY_FUNCTION_PRECEDENCE_VALUE = 50
-
-variables = {"script_version": APP_SCRIPT_VERSION}
-iterator_arrays = {}
-
-previous_answer = 0
 
 ENABLED_DEBUG_OUTPUT = True
 def console_output_debug_msg(message : str, end = "\n"):
@@ -198,6 +110,10 @@ class Token:
         return f"Token(lexeame: {self.lexeame}, type: {self.get_type_str()}, char_index: {self.char_index}, error_object: {self.error_object})"
 
 def lex(expression : str):
+    # TODO: Refactor to handle lex, rpn-generation, minus-to-negation. Return a
+    #   list of error strings, rather than needing an external function. Want to
+    #   catch as many formatting errors here, leaving only run-time errors and
+    #   variable resolution for the evaluation function
     skip_char_count = 0
     tokens = []
     def append_unknown_char_token(char: str, char_index: int) -> None:
@@ -306,15 +222,20 @@ def get_lex_error_count(tokens : typing.List[Token]):
             error_count += 1
     return error_count
 
-def print_lex_errors(tokens : typing.List[Token], heading:str="") -> int:
-    error_count = 0
+def get_lex_error_strs(tokens: typing.List[Token], heading: str="") -> list[str]:
+    errors = []
     for token in tokens:
-        if (token.type == Token.TYPE_BAD):
-            print(f"{heading}TOKEN ERROR: char {token.char_index+1}. {token.error_object.string}.")
-            error_count += 1
-    return error_count
+        if token.type == Token.TYPE_BAD:
+            error = f"{heading}TOKEN ERROR: char {token.char_index+1}. {token.error_object.string}."
+            errors.append(error)
+    return errors
+def print_lex_errors(tokens : typing.List[Token], heading:str="") -> int:
+    errors = get_lex_error_strs(tokens, heading)
+    for error in errors:
+        print(error)
+    return len(errors)
 
-def eval_lex_tokens(tokens : typing.List[Token]):
+def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, list[str]):
     '''
     Returns list(evaluated_value: decimal.Decimal, errors: list[str])
        evaluated_value : decimal.Decimal() or None on error.
@@ -555,6 +476,7 @@ def eval_lex_tokens(tokens : typing.List[Token]):
                     break
                 variables[operand_b] = operand_a
                 numbers_stack.append(operand_a) # Going to return the value that got assigned to the variable
+        console_output_debug_msg(f"numbers_stack at eval: {numbers_stack}")
 
     if (len(numbers_stack) > 1):
         errors.append(f"Too few operators, for the number of operands, {len(numbers_stack)} specifically")
@@ -562,7 +484,776 @@ def eval_lex_tokens(tokens : typing.List[Token]):
 
     if (len(errors) > 0):
         return (None, errors)
+    if not is_number(numbers_stack[0]):
+        return (None, ["Remaining value is not a number"])
     return (numbers_stack[0], errors)
+
+def eval_expression(expression: str) -> (decimal.Decimal or None, list[str]):
+    lex_tokens = lex(expression)
+    errors = get_lex_error_strs(lex_tokens)
+    if len(errors) > 0:
+        return (None, errors)
+    value, errors = eval_lex_tokens(lex_tokens)
+    errors = [f"EVALUATE ERROR: {error}" for error in errors]
+    if len(errors) > 0:
+        return (None, errors)
+    return (value, errors)
+
+class IOType:
+    IOT_IN = 0
+    IOT_OUT = 1
+    IOT_IN_OUT = 2
+    def to_string(self_type):
+        if self_type == IOType.IOT_IN:
+            return "IN"
+        elif self_type == IOType.IOT_OUT:
+            return "OUT"
+        elif self_type == IOType.IOT_IN_OUT:
+            return "IN-OUT"
+        else:
+            raise Exception("Unhandled IOType str convertions")
+
+class CommandDataType:
+    CDT_LITERAL_NUMBER = 1
+    CDT_VAR = 2
+    CDT_ITERATOR = 3
+
+def merge_tags(a: list[str], b: list[str]) -> list[str]:
+    '''
+    Modifies the 'a' list in place.
+    Returns the the list 'a'
+    '''
+    for val in b:
+        if val in a:
+            continue
+        a.append(val)
+
+class CommandDataPackage:
+    def __init__(self, data_type: CommandDataType, data: float or str):
+        self.data_type = data_type
+        self.data = data
+
+class CommandProcessMatchReturnData:
+    def __init__(self, values: list, errors: list[str], tags: list[str]):
+        if not isinstance(values, list):
+            raise TypeError("values should be of type list")
+        if not isinstance(errors, list):
+            raise TypeError("errors should be of type list[str]")
+        for error in errors:
+            if not isinstance(error, str):
+                raise TypeError("errors elements must be of type str only")
+        if not isinstance(tags, list):
+            raise TypeError("tags should be of type list[str]")
+        for tag in tags:
+            if not isinstance(tag, str):
+                raise TypeError("tags elements must be of type str only")
+        self.values = values
+        self.errors = errors
+        self.tags = tags
+        self.validate_internal_state()
+    def __str__(self) -> str:
+        return f"CommandProcessMatchReturnData({self.values=}, {self.errors=}, {self.tags=})"
+    def __repr__(self) -> str:
+        return self.__str__()
+    def __add__(self, other):
+        values = self.values.copy()
+        errors = self.errors.copy()
+        tags = self.tags.copy()
+        values.extend(other.values)
+        errors.extend(other.errors)
+        merge_tags(tags, other.tags)
+        return CommandProcessMatchReturnData(values, errors, tags)
+    def validate_internal_state(self) -> None:
+        if len(self.values) == 0 and len(self.errors) == 0:
+            raise Exception("Assumption not met. len(values) and len(errors) cannot both be zero")
+        if len(self.values) > 0 and len(self.errors) > 0:
+            raise Exception("Assumption not met. len(values) and len(errors) cannot both be > 0")
+    def successful_match(self) -> bool:
+        self.validate_internal_state()
+        return len(self.values) > 0
+    def has_errors(self) -> bool:
+        self.validate_internal_state()
+        return len(self.errors) > 0
+
+class CommandProcessNode: # Abstract
+    def reset_iterator(self) -> None:
+        pass
+    def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
+        '''
+        Return: (values, errors, tags)
+        '''
+        pass
+    def get_str(self) -> str:
+        pass
+
+class CommandProcessRequiredGroup(CommandProcessNode):
+    def __init__(self, nodes: list[CommandProcessNode]):
+        self.nodes = nodes
+        self.reset_iterator()
+    def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
+        phrases_index = 0
+        operation_final_values = []
+        operation_tags = []
+        for nodes_index in range(len(self.nodes)):
+            if phrases_index >= len(phrases):
+                # Missing required arguments
+                console_output_debug_msg(" CommandProcessRequiredGroup: Missing required arguments")
+                return CommandProcessMatchReturnData([], ["Missing required arguments"], [])
+            data = self.nodes[nodes_index].match(phrases[phrases_index:])
+            if data.has_errors():
+                return CommandProcessMatchReturnData([], data.errors, [])
+            operation_final_values.extend(data.values)
+            merge_tags(operation_tags, data.tags)
+            phrases_index += len(data.values)
+        return CommandProcessMatchReturnData(operation_final_values, [], operation_tags)
+    def get_str(self) -> str:
+        nodes_str = ""
+        for i, node in enumerate(self.nodes):
+            if i != 0:
+                nodes_str += " "
+            nodes_str += node.get_str()
+        return f"{nodes_str}"
+
+class CommandProcessXOR(CommandProcessNode):
+    def __init__(self, nodes: list[CommandProcessNode]):
+        self.nodes = nodes
+    def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
+        phrases_index = 0
+        all_errors: list = []
+        for nodes_index in range(len(self.nodes)):
+            if phrases_index >= len(phrases):
+                console_output_debug_msg(" CommandProcessXOR: Missing required arguments")
+                return CommandProcessMatchReturnData([], ["Missing required arguments"], [])
+            data = self.nodes[nodes_index].match(phrases[phrases_index:])
+            if data.has_errors():
+                all_errors.extend(data.errors)
+                continue
+            phrases_index += len(data.values)
+            return CommandProcessMatchReturnData(data.values, [], data.tags)
+        all_errors.extend(["No phrase matches required arguments"])
+        return CommandProcessMatchReturnData([], all_errors, data.tags)
+    def get_str(self) -> str:
+        nodes_str = ""
+        for i, node in enumerate(self.nodes):
+            if i != 0:
+                nodes_str += "|"
+            nodes_str += node.get_str()
+        return f"<{nodes_str}>"
+
+class CommandProcessOptional(CommandProcessNode):
+    def __init__(self, optional_node: CommandProcessNode):
+        self.optional_node = optional_node
+    def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
+        if len(phrases) == 0:
+            return CommandProcessMatchReturnData([None], [], [])
+        data = self.optional_node.match(phrases)
+        return data
+    def get_str(self) -> str:
+        return f"[{self.optional_node.get_str()}]"
+
+class CommandProcessAddition(CommandProcessNode):
+    def __init__(self, main_node: CommandProcessNode, optional_node: CommandProcessNode):
+        self.main_node = main_node
+        self.optional_node = optional_node
+    def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
+        if len(phrases) == 0:
+            console_output_debug_msg(" CommandProcessAddition: Missing required arguments")
+            return CommandProcessMatchReturnData([], ["Missing required arguements"], [])
+        phrases_index = 0
+        data = self.main_node.match(phrases[phrases_index:])
+        if data.has_errors():
+            return CommandProcessMatchReturnData([], data.errors, [])
+        phrases_index += len(data.values)
+        no_more_phrases = phrases_index == len(phrases)
+        if no_more_phrases:
+            return data
+        optional_data = self.optional_node.match(phrases[phrases_index:])
+        if optional_data.has_errors():
+            return CommandProcessMatchReturnData([], optional_data.errors, [])
+        return data + optional_data
+    def get_str(self) -> str:
+        return f"{self.main_node.get_str()} [{self.optional_node.get_str()}]"
+
+class CommandProcessRepeat(CommandProcessNode):
+    '''
+    Have the match continue untill it returns errors,
+    Two types of behaviours when it errors,
+      either stop processing the matches, and return as a success (yes, even means no match is a success, or could add a check to garantee a single match (even have it as an arguemnt)), 
+      or fail if any matches fail, meaning repeat must always be placed at the end, no exceptions
+    '''
+    def __init__(self, node: CommandProcessNode):
+        self.node = node
+    def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
+        final_tags = []
+        final_values = []
+        for phrasei in range(len(phrases)):
+            data = self.node.match(phrases[phrasei:])
+            if data.has_errors():
+                if len(final_tags) == 0:
+                    console_output_debug_msg(" CommandProcessRepeat: Requires at least one valid argument")
+                    return CommandProcessMatchReturnData([], data.errors.extend("Repeat command requires at least one valid argument"), [])
+                return CommandProcessMatchReturnData(final_values, data.errors, final_tags)
+            final_values.extend(data.values)
+            merge_tags(final_tags, data.tags)
+        return CommandProcessMatchReturnData(final_values, data.errors, final_tags)
+    def get_str(self) -> str:
+        return f"{self.node.get_str()}..."
+
+class CommandProcessLiteralNumber(CommandProcessNode):
+    def __init__(self, tag: str):
+        self.tag = tag
+    def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
+        try:
+            return CommandProcessMatchReturnData([decimal.Decimal(float(phrases[0]))], [], [self.tag])
+        except ValueError:
+            console_output_debug_msg(" CommandProcessLiteralNumber: Failed to convert")
+            return CommandProcessMatchReturnData([], [f"Cannot convert '{phrases[0]}' to a number"], [])
+    def get_str(self) -> str:
+        return "NUMBER"
+class CommandProcessVariable(CommandProcessNode):
+    def __init__(self, io_type: IOType, tag: str, convert_in_var_to_number: bool):
+        self.io_type = io_type
+        self.tag = tag
+        self.convert_in_var_to_number = convert_in_var_to_number
+    def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
+        phrase = phrases[0]
+        var_exists = variables.get(phrase) != None
+        if self.io_type == IOType.IOT_IN or self.io_type == IOType.IOT_IN_OUT:
+            if not var_exists:
+                console_output_debug_msg(" CommandProcessVariable: use of undefined var")
+                return CommandProcessMatchReturnData([], [f"Varible '{phrases}' is undefined"], [])
+            if self.convert_in_var_to_number and self.io_type == IOType.IOT_IN:
+                phrase = variables.get(phrase)
+        return CommandProcessMatchReturnData([phrase], [], [self.tag])
+    def get_str(self) -> str:
+        io_str = IOType.to_string(self.io_type)
+        return f"{io_str}-VAR"
+class CommandProcessIterator(CommandProcessNode):
+    def __init__(self, io_type: IOType, tag: str):
+        self.io_type = io_type
+        self.tag = tag
+    def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
+        phrase = phrases[0]
+        iterator_exists = iterator_arrays.get(phrase) != None
+        if self.io_type == IOType.IOT_IN or self.io_type == IOType.IOT_IN_OUT:
+            if not iterator_exists:
+                console_output_debug_msg(f" Available iterators: {iterator_arrays=}")
+                console_output_debug_msg(" CommandProcessIterator: use of undefined iter")
+                return CommandProcessMatchReturnData([], [f"Iterator '{phrase}' is undefined"], [])
+        return CommandProcessMatchReturnData([phrase], [], [self.tag])
+    def get_str(self) -> str:
+        io_str = IOType.to_string(self.io_type)
+        return f"{io_str}-ITER"
+class CommandProcessCmpOperator(CommandProcessNode):
+    def __init__(self, tag: str):
+        self.tag = tag
+    def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
+        phrase = phrases[0]
+        operator = comparison_operators.get(phrase)
+        if operator == None:
+            console_output_debug_msg(" CommandProcessCmpOperator: unrecognised operator")
+            return CommandProcessMatchReturnData([], [f"Comparison operator '{operator}' is unrecognised"], [])
+        return CommandProcessMatchReturnData([operator], [], [self.tag])
+    def get_str(self) -> str:
+        return "OP"
+class CommandProcessExpression(CommandProcessNode):
+    def __init__(self, tag: str):
+        self.tag = tag
+    def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
+        phrase = phrases[0]
+        lex_tokens = lex(phrase)
+        errors = get_lex_error_strs(lex_tokens)
+        if len(errors) > 0:
+            console_output_debug_msg(" CommandProcessExpression: Expression had lexical errors")
+            return CommandProcessMatchReturnData([], errors, [])
+        return CommandProcessMatchReturnData([phrase], [], [self.tag])
+    def get_str(self) -> str:
+        return "EXPRESSION"
+
+class CommandProcessText(CommandProcessNode):
+    def __init__(self, tag: str, match_exact_str: str or None):
+        self.tag = tag
+        self.match_exact_str = match_exact_str
+    def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
+        if len(phrases) == 0:
+            return CommandProcessMatchReturnData([], ["Missing required arguments"], [])
+        if self.match_exact_str != None:
+            if phrases[0] != self.match_exact_str:
+                return CommandProcessMatchReturnData([], [f"Exact string '{self.match_exact_str}' not matched"], [])
+        return CommandProcessMatchReturnData([phrases[0]], [], [self.tag])
+    def get_str(self) -> str:
+        text = "TEXT" if self.match_exact_str == None else self.match_exact_str
+        return text
+
+class CommandProcessTreeMatchState:
+    def __init__(self, command_matched: bool, args_matched: bool, callback_errors: list[str], values: list, tags: list[str]):
+        self.command_matched = command_matched
+        self.args_matched = args_matched
+        self.callback_errors = callback_errors
+        self.values = values
+        self.tags = tags
+        self.assert_check_types()
+    def assert_check_types(self) -> None:
+        if not isinstance(self.command_matched, bool):
+            raise TypeError("command_matched must be of type bool")
+        if not isinstance(self.args_matched, bool):
+            raise TypeError("args_matched must be of type bool")
+        if not isinstance(self.callback_errors, list):
+            raise TypeError("callback_errors must be of type list[str]")
+        for error in self.callback_errors:
+            if not isinstance(error, str):
+                raise TypeError("callback_errors must only contain strings")
+        if not isinstance(self.values, list):
+            raise TypeError("values must be of type list")
+        if not isinstance(self.tags, list):
+            raise TypeError("tags must be of type list")
+        for tag in self.tags:
+            if not isinstance(tag, str):
+                raise TypeError("tags must only contain strings")
+    def __str__(self) -> str:
+        return f"CommandProcessMatchState({self.command_matched=}, {self.args_matched=}, {self.callback_had_errors=}, {self.values=}, {self.tags=})"
+    def callback_had_errors(self) -> bool:
+        return len(self.callback_errors) > 0
+class CommandProcessTree:
+    def __init__(self, name: str, root_node: CommandProcessNode):
+        self.name = name
+        self.root_node = root_node
+    def match_and_run(self, test_phrases: list[str], script_line_number: int, on_success_callback: typing.Callable) -> CommandProcessTreeMatchState:
+        '''
+        on_success_callback: def callback(values: list, tags: list[str]) -> None or list[str]
+        '''
+        match_args_len_exact = True
+        if len(test_phrases) == 0:
+            console_output_debug_msg(f"CommandProcessTree.match_and_run(): {self.get_str()}: test_phrases.len()==0")
+            return CommandProcessTreeMatchState(False, False, [], [], [])
+        match_name = f"!{self.name}"
+        if test_phrases[0] != match_name:
+            return CommandProcessTreeMatchState(False, False, [], [], [])
+        console_output_debug_msg(f"given phrases: {test_phrases}")
+        data = self.root_node.match(test_phrases[1:])
+        console_output_debug_msg(f"match_and_run: root_node ({self.root_node}): return ({data=})")
+        if data.has_errors():
+            print(f"[{script_line_number}] Errors occurred for command {self.name}: Expected format '{self.get_str()}'")
+            for error in data.errors:
+                print(f"  {error}")
+            return CommandProcessTreeMatchState(True, False, [], [], [])
+        if len(data.values) < len(test_phrases)-1 and match_args_len_exact:
+            console_output_debug_msg(f"Early return due to too many arguments")
+            return CommandProcessTreeMatchState(True, False, [], [], [])
+        callback_errors = []
+        if on_success_callback != None:
+            return_value = on_success_callback(data.values, data.tags)
+            if return_value != None and isinstance(return_value, (list, tuple)):
+                callback_errors = [f"[{script_line_number}] {self.name}: {error}" for error in return_value]
+                for error in callback_errors:
+                    print(error)
+        return CommandProcessTreeMatchState(True, True, callback_errors, data.values, data.tags)
+
+    def get_str(self) -> str:
+        return f"!{self.name} {self.root_node.get_str()}"
+
+'''
+ EXAMPLE of the new declarative system
+Command("if", lambda a: , OPIONAL([XOR([LITERAL(), VAR()]), OP(), XOR([LITERAL(), VAR()])], [VAR(), XOR([LITERAL(), VAR])]))
+
+match_and_enforce_command("if", ["NUMBER|VAR", "OP", "NUMBER|VAR"], False, ["<VAR> <NUMBER|VAR>"], False, expression_split, line_index):
+
+if <NUMBER|VAR> <OP> <NUMBER|VAR> [<VAR> <NUMBER|VAR>]
+if <NUMBER|VAR> OP <NUMBER|VAR> [VAR <NUMBER|VAR>]
+    
+'''
+
+test_if_command_tree = CommandProcessTree("if", CommandProcessAddition(CommandProcessRequiredGroup([CommandProcessXOR([CommandProcessLiteralNumber("lval"), CommandProcessVariable(IOType.IOT_IN, "lval", False)]), CommandProcessCmpOperator("op"), CommandProcessXOR([CommandProcessLiteralNumber("lval"), CommandProcessVariable(IOType.IOT_IN, "lval", False)])]), CommandProcessRequiredGroup([CommandProcessVariable(IOType.IOT_OUT, "ifset-out-var", False), CommandProcessXOR([CommandProcessLiteralNumber("ifset-get"), CommandProcessVariable(IOType.IOT_IN, "ifset-get", False)])])))
+print(f"test_if_command_tree: {test_if_command_tree.get_str()}")
+test_phrases = ["!if", "5", "<", "2"]
+on_success = lambda a,b: print(f"test_if_command_tree successful match with values:{a} tags:{b} {a[1](a[0], a[2])=}")
+if_command_match_and_run_return = test_if_command_tree.match_and_run(test_phrases, 0, on_success)
+print(f"test_if_command_tree.match_and_run() {if_command_match_and_run_return}")
+test_if_statement = input("Enter an if command expression as a test: ").strip().split()
+console_output_debug_msg("\n\n")
+console_output_debug_msg(test_if_command_tree.match_and_run(test_if_statement, 0, on_success))
+
+class BinaryFunction:
+    def __init__(self, lexeame: str, precedence: int, callback: typing.Callable, pre_condition_fn: typing.Callable or None):
+        self._lexeame = None
+        self.lexeame = lexeame
+        if not isinstance(precedence, int):
+            raise TypeError("precedence must be of type int")
+        if not isinstance(callback, typing.Callable):
+            raise TypeError("callback must be of type callable")
+        if pre_condition_fn == None:
+            pre_condition_fn = lambda a, b: []
+        if not isinstance(pre_condition_fn, typing.Callable):
+            raise TypeError("pre_condition_fn must be of type callable")
+        self._precedence = precedence
+        self._callback = callback
+        self._pre_condition_fn = pre_condition_fn
+    def __str__(self) -> str:
+        return f"BinaryFunction({self.lexeame=}, {self.precedence=}, {self.callback=})"
+
+    def handle_precondition(self, left_operand: decimal.Decimal, right_operand: decimal.Decimal) -> list[str]:
+        '''
+        Return a list of strings representing errors
+        '''
+        return self._pre_condition_fn(left_operand, right_operand)
+
+    @property
+    def lexeame(self) -> chr:
+        return self._lexeame
+    @lexeame.setter
+    def lexeame(self, lexeame: chr) -> None:
+        if not isinstance(lexeame, str):
+            raise TypeError("lexeame must be of type chr")
+        if len(lexeame) < 1:
+            raise ValueError("lexeame must be at least of length 1")
+        if not is_punct(lexeame):
+            raise ValueError("lexeame must be made strictly from punctuation characters")
+        self._lexeame = lexeame
+
+    @property
+    def precedence(self) -> int:
+        return self._precedence
+    
+    @property
+    def callback(self) -> typing.Callable:
+        return self._callback
+
+    def call_callback(self, left_operand: decimal.Decimal, right_operand: decimal.Decimal) -> (decimal.Decimal, list[str]):
+        precondition_errors = self.handle_precondition(left_operand, right_operand)
+        if len(precondition_errors) > 0:
+            return (None, precondition_errors)
+        try:
+            return_val = self._callback(left_operand, right_operand)
+        except (ValueError, ZeroDivisionError):
+            return (None, [f"binary callback function failure, {sys.exc_info()[1]}"])
+        if not isinstance(return_val, decimal.Decimal):
+            raise TypeError("callback does not return the correct type, expected type decimal.Decimal")
+        return (return_val, [])
+
+KNOWN_CONSTS = {"pi": math.pi, "e": math.e, "deg2rad": (math.pi/180), "rad2deg": (180/math.pi)}
+'''
+NOTE: These functions take a single decimal.Decimal as input and returns a single Decimal.Decimal
+'''
+KNOWN_FUNCTIONS = {"negate": negate, "ceil": math.ceil, "floor": math.floor, "round": round, "sqrt": math.sqrt, "log10": log10, "log2": log2, "cos": math.cos, "sin": math.sin, "tan": math.tan, "cosec": cosec, "sec": sec, "cot": cot, "acos": math.acos, "asin": math.asin, "atan": math.atan}
+
+
+BINARY_FUNCTIONS = {"+": BinaryFunction('+', 10, lambda a,b: a+b, None), 
+        "-": BinaryFunction('-', 10, lambda a,b: a-b, None), 
+        "*": BinaryFunction('*', 20, lambda a,b: a*b, None),
+        "/": BinaryFunction('/', 20, lambda a,b: a/b, lambda left,right: ["Division by zero"] if right==0 else []),
+        "%": BinaryFunction('%', 20, lambda a,b: a%b, lambda left,right: ["Division by zero"] if right==0 else []),
+        "^": BinaryFunction('^', 30, lambda a,b: decimal.Decimal(math.pow(a,b)), None),
+        ">": BinaryFunction('>', 5, lambda a,b: decimal.Decimal(a>b), None),
+        "<": BinaryFunction('<', 5, lambda a,b: decimal.Decimal(a<b), None),
+        ">=": BinaryFunction('>=', 5, lambda a,b: decimal.Decimal(a>=b), None),
+        "<=": BinaryFunction('<=', 5, lambda a,b: decimal.Decimal(a<=b), None),
+        "==": BinaryFunction('==', 5, lambda a,b: decimal.Decimal(a==b), None),
+        "!=": BinaryFunction('!=', 5, lambda a,b: decimal.Decimal(a!=b), None),
+        "&&": BinaryFunction('&&', 4, lambda a,b: decimal.Decimal(bool(a) and bool(b)), None),
+        "||": BinaryFunction('||', 3, lambda a,b: decimal.Decimal(bool(a) or bool(b)), None), }
+
+if not all(map(lambda a: a[0] == a[1].lexeame, zip(BINARY_FUNCTIONS.keys(), BINARY_FUNCTIONS.values()))):
+        raise ValueError("Binary function lexeame and BINARY_FUNCTIONS key do not match")
+
+binary_function_names = BINARY_FUNCTIONS.keys()
+binary_functions_max_name_len = max(map(lambda a: len(a), BINARY_FUNCTIONS.keys()))
+
+LOWEST_PRECEDENCE_VALUE = 0
+ASSIGNMENT_PRECEDENCE_VALUE = 1
+UNARY_FUNCTION_PRECEDENCE_VALUE = 50
+
+def get_user_number_input(prompt, allow_program_exit=False) -> float:
+    is_valid = False
+    number = 0
+    invalid_input_error_message = "Input Error: Expected an int"
+    while not is_valid:
+        is_valid = True
+        try:
+            number = float(input(prompt))
+        except (ValueError):
+            print(invalid_input_error_message)
+            is_valid = False
+        except (EOFError, KeyboardInterrupt):
+            if allow_program_exit:
+                sys.exit("Exited by user on input prompt")
+            print(invalid_input_error_message)
+    return number
+
+command_tree_if = CommandProcessTree("if", 
+    CommandProcessAddition(
+        CommandProcessRequiredGroup([
+            CommandProcessXOR([
+                CommandProcessLiteralNumber(""),
+                CommandProcessVariable(IOType.IOT_IN, "", True)
+            ]),
+            CommandProcessCmpOperator(""),
+            CommandProcessXOR([
+                CommandProcessLiteralNumber(""),
+                CommandProcessVariable(IOType.IOT_IN, "", True)
+            ])
+        ]), 
+        CommandProcessRequiredGroup([
+            CommandProcessVariable(IOType.IOT_OUT, "ifset", True),
+            CommandProcessXOR([
+                CommandProcessLiteralNumber("ifset"),
+                CommandProcessVariable(IOType.IOT_IN, "ifset", True)
+            ])
+        ])
+    )
+)
+
+command_tree_while = CommandProcessTree("while", 
+    CommandProcessRequiredGroup([
+        CommandProcessXOR([
+            CommandProcessLiteralNumber(""),
+            CommandProcessVariable(IOType.IOT_IN, "", True)
+        ]),
+        CommandProcessCmpOperator(""),
+        CommandProcessXOR([
+            CommandProcessLiteralNumber(""),
+            CommandProcessVariable(IOType.IOT_IN, "", True)
+        ]),
+    ])
+)
+
+data = command_tree_while.match_and_run(["!while", "1", "<", "2"], 0, None)
+console_output_debug_msg(f"while test: {data=}")
+
+command_tree_exit = CommandProcessTree("exit",
+    CommandProcessOptional(
+        CommandProcessXOR([
+            CommandProcessLiteralNumber("code"),
+            CommandProcessVariable(IOType.IOT_IN, "code", True)
+        ])
+    )
+)
+
+variables["test"] = 3
+data = command_tree_exit.match_and_run(["!exit"], 0, lambda a,b: print("Exit with code ", "0" if not ("code" in b) else str(a[0])))
+print("exit command: {data=}")
+data = command_tree_exit.match_and_run(["!exit"], 0, lambda a,b: print("Exit with code ", "0" if not ("code" in b) else str(a[0])))
+print("exit 1 command: {data=}")
+data = command_tree_exit.match_and_run(["!exit"], 0, lambda a,b: print("Exit with code ", "0" if not ("code" in b) else str(a[0])))
+print("exit test command: {data=}")
+
+
+command_tree_input = CommandProcessTree("input",
+    CommandProcessOptional(
+        CommandProcessRepeat(
+            CommandProcessText("prompt", None)
+        )
+    )
+)
+
+def command_process_callback_input(values: list, tags: list[str]) -> None:
+    console_output_debug_msg(f"command_process_callback_input: {values=} {tags=}")
+    if "prompt" in tags:
+        prompt = " ".join(values)
+    else:
+        prompt = "INPUT >> "
+    variables["input"] = decimal.Decimal(get_user_number_input(prompt))
+
+command_tree_input.match_and_run(["!input"], 0, command_process_callback_input)
+command_tree_input.match_and_run(["!input", "Enter", "a number: "], 0, command_process_callback_input)
+
+command_tree_print = CommandProcessTree("print",
+     CommandProcessOptional(
+        CommandProcessRepeat(
+            CommandProcessText("text", None)
+        )
+    )
+)
+
+data = command_tree_print.match_and_run(["!print", "Hello", "from", "script", ". Some  extra  text  after  ."], 0, lambda vals,tags: print(" ".join(vals) if "text" in tags else ""))
+console_output_debug_msg(f"command_tree_print: match_and_run: {data=}")
+data = command_tree_print.match_and_run(["!print"], 0, lambda vals,tags: print(" ".join(vals) if "text" in tags else ""))
+console_output_debug_msg(f"command_tree_print: {data=}")
+
+def command_process_callback_print(values: list, tags: list[str]) -> None:
+    output = ""
+    if "text" in tags:
+        output = " ".join(values)
+    print(output)
+
+command_tree_varout = CommandProcessTree("varout",
+    CommandProcessOptional(
+        CommandProcessAddition(
+            CommandProcessVariable(IOType.IOT_IN, "var", False),
+            CommandProcessText("name", "-name")
+        )
+    )
+)
+
+def command_process_callback_varout(values: list, tags: list[str]) -> None:
+    output = f"{values[0]}=" if "name" in tags else ""
+    output += str(variables[values[0]]) if "var" in tags else ""
+    if "var" in tags: print(output)
+command_tree_varout.match_and_run(["!varout", "test"], 0, command_process_callback_varout)
+
+command_tree_repeat = CommandProcessTree("repeat",
+     CommandProcessRequiredGroup([
+         CommandProcessXOR([
+             CommandProcessLiteralNumber(""),
+             CommandProcessVariable(IOType.IOT_IN, "", True)
+         ]),
+         CommandProcessExpression("")
+     ])
+ )
+
+variables["test1"] = 0
+def command_process_callback_repeat(values: list, tags: list[str]) -> list[str]:
+    for _ in range(int(values[0])):
+        value, errors = eval_expression(values[1])
+        if len(errors) > 0:
+            return errors
+
+repeat_match_data = command_tree_repeat.match_and_run(["!repeat", "test", "test1=test1+1"], 0, command_process_callback_repeat)
+
+command_tree_yield = CommandProcessTree("yield",
+    CommandProcessRequiredGroup([
+        CommandProcessIterator(IOType.IOT_OUT, ""),
+        CommandProcessXOR([
+            CommandProcessLiteralNumber(""),
+            CommandProcessVariable(IOType.IOT_IN, "", True)
+        ])
+    ])
+)
+
+def command_process_callback_yield(values: list, tags: list[str]) -> None:
+    global iterator_arrays
+    console_output_debug_msg(f"yield callback: yield command callback called for iterator {values[0]}")
+    if iterator_arrays.get(values[0]) == None:
+        iterator_arrays[values[0]] = []
+    iterator_arrays[values[0]].append(values[1])
+    console_output_debug_msg(f"yield callback: {iterator_arrays=}")
+
+command_tree_clear = CommandProcessTree("clear",
+    CommandProcessIterator(IOType.IOT_IN, "")
+)
+
+def command_process_callback_clear(values: list, tags: list[str]) -> None:
+    global iterator_arrays
+    iterator_arrays[values[0]] = []
+
+command_tree_dup = CommandProcessTree("dup",
+    CommandProcessRequiredGroup([
+        CommandProcessIterator(IOType.IOT_OUT, ""),
+        CommandProcessIterator(IOType.IOT_IN, "")
+    ])
+)
+
+def command_process_callback_dup(values: list, tags: list[str]) -> None:
+    global iterator_arrays
+    iterator_arrays[values[0]] = iterator_arrays[values[1]].copy()
+
+command_tree_count = CommandProcessTree("count",
+    CommandProcessRequiredGroup([
+        CommandProcessIterator(IOType.IOT_IN, ""),
+        CommandProcessVariable(IOType.IOT_OUT, "", False)
+    ])
+)
+
+def command_process_callback_count(values: list, tags: list[str]) -> None:
+    global variables
+    variables[values[1]] = len(iterator_arrays[values[0]])
+    console_output_debug_msg(f"count callback: Set variable {values[1]}={len(iterator_arrays[values[0]])} from iterator {values[0]}")
+
+command_tree_map = CommandProcessTree("map",
+    CommandProcessRequiredGroup([
+        CommandProcessIterator(IOType.IOT_IN_OUT, ""),
+        CommandProcessExpression("")
+    ])
+)
+
+def command_process_callback_map(values: list, tags: list[str]) -> list[str]:
+    global iterator_arrays, variables
+    iterator_len = len(iterator_arrays[values[0]])
+    for i in range(iterator_len):
+        variables[values[0]] = iterator_arrays[values[0]][i]
+        mapped_value, errors = eval_expression(values[1])
+        if mapped_value == None:
+            return errors
+        iterator_arrays[values[0]][i] = mapped_value
+    return []
+
+command_tree_filter = CommandProcessTree("filter",
+    CommandProcessRequiredGroup([
+        CommandProcessIterator(IOType.IOT_IN_OUT, ""),
+        CommandProcessXOR([
+            CommandProcessLiteralNumber(""),
+            CommandProcessVariable(IOType.IOT_IN, "left_var", False)
+        ]),
+        CommandProcessCmpOperator(""),
+        CommandProcessXOR([
+            CommandProcessLiteralNumber(""),
+            CommandProcessVariable(IOType.IOT_IN, "right_var", False)
+        ])
+    ])
+)
+
+def command_process_callback_filter(values: list, tags: list[str]) -> None:
+    global iterator_arrays, variables
+    filtered_list = []
+    for val in iterator_arrays[values[0]]:
+        variables[values[0]] = val
+        left = variables[values[1]] if "left_var" in tags else values[1]
+        right = variables[values[3]] if "right_var" in tags else values[3]
+        if values[2](left, right):
+            filtered_list.append(val)
+    iterator_arrays[values[0]] = filtered_list
+
+command_tree_next = CommandProcessTree("next",
+    CommandProcessIterator(IOType.IOT_IN_OUT, "")
+)
+
+def command_process_callback_next(values: list, tags: list[str]) -> None:
+    global variables, iterator_arrays
+    variables[values[0]] = iterator_arrays[values[0]].pop()
+    console_output_debug_msg("next callback: Assigned new value to variable {values[0]}={variables[values[0]]}")
+
+command_tree_sum = CommandProcessTree("sum",
+    CommandProcessRequiredGroup([
+        CommandProcessIterator(IOType.IOT_IN, ""),
+        CommandProcessVariable(IOType.IOT_OUT, "", False)
+    ])
+)
+
+def command_process_callback_sum(values: list, tags: list[str]) -> None:
+    global variables
+    variables[values[1]] = sum(iterator_arrays[values[0]])
+
+command_tree_product = CommandProcessTree("product",
+    CommandProcessRequiredGroup([
+        CommandProcessIterator(IOType.IOT_IN, ""),
+        CommandProcessVariable(IOType.IOT_OUT, "", False)
+    ])
+)
+
+def command_process_callback_product(values: list, tags: list[str]) -> None:
+    global variables
+    variables[values[1]] = product(iterator_arrays[values[0]])
+
+command_trees = {
+        "if": (command_tree_if, None),
+        "while": (command_tree_while, None),
+        "exit": (command_tree_exit, lambda values, tags: sys.exit(0 if "code" in tags else values[0])),
+        "input": (command_tree_input, command_process_callback_input),
+        "print": (command_tree_print, command_process_callback_print),
+        "varout": (command_tree_varout, command_process_callback_varout),
+        "repeat": (command_tree_repeat, command_process_callback_repeat),
+        "yield": (command_tree_yield, command_process_callback_yield),
+        "clear": (command_tree_clear, command_process_callback_clear),
+        "dup": (command_tree_dup, command_process_callback_dup),
+        "count": (command_tree_count, command_process_callback_count),
+        "map": (command_tree_map, command_process_callback_map),
+        "filter": (command_tree_filter, command_process_callback_filter),
+        "next": (command_tree_next, command_process_callback_next),
+        "sum": (command_tree_sum, command_process_callback_sum),
+        "product": (command_tree_product, command_process_callback_product)
+        }
+
+
+previous_answer = 0
 
 def print_constants() -> None:
     print("Constants:")
@@ -582,18 +1273,6 @@ def print_commands() -> None:
     print(" input [PROMPT]          - output PROMPT to stdout and wait input\n    (input put into variable 'input')")
     print(" print [TEXT]            - output TEXT to stdout")
     print(" varout <VAR> [-name]    - output variable <VAR> with optional name")
-
-def get_user_number_input(prompt) -> float:
-    is_valid = False
-    number = 0
-    while not is_valid:
-        is_valid = True
-        try:
-            number = float(input(prompt))
-        except:
-            print("Input Error: Expected an int")
-            is_valid = False
-    return number
 
 def parse_input_for_args(uinput: str) -> list[str]:
     out_args = []
@@ -669,19 +1348,10 @@ if len(sys.argv) > 1:
                 return var_val
         def apply_condition_operator(left: float, right: float, operator: str) -> bool or None:
             condition_true = False
-            if operator == "==":
-                return left == right
-            elif operator == "!=":
-                return left != right
-            elif operator == ">=":
-                return left >= right
-            elif operator == "<=":
-                return left <= right
-            elif operator == ">":
-                return left > right
-            elif operator == "<":
-                return left < right
-            return None
+            operator_fn = comparison_operators.get(operator)
+            if operator_fn == None:
+                return None
+            return operator_fn(left, right)
         def enforce_command_parameters(command_name: str, required_arguments: list[str], required_args_repeat: bool, optional_arguments: list[str], optional_args_repeat: bool, expression_split_count: int, line_index: int) -> None:
             if expression_split_count < len(required_arguments):
                 required_arguments_str = ""
@@ -750,32 +1420,44 @@ if len(sys.argv) > 1:
                 skip_expression_count -= 1
                 continue
             if skip_till_if_end_count > 0 or skip_till_next_while_end_count > 0:
+                console_output_debug_msg(" skipping line, due to skip_till_if_end or skip_till_while_end")
                 expression_split = parse_input_for_args(expression)
+                if len(expression_split) == 0:
+                    continue
                 if skip_till_next_while_end_count > 0:
-                    if len(expression_split[0]) > 0 and expression_split[0] == "!endwhile":
+                    console_output_debug_msg(f"   skip_till_while_end {skip_till_next_while_end_count}")
+                    if expression_split[0] == "!endwhile":
                         skip_till_next_while_end_count -= 1
-                    if len(expression_split[0]) > 0 and expression_split[0] == "!while":
+                    if expression_split[0] == "!while":
                         skip_till_next_while_end_count += 1
-                if len(expression_split[0]) > 0 and expression_split[0] == "!endif":
+                if expression_split[0] == "!endif":
+                    console_output_debug_msg(f"   skip_till_if_end {skip_till_if_end_count}")
                     if skip_till_if_end_count == 0:
                         output_error(line_index, "endif: Unmatched endif")
                         continue
                     skip_till_if_end_count -= 1
                 continue
+
             expression_split = parse_input_for_args(expression)
-            if len(expression_split[0]) > 0 and expression_split[0] == "!endwhile":
+            if len(expression_split) == 0:
+                console_output_debug_msg(" skipping line, expression line empty")
+                continue
+            if expression_split[0] == "!endwhile":
                 if len(while_embed_objects) == 0:
                     output_error(line_index, f"endwhile: unmatched !endwhile")
                     continue
                 while_object = while_embed_objects.pop()
-                start_index = while_object.start_index
-                expressioni = start_index
+                expressioni = while_object.start_index
                 dont_inc_expression_this_iteration = True
-                console_output_debug_msg(f"[{line_index+1}] Found !endwhile. Now jumping back to line {start_index+1}  expressioni:{expressioni}")
+                console_output_debug_msg(f"[{line_index+1}] Found !endwhile. Now jumping back to line {expressioni+1}  expressioni:{expressioni}")
                 continue
-            if len(expression_split[0]) > 0 and expression_split[0][0] == "!":
+            if expression_split[0][0] == "!":
+                if expression_split[0] == "!endif":
+                    console_output_debug_msg(f"[{line_index+1}] ignoring an endif command")
+                    continue
                 if expression_split[0] == "!strict":
                     exit_on_fail = True
+                    continue
                 elif expression_split[0] == "!debug":
                     if len(expression_split) <= 1:
                         ENABLED_DEBUG_OUTPUT = not ENABLED_DEBUG_OUTPUT
@@ -801,252 +1483,46 @@ if len(sys.argv) > 1:
                         echo_enabled = not echo_enabled
                     else:
                         output_error(line_index, "echo: Invalid value for echo option")
-                elif expression_split[0] == "!input":
-                    prompt = ""
-                    if len(expression_split) == 1:
-                        prompt = "INPUT >> "
-                    else:
-                        for i, text in enumerate(expression_split[1:]):
-                            if i != 0:
-                                prompt += " "
-                            prompt += text
-                    variables["input"] = decimal.Decimal(get_user_number_input(prompt))
-                elif expression_split[0] == "!print":
-                    output = ""
-                    if len(expression_split) >= 1:
-                        for i, text in enumerate(expression_split[1:]):
-                            if i != 0:
-                                output += " "
-                            output += text
-                    print(output)
-                elif expression_split[0] == "!varout":
-                    if len(expression_split) > 1:
-                        var_name = expression_split[1]
-                        var_val = variables.get(var_name)
-                        var_output = f"{var_val}"
-                        include_name = False
-                        if len(expression_split) > 2:
-                            if expression_split[2] == "-name":
-                                include_name = True
-                        if include_name:
-                            var_output = f"{var_name}={var_val}"
-                        if var_val == None:
-                            output_error(line_index, f"varout: variable '{var_name}' is not defined")
-                        else:
-                            print(var_output)
-                elif expression_split[0] == "!exit":
-                    exit_code = 0
-                    if len(expression_split) > 1:
-                        try:
-                            exit_code = int(expression_split[1])
-                        except ValueError:
-                            var_val = variables.get(expression_split[1])
-                            if var_val != None:
-                                exit_code = int(var_val)
-                    sys.exit(exit_code)
-                elif match_and_enforce_command("if", ["NUMBER|VAR", "OP", "NUMBER|VAR"], False, ["<VAR> <NUMBER|VAR>"], False, expression_split, line_index):
-                    if_left_val = 0
-                    if_right_val = 0
-                    if_operator = None
-                    if_left_val = get_literal_or_var(expression_split[1])
-                    if if_left_val == None:
-                        output_error(line_index, f"if: Unrecognised variable name {expression_split[1]}")
-                        continue
-                    console_output_debug_msg(f"if: found left val {if_left_val}")
-                    if_right_val = get_literal_or_var(expression_split[3])
-                    if if_right_val == None:
-                        output_error(line_index, f"if: Unrecognised variable name {expression_split[3]}")
-                        continue
-                    console_output_debug_msg(f"if: found right val {if_right_val}")
-                    if_operator = expression_split[2]
-
-
-                    if_condition_true = apply_condition_operator(if_left_val, if_right_val, if_operator)
-                    if if_condition_true == None:
-                        output_error(line_index, f"if: unrecognised condition operator {if_operator}")
-                        if_condition_true = False
-                    console_output_debug_msg(f"if: condition is {if_left_val} {if_operator} {if_right_val} = {if_condition_true}")
-                    if len(expression_split) >= 6:
-                        console_output_debug_msg(f"ifset: got set_var: {expression_split[4]}:{type(expression_split[4])}, set_val: {expression_split[5]}:{type(expression_split[5])}")
-                        set_var_name = expression_split[4]
-                        set_val = get_literal_or_var(expression_split[5])
-                        console_output_debug_msg(f"ifset: have been given set_var: {set_var_name}, set_val: {set_val}")
-                        if set_val == None:
-                            output_error(line_index, f"if: Unrecognised variable name {expression_split[5]}")
-                        if if_condition_true:
-                            variables[set_var_name] = set_val
-                    else:
-                        if not if_condition_true:
-                            skip_till_if_end_count += 1
-                elif match_and_enforce_command("repeat", ["NUMBER|VAR", "EXPRESSION"], False, [], False, expression_split, line_index):
-                    iteration_count = int(get_literal_or_var(expression_split[1]))
-                    if iteration_count == None:
-                        output_error(line_index, f"repeat: Unrecognised variable name {expression_split[1]}")
-                        iteration_count = 0
-                    repeat_expression = expression_split[2]
-                    for _ in range(iteration_count):
-                        lex_tokens = lex(repeat_expression) # Only need to do this to update the variabels (as they get subsituted here, if that is moved, then only need to call once before the whole loop)
-                        lex_tokens_error_count = print_lex_errors(lex_tokens, f"{line_index+1} in repeat: ")
-                        if lex_tokens_error_count > 0:
-                            sys.exit(f"{line_index+1} Lexer error(s) in repeat statement")
-                        evaluated_value, eval_errors = eval_lex_tokens(lex_tokens)
-                        if len(eval_errors) > 0:
-                            for error in eval_errors:
-                                print(f"{line_index+1} Error: repeat: {error}")
-                            sys.exit(f"{line_index+1} Eval error(s) in repeat statement")
-                elif match_and_enforce_command("while", ["NUMBER|VAR", "OP", "NUMBER|VAR"], False, [], False, expression_split, line_index):
-                    left_operand = get_literal_or_var(expression_split[1])
-                    cmp_operator = expression_split[2]
-                    right_operand = get_literal_or_var(expression_split[3])
-                    if left_operand == None:
-                        output_error(line_index, f"while: Unrecognised variable name {expression_split[1]}")
-                        continue
-                    if right_operand == None:
-                        output_error(line_index, f"while: Unrecognised variable name {expression_split[3]}")
-                        continue
-                    condition_true = apply_condition_operator(left_operand, right_operand, cmp_operator)
-                    if condition_true == None:
-                        output_error(line_index, f"while: Unrecognised comparison operator {cmp_operator}")
-                        continue
-                    if not condition_true:
-                        console_output_debug_msg(f"[{line_index+1}] While condition unmet. skipping to next endwhile")
-                        skip_till_next_while_end_count = 1
-                    else:
-                        while_embed_objects.append(WhileEmbed(expressioni))
-                elif match_and_enforce_command("yield", ["ITER", "NUMBER|VAR"], False, [], False, expression_split, line_index):
-                    iterator_name = expression_split[1]
-                    new_append_value = get_literal_or_var(expression_split[2])
-                    if new_append_value == None:
-                        output_error(line_index, f"yield: variable '{expression_split[2]}' is not defined")
-                        continue
-                    if iterator_arrays.get(iterator_name) == None:
-                        iterator_arrays[iterator_name] = []
-                    iterator_arrays[iterator_name].append(new_append_value)
-                    console_output_debug_msg(f"Yielded {new_append_value} into iterator {iterator_name}, new_iterator {iterator_arrays[iterator_name]}")
-                elif match_and_enforce_command("clear", ["ITER"], False, [], False, expression_split, line_index):
-                    iterator_name = expression_split[1]
-                    iterator_arrays[iterator_name] = []
-                    console_output_debug_msg(f"Cleared iterator {iterator_name}")
-                elif match_and_enforce_command("dup", ["OUT-ITER", "IN-ITER"], False, [], False, expression_split, line_index):
-                    out_iterator_name = expression_split[1]
-                    in_iterator_name = expression_split[2]
-                    in_iterator = iterator_arrays.get(in_iterator_name)
-                    if in_iterator == None:
-                        output_error(line_index, f"dup: Iterator '{in_iterator_name}' is not defined")
-                        continue
-                    iterator_arrays[out_iterator_name] = in_iterator.copy()
-                    console_output_debug_msg(f"Duplicated iterator {in_iterator_name}:{in_iterator} to {out_iterator_name}:{iterator_arrays[out_iterator_name]}")
-                elif match_and_enforce_command("count", ["ITER", "VAR"], False, [], False, expression_split, line_index):
-                    iterator_name = expression_split[1]
-                    iterator = iterator_arrays.get(iterator_name)
-                    output_variable_name = expression_split[2]
-                    if iterator == None:
-                        output_error(line_index, f"count: Iterator '{iterator_name}' is not defined")
-                        continue
-                    variables[output_variable_name] = len(iterator_arrays[iterator_name])
-                elif match_and_enforce_command("map", ["ITER", "EXPRESSION"], False, [], False, expression_split, line_index):
-                    iterator_name = expression_split[1]
-                    map_expression = expression_split[2]
-                    iterator = iterator_arrays.get(iterator_name)
-                    if iterator == None:
-                        output_error(line_index, f"map: Iterator '{iterator_name}' is not defined")
-                        continue
-                    iter_len = len(iterator)
-                    for i in range(iter_len):
-                        cur_elm = iterator_arrays[iterator_name][i]
-                        variables[iterator_name] = decimal.Decimal(cur_elm)
-                        lex_tokens = lex(map_expression)
-                        lex_error_count = print_lex_errors(lex_tokens, f"[{line_index+1}] map: ")
-                        if lex_error_count > 0:
-                            sys.exit(f"[{line_index+1}] map: {lex_error_count} lexer errors")
-                        evaluated_value, eval_errors = eval_lex_tokens(lex_tokens)
-                        if len(eval_errors) > 0:
-                            for error in eval_errors:
-                                print(f"[{line_index+1}] map: eval error {error}")
-                            output_error(line_index, f"map: {len(eval_errors)} eval errors occured")
-                            continue
-                        iterator_arrays[iterator_name][i] = evaluated_value
-                elif match_and_enforce_command("filter", ["ITER", "NUMBER|VAR", "CMP_OP", "NUMBER|VAR"], False, [], False, expression_split, line_index):
-                    #if len(expression_split) < 3:
-                        #sys.exit(f"[{line_index+1}] filter: Incorrect filter statement, expected '!filter <ITER> <COMPARISON-EXPRESSION>")
-                    iterator_name = expression_split[1]
-                    iterator = iterator_arrays.get(iterator_name)
-                    left_val = get_literal_or_var(expression_split[2])
-                    right_val = get_literal_or_var(expression_split[4])
-                    if left_val == None:
-                        output_error(line_index, f"filter: Variable '{expression_split[2]}' is not defined")
-                        continue
-                    if right_val == None:
-                        output_error(line_index, f"filter: Variable '{expression_split[4]}' is not defined")
-                        continue
-                    operator = expression_split[3]
-                    condition_true = apply_condition_operator(left_val, right_val, operator)
-                    if condition_true == None:
-                        output_error(line_index, f"filter: Operator '{expression_split[3]}' is not recognised")
-                        continue
-                    if iterator == None:
-                        output_error(line_index, f"filter: Iterator '{iterator_name}' is not defined")
-                        continue
-                    iter_len = len(iterator)
-                    filtered_array = []
-                    for i in range(iter_len):
-                        cur_elm = iterator_arrays[iterator_name][i]
-                        variables[iterator_name] = decimal.Decimal(cur_elm)
-                        left_val = get_literal_or_var(expression_split[2])
-                        right_val = get_literal_or_var(expression_split[4])
-                        condition_true = apply_condition_operator(left_val, right_val, operator)
-                        if condition_true:
-                            filtered_array.append(cur_elm)
-                    iterator_arrays[iterator_name] = filtered_array
-
-                    #filtered_array = []
-                    #for i in range(iter_len):
-                    #    cur_elm = iterator_arrays[iterator_name][i]
-                    #    variables[iterator_name] = decimal.Decimal(cur_elm)
-                    #    lex_tokens = lex(map_expression)
-                    #    lex_error_count = print_lex_errors(lex_tokens, f"[{line_index+1}] map: ")
-                    #    if lex_error_count > 0:
-                    #        sys.exit(f"[{line_index+1}] map: {lex_error_count} lexer errors")
-                    #    evaluated_value, eval_errors = eval_lex_tokens(lex_tokens)
-                    #    if len(eval_errors) > 0:
-                    #        for error in eval_errors:
-                    #            print(f"[{line_index+1}] map: eval error {error}")
-                    #        output_error(line_index, f"map: {len(eval_errors)} eval errors occured")
-                    #        continue
-                    #    if evaluated_value:
-                    #        filtered_array.append(cur_elm)
-                    #iterator_arrays[iterator_name] = filtered_array
-                elif match_and_enforce_command("next", ["ITER"], False, [], False, expression_split, line_index):
-                    iterator_name = expression_split[1]
-                    iterator = iterator_arrays.get(iterator_name)
-                    if iterator == None:
-                        output_error(line_index, f"next: Iterator '{iterator_name}' is not defined")
-                        continue
-                    if len(iterator) == 0:
-                        continue # If the iterator is empty, dont update any variables
-                    cur_val = iterator_arrays[iterator_name].pop(0)
-                    variables[iterator_name] = decimal.Decimal(cur_val)
-                elif match_and_enforce_command("sum", ["ITER", "VAR"], False, [], False, expression_split, line_index):
-                    iterator_name = expression_split[1]
-                    variable_name = expression_split[2]
-                    iterator = iterator_arrays.get(iterator_name)
-                    if iterator == None:
-                        output_error(line_index, f"sum: Iterator '{iterator_name}' is not defined")
-                        continue
-                    variables[variable_name] = sum(iterator)
-                elif match_and_enforce_command("product", ["ITER", "VAR"], False, [], False, expression_split, line_index):
-                    iterator_name = expression_split[1]
-                    variable_name = expression_split[2]
-                    iterator = iterator_arrays.get(iterator_name)
-                    if iterator == None:
-                        output_error(line_index, f"product: Iterator '{iterator_name}' is not defined")
-                        continue
-                    variables[variable_name] = product(iterator)
-                elif expression_split[0] == "!endif":
-                    console_output_debug_msg(f"[{line_index+1}] ignoring an endif command")
-                else:
-                    output_error(line_index, f"Command: unrecognised command '{expression_split[0]}'")
                     continue
+                if expression_split[0] in ["!if", "!while"]:
+                    for command in ["if", "while"]:
+                        command_match_object = command_trees[command][0].match_and_run(expression_split, line_index+1, None)
+                        if not command_match_object.command_matched:
+                            continue
+                        if not command_match_object.args_matched:
+                            sys.exit(f"Fatal error Missing or invalid arguments for {command} command statement")
+                        if command == "if":
+                            condition_true = command_match_object.values[1](command_match_object.values[0], command_match_object.values[2])
+                            console_output_debug_msg(f"[{line_index+1}] if condition: {expression_split[1]} {expression_split[2]} {expression_split[3]} = {condition_true}")
+                            contains_ifset_data = 'ifset' in command_match_object.tags
+                            if contains_ifset_data:
+                                if condition_true:
+                                    variables[command_match_object.values[3]] = command_match_object.values[4]
+                                break
+                            if not condition_true:
+                                skip_till_if_end_count += 1
+                            break
+                        elif command == "while":
+                            condition_true = command_match_object.values[1](command_match_object.values[0], command_match_object.values[2])
+                            if condition_true:
+                                while_embed_objects.append(WhileEmbed(expressioni))
+                            else:
+                                console_output_debug_msg(f"[{line_index+1}] While condition unmet ({expression_split[1]};{command_match_object.values[0]} {expression_split[2]} {expression_split[3]};{command_match_object.values[2]} = {condition_true}). skipping to next endwhile")
+                                skip_till_next_while_end_count = 1
+                    continue
+
+                command_matched = False
+                for command, callback in command_trees.values():
+                    data = command.match_and_run(expression_split, line_index+1, callback)
+                    if data.command_matched and not data.args_matched:
+                        sys.exit(f"Invalid command arguments to command {command.name}")
+                    if data.command_matched and data.args_matched:
+                        command_matched = True
+                        if data.callback_had_errors():
+                            sys.exit(f"Fatal error occurred during command {command.name}, exiting ...")
+                        break
+                if not command_matched:
+                    output_error(line_index, f"Command: unrecognised command '{expression_split[0]}'")
                 continue
             lex_tokens = lex(expression)
             lex_error_count = print_lex_errors(lex_tokens, f"{line_index+1}: ")
