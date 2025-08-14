@@ -10,7 +10,7 @@ import os
 import string
 
 APP_VERSION_MAJOR = 3
-APP_VERSION_MINOR = 2
+APP_VERSION_MINOR = 3
 APP_SCRIPT_VERSION = 6
 
 variables = {"script_version": APP_SCRIPT_VERSION}
