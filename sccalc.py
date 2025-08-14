@@ -8,6 +8,7 @@ import sys
 import typing
 import os
 import string
+import itertools
 
 APP_VERSION_MAJOR = 3
 APP_VERSION_MINOR = 4
@@ -1383,6 +1384,39 @@ if len(sys.argv) > 1:
         sys.exit()
     if (sys.argv[1] == "__VERSION__"):
         print(f"{APP_VERSION_MAJOR}.{APP_VERSION_MINOR}")
+        sys.exit()
+    if sys.argv[1] == "--output-script-standard":
+        standards_output_path = f"script-{APP_SCRIPT_VERSION}-standard"
+        if CUSTOM_SCRIPT_VERSION:
+            standards_output_path += "-custom"
+        file_handle = open(standards_output_path, "w")
+        file_handle.write("Comments:\n   Commented lines start with a  #  character\n")
+        file_handle.write("Commands description:\n   Command lines start with a  !  character.\n   Each command has a unique interface (set of parameters) and have unique functionality.\n")
+        serialized_consts = " ".join(KNOWN_CONSTS.keys())
+        file_handle.write("Constants:\n")
+        file_handle.write(f"   {serialized_consts}\n")
+        serialized_unary_functions = " ".join(KNOWN_FUNCTIONS.keys())
+        file_handle.write("Unary functions:\n")
+        file_handle.write(f"   {serialized_unary_functions}\n")
+        serialized_binary_functions = " ".join(BINARY_FUNCTIONS.keys())
+        file_handle.write("Binary functions:\n")
+        file_handle.write(f"   {serialized_binary_functions}\n")
+        function_precedences = list(map(lambda a: (a.precedence, a.lexeame), BINARY_FUNCTIONS.values()))
+        function_precedences.append((UNARY_FUNCTION_PRECEDENCE_VALUE, "<UNARY-FUNCTIONS>"))
+        function_precedences = sorted(function_precedences, key=lambda a: a[0])
+        console_output_debug_msg(f"{function_precedences=}")
+        grouped_function_precedences = [list(group) for key, group in itertools.groupby(function_precedences, lambda a: a[0])]
+        console_output_debug_msg(f"{grouped_function_precedences=}")
+        grouped_function_precedences = [tuple([item[1] for item in group]) for group in grouped_function_precedences]
+        console_output_debug_msg(f"{grouped_function_precedences=}")
+        file_handle.write("Function precedences (from least to most):\n")
+        for precedence_group in grouped_function_precedences:
+            serialized_function_group = " ".join(precedence_group)
+            file_handle.write(f"   {serialized_function_group}\n")
+        file_handle.write("Available commands: \n")
+        for command_tree, command_callback in command_trees.values():
+            file_handle.write(f"   {command_tree.get_str()}\n")
+        file_handle.close()
         sys.exit()
     if (os.path.isfile(sys.argv[1])):
         # NOTE: This scope is the scripting system. Everything here is only for the scripting part
