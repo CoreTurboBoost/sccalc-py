@@ -10,7 +10,7 @@ import os
 import string
 
 APP_VERSION_MAJOR = 3
-APP_VERSION_MINOR = 1
+APP_VERSION_MINOR = 2
 APP_SCRIPT_VERSION = 6
 
 variables = {"script_version": APP_SCRIPT_VERSION}
@@ -1286,7 +1286,7 @@ def command_process_callback_read(values: list, tags: list[str]) -> None:
 command_trees = {
         "if": (command_tree_if, None),
         "while": (command_tree_while, None),
-        "exit": (command_tree_exit, lambda values, tags: sys.exit(0 if "code" in tags else values[0])),
+        "exit": (command_tree_exit, lambda values, tags: sys.exit(int(values[0]) if "code" in tags else 0)),
         "input": (command_tree_input, command_process_callback_input),
         "print": (command_tree_print, command_process_callback_print),
         "varout": (command_tree_varout, command_process_callback_varout),
