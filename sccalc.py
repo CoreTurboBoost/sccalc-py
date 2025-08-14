@@ -1166,7 +1166,11 @@ command_tree_next = CommandProcessTree("next",
 
 def command_process_callback_next(values: list, tags: list[str]) -> None:
     global variables, iterator_arrays
-    variables[values[0]] = iterator_arrays[values[0]].pop()
+    iterator_name = values[0]
+    if len(iterator_arrays[iterator_name]) == 0:
+        console_output_debug_msg(f"next callback: Iterator {iterator_name} is empty")
+        return None
+    variables[iterator_name] = iterator_arrays[iterator_name].pop()
     console_output_debug_msg("next callback: Assigned new value to variable {values[0]}={variables[values[0]]}")
 
 command_tree_sum = CommandProcessTree("sum",
