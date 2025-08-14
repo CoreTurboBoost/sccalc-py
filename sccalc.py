@@ -1420,6 +1420,8 @@ if len(sys.argv) > 1:
             serialized_function_group = " ".join(precedence_group)
             file_handle.write(f"   {serialized_function_group}\n")
         file_handle.write("Available commands: \n")
+        file_handle.write(f"   !endif\n")
+        file_handle.write(f"   !endwhile\n")
         for command_tree, command_callback in command_trees.values():
             file_handle.write(f"   {command_tree.get_str()}\n")
         file_handle.close()
