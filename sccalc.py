@@ -1400,7 +1400,7 @@ if len(sys.argv) > 1:
         file_handle.write(f"   {serialized_consts}\n")
         serialized_comparison_operators = " ".join(comparison_operators.keys())
         file_handle.write("Comparison operators (CMP-OP):\n")
-        file_handle.write(f"    {serialized_comparison_operators}\n")
+        file_handle.write(f"   {serialized_comparison_operators}\n")
         serialized_unary_functions = " ".join(KNOWN_FUNCTIONS.keys())
         file_handle.write("Unary functions:\n")
         file_handle.write(f"   {serialized_unary_functions}\n")
