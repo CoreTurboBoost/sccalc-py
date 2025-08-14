@@ -758,7 +758,7 @@ class CommandProcessCmpOperator(CommandProcessNode):
             return CommandProcessMatchReturnData([], [f"Comparison operator '{operator}' is unrecognised"], [])
         return CommandProcessMatchReturnData([operator], [], [self.tag])
     def get_str(self) -> str:
-        return "OP"
+        return "CMP-OP"
 class CommandProcessExpression(CommandProcessNode):
     def __init__(self, tag: str):
         self.tag = tag
