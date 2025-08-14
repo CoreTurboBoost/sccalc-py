@@ -1399,7 +1399,7 @@ if len(sys.argv) > 1:
         file_handle.write("   Used for variable names and iterator names\n")
         file_handle.write("   Valid characters: Alphabetical or _ followed by any number of alphanumerical or _\n")
         file_handle.write("Expression:\n")
-        file_handle.write("   Consists of Identifiers, constants, Unary-operators, Binary-Operators and assignments\n")
+        file_handle.write("   Consists of Identifiers, constants, Unary-operators, Binary-Operators and variable assignments\n")
         file_handle.write("   If a line does not begin with a  !  or  #  it is assumed to be a expression\n")
         file_handle.write("Variable assignment:\n")
         file_handle.write("   <Identifier> = <Expression>\n")
