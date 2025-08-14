@@ -1063,7 +1063,6 @@ command_tree_repeat = CommandProcessTree("repeat",
      ])
  )
 
-variables["test1"] = 0
 def command_process_callback_repeat(values: list, tags: list[str]) -> list[str]:
     for _ in range(int(values[0])):
         value, errors = eval_expression(values[1])
