@@ -10,7 +10,7 @@ import os
 import string
 
 APP_VERSION_MAJOR = 3
-APP_VERSION_MINOR = 3
+APP_VERSION_MINOR = 4
 APP_SCRIPT_VERSION = 6
 
 variables = {"script_version": APP_SCRIPT_VERSION}
@@ -1255,7 +1255,7 @@ def command_process_callback_read(values: list, tags: list[str]) -> None:
 
     variables[output_status_variable_name] = decimal.Decimal(STATUS_SUCCESS)
     try:
-        file_handle = open("file_path")
+        file_handle = open(file_path)
     except FileNotFoundError:
         console_output_debug_msg(f"!read: File {file_path} not found")
         variables[output_status_variable_name] = STATUS_FILE_NOT_FOUND
