@@ -957,6 +957,7 @@ def get_user_number_input(prompt, allow_program_exit=False) -> float:
             if allow_program_exit:
                 sys.exit("Exited by user on input prompt")
             print(invalid_input_error_message)
+            is_valid = False
     return number
 
 command_tree_if = CommandProcessTree("if", 
