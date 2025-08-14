@@ -1391,7 +1391,10 @@ if len(sys.argv) > 1:
             standards_output_path += "-custom"
         file_handle = open(standards_output_path, "w")
         file_handle.write("Comments:\n   Commented lines start with a  #  character\n")
-        file_handle.write("Commands description:\n   Command lines start with a  !  character.\n   Each command has a unique interface (set of parameters) and have unique functionality.\n")
+        file_handle.write("Commands description:\n   Command lines start with a  !  character.\n")
+        file_handle.write("   Each command has a unique interface (set of parameters) and have unique functionality.\n")
+        file_handle.write("   Commands allows for text to be surrounded in double quotes (\") to be passed into a single parameter literally\n")
+        file_handle.write("   Some characters can be escaped by placing a \\ directly in front of them\n")
         serialized_consts = " ".join(KNOWN_CONSTS.keys())
         file_handle.write("Constants:\n")
         file_handle.write(f"   {serialized_consts}\n")
