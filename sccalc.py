@@ -1190,6 +1190,44 @@ def command_process_callback_product(values: list, tags: list[str]) -> None:
     global variables
     variables[values[1]] = product(iterator_arrays[values[0]])
 
+command_tree_write = CommandProcessTree("write",
+    CommandProcessRequiredGroup([
+        CommandProcessText("", None),
+        CommandProcessIterator(IOType.IOT_IN, ""),
+        CommandProcessVariable(IOType.IOT_OUT, "", False)
+    ])
+)
+
+def command_process_callback_write(values: list, tags: list[str]) -> None:
+    global variables
+    file_path = values[0]
+    input_iterator = iterator_arrays[values[1]]
+    output_status_variable_name = values[2]
+    serialized_iterator_data = ",".join([f"{value}" for value in input_iterator])
+
+    STATUS_SUCCESS = 0
+    STATUS_PERMISSION_ERROR = 1
+    STATUS_ENCODE_ERROR = 2
+
+    variables[output_status_variable_name] = decimal.Decimal(STATUS_SUCCESS)
+    try:
+        file_handle = open(file_path, "w")
+    except PermissionError:
+        console_output_debug_msg(f"!write: Denied permission to write to file {file_path}")
+        variables[output_status_variable_name] = decimal.Decimal(STATUS_PERMISSION_ERROR)
+        return None
+    try:
+        file_handle.write(serialized_iterator_data)
+    except UnicodeEncodeError:
+        console_output_debug_msg(f"!write: Serialized iterator failed encoding when write to file {file_path}")
+        variables[output_status_variable_name] = decimal.Decimal(STATUS_ENCODE_ERROR)
+        return None
+    except PermissionError:
+        console_output_debug_msg(f"!write: Denied permission to write to file {file_path}")
+        variables[output_status_variable_name] = decimal.Decimal(STATUS_PERMISSION_ERROR)
+        return None
+    file_handle.close()
+
 command_trees = {
         "if": (command_tree_if, None),
         "while": (command_tree_while, None),
