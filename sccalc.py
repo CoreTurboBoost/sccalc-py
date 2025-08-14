@@ -1228,6 +1228,60 @@ def command_process_callback_write(values: list, tags: list[str]) -> None:
         return None
     file_handle.close()
 
+command_tree_read = CommandProcessTree("read",
+    CommandProcessRequiredGroup([
+        CommandProcessText("", None),
+        CommandProcessIterator(IOType.IOT_OUT, ""),
+        CommandProcessVariable(IOType.IOT_OUT, "", False)
+    ])
+)
+
+def command_process_callback_read(values: list, tags: list[str]) -> None:
+    global variables, iterator_arrays
+    file_path = values[0]
+    output_iterator_name = values[1]
+    output_status_variable_name = values[2]
+
+    STATUS_SUCCESS = 0
+    STATUS_PERMISSION_ERROR = 1
+    STATUS_DECODE_ERROR = 2
+    STATUS_DESERIALIZATION_ERROR = 3
+    STATUS_FILE_NOT_FOUND = 4
+
+    variables[output_status_variable_name] = decimal.Decimal(STATUS_SUCCESS)
+    try:
+        file_handle = open("file_path")
+    except FileNotFoundError:
+        console_output_debug_msg(f"!read: File {file_path} not found")
+        variables[output_status_variable_name] = STATUS_FILE_NOT_FOUND
+        return None
+    except PermissionError:
+        console_output_debug_msg(f"!read: Denied permission to write to file {file_path}")
+        variables[output_status_variable_name] = STATUS_PERMISSION_ERROR
+        return None
+    try:
+        contents = file_handle.read()
+    except UnicodeDecodeError:
+        console_output_debug_msg(f"!read: File {file_path} is not a valid text file")
+        variables[output_status_variable_name] = STATUS_DECODE_ERROR
+        return None
+    except PermissionError:
+        console_output_debug_msg(f"!read: Denied permission to write to file {file_path}")
+        variables[output_status_variable_name] = STATUS_PERMISSION_ERROR
+        return None
+    file_handle.close()
+    deserialized_iterator_data = contents.split(",")
+    deserialzed_numbers = []
+    for data in deserialized_iterator_data:
+        try:
+            value = decimal.Decimal(float(data))
+        except ValueError:
+            console_output_debug_msg(f"!read: De-serialized iterator data is invalid")
+            variables[output_status_variable_name] = STATUS_DESERIALIZATION_ERROR
+            return None
+        deserialzed_numbers.append(value)
+    iterator_arrays[output_iterator_name] = deserialzed_numbers
+
 command_trees = {
         "if": (command_tree_if, None),
         "while": (command_tree_while, None),
