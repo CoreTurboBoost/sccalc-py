@@ -10,8 +10,8 @@ import os
 import string
 
 APP_VERSION_MAJOR = 3
-APP_VERSION_MINOR = 0
-APP_SCRIPT_VERSION = 5
+APP_VERSION_MINOR = 1
+APP_SCRIPT_VERSION = 6
 
 variables = {"script_version": APP_SCRIPT_VERSION}
 iterator_arrays = {} # {str: list[decimal.Decimal]}
