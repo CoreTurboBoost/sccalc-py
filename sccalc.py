@@ -13,6 +13,8 @@ APP_VERSION_MAJOR = 3
 APP_VERSION_MINOR = 4
 APP_SCRIPT_VERSION = 6
 
+CUSTOM_SCRIPT_VERSION = False
+
 variables = {"script_version": APP_SCRIPT_VERSION}
 iterator_arrays = {} # {str: list[decimal.Decimal]}
 
