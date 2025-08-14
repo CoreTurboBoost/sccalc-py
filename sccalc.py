@@ -1298,7 +1298,9 @@ command_trees = {
         "filter": (command_tree_filter, command_process_callback_filter),
         "next": (command_tree_next, command_process_callback_next),
         "sum": (command_tree_sum, command_process_callback_sum),
-        "product": (command_tree_product, command_process_callback_product)
+        "product": (command_tree_product, command_process_callback_product),
+        "write": (command_tree_write, command_process_callback_write),
+        "read": (command_tree_read, command_process_callback_read)
         }
 
 
