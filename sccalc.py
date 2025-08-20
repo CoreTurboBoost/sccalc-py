@@ -1215,6 +1215,7 @@ def command_process_callback_write(values: list, tags: list[str]) -> None:
     STATUS_SUCCESS = 0
     STATUS_PERMISSION_ERROR = 1
     STATUS_ENCODE_ERROR = 2
+    STATUS_IS_A_DIRECTORY = 5
 
     variables[output_status_variable_name] = decimal.Decimal(STATUS_SUCCESS)
     try:
@@ -1223,6 +1224,9 @@ def command_process_callback_write(values: list, tags: list[str]) -> None:
         console_output_debug_msg(f"!write: Denied permission to write to file {file_path}")
         variables[output_status_variable_name] = decimal.Decimal(STATUS_PERMISSION_ERROR)
         return None
+    except IsADirectoryError:
+        console_output_debug_msg(f"!write: File path {file_path} is a directory")
+        variables[output_status_variable_name] = decimal.Decimal(STATUS_IS_A_DIRECTORY)
     try:
         file_handle.write(serialized_iterator_data)
     except UnicodeEncodeError:
@@ -1254,6 +1258,7 @@ def command_process_callback_read(values: list, tags: list[str]) -> None:
     STATUS_DECODE_ERROR = 2
     STATUS_DESERIALIZATION_ERROR = 3
     STATUS_FILE_NOT_FOUND = 4
+    STATUS_IS_A_DIRECTORY = 5
 
     variables[output_status_variable_name] = decimal.Decimal(STATUS_SUCCESS)
     try:
@@ -1266,6 +1271,9 @@ def command_process_callback_read(values: list, tags: list[str]) -> None:
         console_output_debug_msg(f"!read: Denied permission to write to file {file_path}")
         variables[output_status_variable_name] = STATUS_PERMISSION_ERROR
         return None
+    except IsADirectoryError:
+        console_output_debug_msg(f"!write: File path {file_path} is a directory")
+        variables[output_status_variable_name] = decimal.Decimal(STATUS_IS_A_DIRECTORY)
     try:
         contents = file_handle.read()
     except UnicodeDecodeError:
