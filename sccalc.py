@@ -1319,7 +1319,7 @@ command_trees = {
         }
 
 command_process_descriptions = {
-        "if": "Compare the two variables or literal numbers and either assign to a variable or start a if statement block, end block with !endif command",
+        "if": "Compare the two variables or literal numbers and either assign to a variable (if provided) or start a if statement block, end block with !endif command",
         "while": "Compare two variables or literal numbers and run the while block while the condition is true, end block with !endwhile command",
         "exit": "Stop the program with an optional exit code",
         "input": "Hold execution of the program and request user input as a number",
