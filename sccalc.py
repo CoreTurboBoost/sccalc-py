@@ -1318,6 +1318,63 @@ command_trees = {
         "read": (command_tree_read, command_process_callback_read)
         }
 
+command_process_descriptions = {
+        "if": "Compare the two variables or literal numbers and either assign to a variable or start a if statement block, end block with !endif command",
+        "while": "Compare two variables or literal numbers and run the while block while the condition is true, end block with !endwhile command",
+        "exit": "Stop the program with an optional exit code",
+        "input": "Hold execution of the program and request user input as a number",
+        "print": "Output literal text to the user",
+        "varout": "Output the value in a variable",
+        "repeat": "Repeats an expression for a given count (can be a literal number or a variable). Count cannot be accessed or modified",
+        "yield": "Appends a literal number or value in a variable to an iterator",
+        "clear": "Removes all values within an iterator",
+        "dup": "Makes a exact hard copy of an iterator",
+        "count": "Returns the number of remaining values within an iterator, into a chosen variable",
+        "map": "Higher order function 'map' that operates on iterators, given an expression. The current iterated value is the variable with the same name as the iterator",
+        "filter": "Higher order function 'map' that operates on iterators, given a condition. The current iterated value is the variable with the same name as the iterator",
+        "next": "Assumes iterator is not empty. Pops the next value from the iterator and sets the variable with the same name as the iterator to the popped value from the iterator",
+        "sum": "Higher order function 'map' that operates on iterators. Returns the sum into a chosen output variable",
+        "product": "Higher order function 'map' that operates on iterators. Returns the sum into a chosen output variable",
+        "write": "Attempts to write the given iterator to a given file path. The success of the operation is returned into a chosen variable. 0 is success, any other value is a failure. 1 - permission error. 2 - decode error. 5 - is a directory",
+        "read": "Attempts to write the given iterator to a given file path. The success of the operation is returned into a chosen variable. 0 is success, any other value is a failure. 1 - permission error. 2 - encode error. 3 - de-serialization error. 4 - file not found. 5 - is a directory"
+}
+
+binary_function_descriptions = {
+    "+":  "Binary addition",
+    "-":  "Binary subtraction",
+    "*":  "Binary multiplication",
+    "/":  "Binary division",
+    "%":  "Modulus operator",
+    "^":  "Exponentiation",
+    ">":  "Greater than",
+    "<":  "Less than",
+    ">=": "Greater than or equal too",
+    "<=": "Less than or equal too",
+    "==": "Exactly equal too, equivalent",
+    "!=": "Not equal too, inequivalent",
+    "&&": "Boolean AND",
+    "||": "Boolean OR"
+}
+
+unary_function_descriptions = {
+    "negate": "Negation. Flip the sign of the number",
+    "ceil": "Mathematical ceiling of a number. Rounds number up to nearest whole number",
+    "floor": "Mathematical floor of a number. Rounds number down to the nearest whole number",
+    "round": "Mathematical round to whole number",
+    "sqrt": "Mathematical square root",
+    "log10": "Logarithmic function with base 10",
+    "log2": "Logarithmic function with base 2",
+    "cos": "Trigonometric cosine function, angle in radians",
+    "sin": "Trigonometric sine function, angle in radians",
+    "tan": "Trigonometric tangent function, angle in radians",
+    "cosec": "Trigonometric co-secant function, angle in radians",
+    "sec": "Trigonometric secant function, angle in radians",
+    "cot": "Trigonometric co-tangent function, angle in radians",
+    "acos": "Trigonometric arc-cosine function, angle in radians",
+    "asin": "Trigonometric arc-sine function, angle in radians",
+    "atan": "Trigonometric arc-tangent function, angle in radians"
+}
+
 
 previous_answer = 0
 
