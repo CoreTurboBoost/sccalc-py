@@ -1502,6 +1502,9 @@ if len(sys.argv) > 1:
 
         longest_command_word_len = max([len(cmd[0].get_str()) for cmd in command_trees.values()])
         file_handle.write("\nAvailable commands: \n")
+        file_handle.write(f"   !strict\n      Tells the interpreter to exit for any error that occurs\n")
+        file_handle.write(f"   !debug [on|off|toggle]\n      Enable or disable debug output\n")
+        file_handle.write(f"   !echo [on|off|toggle]\n      Enable or disable per line expression evaluation output\n")
         file_handle.write(f"   !endif\n      Marks end of a if block\n")
         file_handle.write(f"   !endwhile\n      Marks end of a while block\n")
         for command_tree, command_callback in command_trees.values():
