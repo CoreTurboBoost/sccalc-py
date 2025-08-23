@@ -505,7 +505,7 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
         console_output_debug_msg(f"numbers_stack at eval: {numbers_stack}")
 
     if (len(numbers_stack) > 1):
-        errors.append(f"Too few operators, for the number of operands, {len(numbers_stack)} specifically")
+        errors.append(f"Too few operators, for the number of operands, {len(numbers_stack)} operands remaining")
         console_output_debug_msg(f"Error: numbers_stack:{numbers_stack}")
 
     if (len(errors) > 0):
