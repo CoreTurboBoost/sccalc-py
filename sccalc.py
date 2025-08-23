@@ -1461,8 +1461,10 @@ if len(sys.argv) > 1:
     if (sys.argv[1] == "--help" or sys.argv[1] == "-h"):
         print(f"python3 {sys.argv[0]} [expression]")
         print( "python3 {-v|-h|__VERSION__}")
-        print( "  -v, --version    print program version and exit")
-        print( "      __VERSION__  output version in specific format")
+        print( "  -v, --version                 print program version and exit")
+        print( "      __VERSION__               output version in specific format")
+        print( "      --license                 print program license")
+        print(f"      --output-script-standard  output the script standard to the file 'script-{APP_SCRIPT_VERSION}-standard'")
         print( "  -h, --help       print this help page and exit")
         sys.exit()
     if (sys.argv[1] == "--version" or sys.argv[1] == "-v"):
