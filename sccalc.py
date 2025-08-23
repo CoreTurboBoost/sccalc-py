@@ -435,7 +435,7 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
         post_fix_token_list.append(operators_stack.pop())
 
     if (open_bracket_count > 0):
-        errors.append(f"Bracket mismatch. Some brackets dont have \')\', {open_bracket_count} specifically")
+        errors.append(f"Bracket mismatch. Some brackets dont have \')\', {open_bracket_count} unclosed brackets remaining")
 
     # debug
     post_fix_str = ""
