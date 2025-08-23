@@ -1345,7 +1345,7 @@ command_process_descriptions = {
         "if": "Compare the two variables or literal numbers and either assign to a variable (if provided) or start a if statement block, end block with !endif command",
         "while": "Compare two variables or literal numbers and run the while block while the condition is true, end block with !endwhile command",
         "exit": "Stop the program with an optional exit code",
-        "input": "Hold execution of the program and request user input as a number",
+        "input": "Hold execution of the program and request user input as a number. The variable 'input' is assigned the users input",
         "print": "Output literal text to the user",
         "varout": "Output the value in a variable",
         "repeat": "Repeats an expression for a given count (can be a literal number or a variable). Count cannot be accessed or modified",
