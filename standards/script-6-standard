@@ -1,0 +1,147 @@
+
+Comments:
+   Commented lines start with a  #  character.
+
+Commands description:
+   Command lines start with a  !  character.
+   Each command has a unique interface (set of parameters) and have unique functionality.
+   Commands allows for text to be surrounded in double quotes (") to be passed into a single parameter literally.
+   Some characters can be escaped by placing a \ directly in front of them.
+
+Identifiers:
+   Used for variable names and iterator names.
+   Valid characters: Alphabetic or  _  followed by any number of alphanumeric or  _  .
+
+Expression:
+   Consists of Identifiers, constants, Unary-operators, Binary-Operators and variable assignments.
+   If a line does not begin with a  !  or  #  it is assumed to be a expression.
+
+Variables description:
+   All assigned variables are global variables, there are no local variables.
+   Variables can only store decimal (or floating point) numbers.
+
+Variable assignment:
+   <Identifier> = <Expression>
+
+Pre-defined variables:
+   script_version
+
+Constants:
+   pi e deg2rad rad2deg
+
+Comparison operators (CMP-OP):
+   == != >= <= > <
+
+Unary functions:
+   negate  - Negation. Flip the sign of the number
+   ceil    - Mathematical ceiling of a number. Rounds number up to nearest whole number
+   floor   - Mathematical floor of a number. Rounds number down to the nearest whole number
+   round   - Mathematical round to whole number
+   sqrt    - Mathematical square root
+   log10   - Logarithmic function with base 10
+   log2    - Logarithmic function with base 2
+   cos     - Trigonometric cosine function, angle in radians
+   sin     - Trigonometric sine function, angle in radians
+   tan     - Trigonometric tangent function, angle in radians
+   cosec   - Trigonometric co-secant function, angle in radians
+   sec     - Trigonometric secant function, angle in radians
+   cot     - Trigonometric co-tangent function, angle in radians
+   acos    - Trigonometric arc-cosine function, angle in radians
+   asin    - Trigonometric arc-sine function, angle in radians
+   atan    - Trigonometric arc-tangent function, angle in radians
+
+Binary functions:
+   +   - Binary addition
+   -   - Binary subtraction
+   *   - Binary multiplication
+   /   - Binary division
+   %   - Modulus operator
+   ^   - Exponentiation
+   >   - Greater than
+   <   - Less than
+   >=  - Greater than or equal too
+   <=  - Less than or equal too
+   ==  - Exactly equal too, equivalent
+   !=  - Not equal too, inequivalent
+   &&  - Boolean AND
+   ||  - Boolean OR
+
+Function precedences (from least to most):
+   ||
+   &&
+   > < >= <= == !=
+   + -
+   * / %
+   ^
+   <UNARY-FUNCTIONS>
+
+Available commands: 
+   !strict
+      Tells the interpreter to exit for any error that occurs
+   !debug [on|off|toggle]
+      Enable or disable debug output
+   !echo [on|off|toggle]
+      Enable or disable per line expression evaluation output
+   !endif
+      Marks end of a if block
+   !endwhile
+      Marks end of a while block
+   !if <NUMBER|IN-VAR> CMP-OP <NUMBER|IN-VAR> [OUT-VAR <NUMBER|IN-VAR>]
+      Compare the two variables or literal numbers and either assign to a variable (if provided) or start a if statement block, end block with !endif command
+   !while <NUMBER|IN-VAR> CMP-OP <NUMBER|IN-VAR>
+      Compare two variables or literal numbers and run the while block while the condition is true, end block with !endwhile command
+   !exit [<NUMBER|IN-VAR>]
+      Stop the program with an optional exit code
+   !input [TEXT...]
+      Hold execution of the program and request user input as a number
+   !print [TEXT...]
+      Output literal text to the user
+   !varout [IN-VAR [-name]]
+      Output the value in a variable
+   !repeat <NUMBER|IN-VAR> EXPRESSION
+      Repeats an expression for a given count (can be a literal number or a variable). Count cannot be accessed or modified
+   !yield OUT-ITER <NUMBER|IN-VAR>
+      Appends a literal number or value in a variable to an iterator
+   !clear IN-ITER
+      Removes all values within an iterator
+   !dup OUT-ITER IN-ITER
+      Makes a exact hard copy of an iterator
+   !count IN-ITER OUT-VAR
+      Returns the number of remaining values within an iterator, into a chosen variable
+   !map IN-OUT-ITER EXPRESSION
+      Higher order function 'map' that operates on iterators, given an expression. The current iterated value is the variable with the same name as the iterator
+   !filter IN-OUT-ITER <NUMBER|IN-VAR> CMP-OP <NUMBER|IN-VAR>
+      Higher order function 'map' that operates on iterators, given a condition. The current iterated value is the variable with the same name as the iterator
+   !next IN-OUT-ITER
+      Assumes iterator is not empty. Pops the next value from the iterator and sets the variable with the same name as the iterator to the popped value from the iterator
+   !sum IN-ITER OUT-VAR
+      Higher order function 'map' that operates on iterators. Returns the sum into a chosen output variable
+   !product IN-ITER OUT-VAR
+      Higher order function 'map' that operates on iterators. Returns the sum into a chosen output variable
+   !write TEXT IN-ITER OUT-VAR
+      Attempts to write the given iterator to a given file path. The success of the operation is returned into a chosen variable. 0 is success, any other value is a failure. 1 - permission error. 2 - decode error. 5 - is a directory
+   !read TEXT OUT-ITER OUT-VAR
+      Attempts to write the given iterator to a given file path. The success of the operation is returned into a chosen variable. 0 is success, any other value is a failure. 1 - permission error. 2 - encode error. 3 - de-serialization error. 4 - file not found. 5 - is a directory
+
+
+Program license:
+
+Copyright 2025 CoreTurboBoost
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
