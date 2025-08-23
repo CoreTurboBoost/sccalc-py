@@ -1524,44 +1524,6 @@ if len(sys.argv) > 1:
                 sys.exit(err_msg)
             else:
                 print(err_msg)
-        def get_literal_or_var(literal_or_var: str) -> float or None:
-            try:
-                return float(literal_or_var)
-            except ValueError:
-                console_output_debug_msg(f"get_literal_or_var: Failed to convert {literal_or_var} to float")
-                var_val = variables.get(literal_or_var)
-                return var_val
-        def apply_condition_operator(left: float, right: float, operator: str) -> bool or None:
-            condition_true = False
-            operator_fn = comparison_operators.get(operator)
-            if operator_fn == None:
-                return None
-            return operator_fn(left, right)
-        def enforce_command_parameters(command_name: str, required_arguments: list[str], required_args_repeat: bool, optional_arguments: list[str], optional_args_repeat: bool, expression_split_count: int, line_index: int) -> None:
-            if expression_split_count < len(required_arguments):
-                required_arguments_str = ""
-                optional_arguments_str = ""
-                for i, required_arg in enumerate(required_arguments):
-                    if i != 0:
-                        required_arguments_str += " "
-                    required_arguments_str += f"<{required_arg}>"
-                if required_args_repeat:
-                    required_arguments_str += "..."
-                for i, optional_arg in enumerate(optional_arguments):
-                    if i != 0:
-                        optional_arguments_str += " "
-                    optional_arguments_str += f"[{optional_arg}]"
-                if optional_args_repeat:
-                    optional_arguments_str += "..."
-                sys.exit(f"[{line_index+1}] Error: {command_name}: Missing required arguments, expected '!{command_name} {required_arguments_str} {optional_arguments_str}'")
-        def match_and_enforce_command(command_name: str, required_arguments: list[str], required_args_repeat: bool, optional_arguments: list[str], optional_args_repeat: bool, expression_list: list[str], line_index: int) -> bool:
-            expression_list_len = len(expression_split)
-            if expression_list_len < 1:
-                return False
-            if expression_list[0] == f"!{command_name}":
-                enforce_command_parameters(command_name, required_arguments, required_args_repeat, optional_arguments, optional_args_repeat, expression_list_len, line_index)
-                return True
-            return False
         fh = open(sys.argv[1])
         contents = fh.read().split("\n")
         contents = list(zip(contents, range(0, len(contents))))
