@@ -861,7 +861,7 @@ class CommandProcessFormatString(CommandProcessNode):
                 formatted_string += char
         return CommandProcessMatchReturnData([formatted_string], [], [self.tag])
     def get_str(self) -> str:
-        f"FORMAT_STRING [FORMAT_ARGS].."
+        return f"FORMAT_STRING [FORMAT_ARGS].."
 
 class CommandProcessTreeMatchState:
     def __init__(self, command_matched: bool, args_matched: bool, callback_errors: list[str], values: list, tags: list[str]):
