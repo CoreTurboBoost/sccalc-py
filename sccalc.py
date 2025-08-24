@@ -1497,13 +1497,15 @@ def parse_input_for_args(uinput: str) -> list[str]:
             skip_char_count -= 1
             continue
         if char == "\\":
-            skip_char_count += 1
             if chari+1 < len(uinput):
                 next_char = uinput[chari+1]
+                skip_char_count += 1
                 if next_char == '"':
                     cur_phrase += '"'
                 elif next_char == '\\':
                     cur_phrase += '\\'
+                else:
+                    skip_char_count -= 1
             continue
         if char == '"':
             in_quote = not in_quote
