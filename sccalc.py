@@ -816,6 +816,53 @@ class CommandProcessText(CommandProcessNode):
         text = "TEXT" if self.match_exact_str == None else self.match_exact_str
         return text
 
+FORMAT_SPECIFIER_GETTERS = {
+        '''
+        CHAR: def _(specifier: char) -> list[any or None, list[str]]
+        '''
+        "v": lambda a: [variables.get(a), [f"Variable '{a}' is undefined"]], 
+        "e": lambda a: eval_expression(a),
+        "i": lambda a: [iterator_arrays.get(a), [f"Iterator '{a}' is undefined"]], 
+        "n": lambda a: [convert_to_number_or_none(a), [f"'{a}' is not a valid literal number"]]
+        }
+class CommandProcessFormatString(CommandProcessNode):
+    def __init__(self, tag: str):
+        self.tag = tag
+    def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
+        if len(phrases) == 0:
+            return CommandProcessMatchReturnData([], ["Missing required arguments, format specifier"], [])
+        cur_phrase_phrases_index = 0
+        formatted_string = ""
+        format_string = phrases[cur_phrase_phrases_index]
+        cur_phrase_phrases_index += 1
+        char_skip_count = 0
+        for chari, char in enumerate(format_string):
+            if char_skip_count > 0:
+                char_skip_count -= 1
+                continue
+            if char == "%":
+                if chari >= len(format_string):
+                    return CommandProcessMatchReturnData([], ["Format string cannot end with a %, use  %%  for a literal percentage sign.", []])
+                next_char = format_string[format_string[chari+1]]
+                char_skip_count += 1
+                if next_char == "%":
+                    formatted_string += "%"
+                elif next_char in FORMAT_SPECIFIER_GETTERS.keys():
+                    if cur_phrase_phrases_index >= len(phrases):
+                        return CommandProcessMatchReturnData([], ["Missing some format specifier arguments"], [])
+                    value, errors = FORMAT_SPECIFIER_GETTERS[phrase[cur_phrase_phrases_index]]
+                    cur_phrase_phrases_index += 1
+                    if value == None:
+                        return CommandProcessMatchReturnData([], ["Format string conversion error occurred"].extend(errors), [])
+                    formatted_string += str(value)
+                else:
+                    return CommandProcessMatchReturnData([], [f"Unrecognised format specifier '{next_char}'"], [])
+            else:
+                formatted_string += char
+        return CommandProcessMatchReturnData([formatted_string], [], [self.tag])
+    def get_str(self) -> str:
+        f"FORMAT_STRING [FORMAT_ARGS].."
+
 class CommandProcessTreeMatchState:
     def __init__(self, command_matched: bool, args_matched: bool, callback_errors: list[str], values: list, tags: list[str]):
         self.command_matched = command_matched
