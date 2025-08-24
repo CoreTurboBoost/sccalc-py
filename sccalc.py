@@ -859,7 +859,9 @@ class CommandProcessFormatString(CommandProcessNode):
                     return CommandProcessMatchReturnData([], [f"Unrecognised format specifier '{next_char}'"], [])
             else:
                 formatted_string += char
-        return CommandProcessMatchReturnData([formatted_string], [], [self.tag])
+        return_values = [formatted_string]
+        return_values.extend([None] * cur_phrase_phrases_index)
+        return CommandProcessMatchReturnData(return_values, [], [self.tag])
     def get_str(self) -> str:
         return f"FORMAT_STRING [FORMAT_ARGS].."
 
