@@ -1386,6 +1386,13 @@ command_tree_printf = CommandProcessTree("printf",
 def command_process_callback_printf(values: list, tags: list[str]) -> None:
     print(values[0])
 
+command_tree_inputf = CommandProcessTree("inputf",
+    CommandProcessFormatString("")
+)
+
+def command_process_callback_inputf(values: list, tags: list[str]) -> None:
+    input(values[0])
+
 command_trees = {
         "if": (command_tree_if, None),
         "while": (command_tree_while, None),
@@ -1406,6 +1413,7 @@ command_trees = {
         "write": (command_tree_write, command_process_callback_write),
         "read": (command_tree_read, command_process_callback_read),
         "printf": (command_tree_printf, command_process_callback_printf),
+        "inputf": (command_tree_inputf, command_process_callback_printf),
         }
 
 command_process_descriptions = {
