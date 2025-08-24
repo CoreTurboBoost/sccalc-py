@@ -725,6 +725,11 @@ class CommandProcessRepeat(CommandProcessNode):
     def get_str(self) -> str:
         return f"{self.node.get_str()}..."
 
+def convert_to_number_or_none(phrase: str) -> decimal.Decimal or None:
+    try:
+        return decimal.Decimal(float(phrase))
+    except ValueError:
+        return None
 class CommandProcessLiteralNumber(CommandProcessNode):
     def __init__(self, tag: str):
         self.tag = tag
