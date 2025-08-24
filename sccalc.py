@@ -816,10 +816,11 @@ class CommandProcessText(CommandProcessNode):
         text = "TEXT" if self.match_exact_str == None else self.match_exact_str
         return text
 
+'''
+values callback signature
+CHAR: def _(specifier: char) -> list[any or None, list[str]]
+'''
 FORMAT_SPECIFIER_GETTERS = {
-        '''
-        CHAR: def _(specifier: char) -> list[any or None, list[str]]
-        '''
         "v": lambda a: [variables.get(a), [f"Variable '{a}' is undefined"]], 
         "e": lambda a: eval_expression(a),
         "i": lambda a: [iterator_arrays.get(a), [f"Iterator '{a}' is undefined"]], 
