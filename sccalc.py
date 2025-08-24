@@ -921,6 +921,8 @@ class CommandProcessTree:
             console_output_debug_msg(f"Early return due to too many arguments")
             return CommandProcessTreeMatchState(True, False, [], [], [])
         callback_errors = []
+        while None in data.values:
+            data.values.remove(None)
         if on_success_callback != None:
             return_value = on_success_callback(data.values, data.tags)
             if return_value != None and isinstance(return_value, (list, tuple)):
