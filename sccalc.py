@@ -843,7 +843,7 @@ class CommandProcessFormatString(CommandProcessNode):
             if char == "%":
                 if chari >= len(format_string):
                     return CommandProcessMatchReturnData([], ["Format string cannot end with a %, use  %%  for a literal percentage sign.", []])
-                next_char = format_string[format_string[chari+1]]
+                next_char = format_string[chari+1]
                 char_skip_count += 1
                 if next_char == "%":
                     formatted_string += "%"
