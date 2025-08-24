@@ -816,6 +816,13 @@ class CommandProcessText(CommandProcessNode):
         text = "TEXT" if self.match_exact_str == None else self.match_exact_str
         return text
 
+def get_and_format_iterator_str(iterator_name: str) -> None or str:
+    iterator = iterator_arrays.get(iterator_name)
+    if iterator == None:
+        return iterator
+    formatted_iterator_str = ", ".join([str(val) for val in iterator])
+    return f"[{formatted_iterator_str}]"
+
 '''
 values callback signature
 CHAR: def _(specifier: char) -> list[any or None, list[str]]
@@ -823,7 +830,7 @@ CHAR: def _(specifier: char) -> list[any or None, list[str]]
 FORMAT_SPECIFIER_GETTERS = {
         "v": lambda a: [variables.get(a), [f"Variable '{a}' is undefined"]], 
         "e": lambda a: eval_expression(a),
-        "i": lambda a: [iterator_arrays.get(a), [f"Iterator '{a}' is undefined"]], 
+        "i": lambda a: [get_and_format_iterator_str(a), [f"Iterator '{a}' is undefined"]], 
         "n": lambda a: [convert_to_number_or_none(a), [f"'{a}' is not a valid literal number"]]
         }
 class CommandProcessFormatString(CommandProcessNode):
