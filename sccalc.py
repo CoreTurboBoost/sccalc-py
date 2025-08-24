@@ -11,7 +11,7 @@ import string
 import itertools
 
 APP_VERSION_MAJOR = 3
-APP_VERSION_MINOR = 8
+APP_VERSION_MINOR = 9
 APP_SCRIPT_VERSION = 6
 
 CUSTOM_SCRIPT_VERSION = False
@@ -1669,12 +1669,12 @@ if len(sys.argv) > 1:
                         skip_till_next_while_end_count -= 1
                     if expression_split[0] == "!while":
                         skip_till_next_while_end_count += 1
-                if expression_split[0] == "!endif":
+                if skip_till_if_end_count > 0:
                     console_output_debug_msg(f"   skip_till_if_end {skip_till_if_end_count}")
-                    if skip_till_if_end_count == 0:
-                        output_error(line_index, "endif: Unmatched endif")
-                        continue
-                    skip_till_if_end_count -= 1
+                    if expression_split[0] == "!endif":
+                        skip_till_if_end_count -= 1
+                    if expression_split[0] == "!if":
+                        skip_till_if_end_count += 1
                 continue
 
             expression_split = parse_input_for_args(expression)
