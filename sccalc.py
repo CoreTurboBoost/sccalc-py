@@ -837,10 +837,12 @@ class CommandProcessFormatString(CommandProcessNode):
         format_string = phrases[cur_phrase_phrases_index]
         char_skip_count = 0
         for chari, char in enumerate(format_string):
+            console_output_debug_msg(f"CommandProcessFormatString.match(): Processing current char '{char}'")
             if char_skip_count > 0:
                 char_skip_count -= 1
                 continue
             if char == "%":
+                console_output_debug_msg(f"CommandProcessFormatString.match():    char matched %")
                 if chari >= len(format_string):
                     return CommandProcessMatchReturnData([], ["Format string cannot end with a %, use  %%  for a literal percentage sign.", []])
                 next_char = format_string[chari+1]
@@ -858,6 +860,7 @@ class CommandProcessFormatString(CommandProcessNode):
                 else:
                     return CommandProcessMatchReturnData([], [f"Unrecognised format specifier '{next_char}'"], [])
             else:
+                console_output_debug_msg(f"CommandProcessFormatString.match():    char matched literal '{char}'")
                 formatted_string += char
         return_values = [formatted_string]
         return_values.extend([None] * cur_phrase_phrases_index)
