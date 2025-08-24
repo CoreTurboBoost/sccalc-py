@@ -1401,7 +1401,8 @@ command_trees = {
         "sum": (command_tree_sum, command_process_callback_sum),
         "product": (command_tree_product, command_process_callback_product),
         "write": (command_tree_write, command_process_callback_write),
-        "read": (command_tree_read, command_process_callback_read)
+        "read": (command_tree_read, command_process_callback_read),
+        "printf": (command_tree_printf, command_process_callback_printf),
         }
 
 command_process_descriptions = {
