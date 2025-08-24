@@ -835,7 +835,6 @@ class CommandProcessFormatString(CommandProcessNode):
         cur_phrase_phrases_index = 0
         formatted_string = ""
         format_string = phrases[cur_phrase_phrases_index]
-        cur_phrase_phrases_index += 1
         char_skip_count = 0
         for chari, char in enumerate(format_string):
             if char_skip_count > 0:
@@ -849,9 +848,9 @@ class CommandProcessFormatString(CommandProcessNode):
                 if next_char == "%":
                     formatted_string += "%"
                 elif next_char in FORMAT_SPECIFIER_GETTERS.keys():
-                    if cur_phrase_phrases_index >= len(phrases):
+                    if cur_phrase_phrases_index+1 >= len(phrases):
                         return CommandProcessMatchReturnData([], ["Missing some format specifier arguments"], [])
-                    value, errors = FORMAT_SPECIFIER_GETTERS[phrase[cur_phrase_phrases_index]]
+                    value, errors = FORMAT_SPECIFIER_GETTERS[next_char](phrases[cur_phrase_phrases_index+1])
                     cur_phrase_phrases_index += 1
                     if value == None:
                         return CommandProcessMatchReturnData([], ["Format string conversion error occurred"].extend(errors), [])
