@@ -1376,6 +1376,13 @@ def command_process_callback_read(values: list, tags: list[str]) -> None:
         deserialzed_numbers.append(value)
     iterator_arrays[output_iterator_name] = deserialzed_numbers
 
+command_tree_printf = CommandProcessTree("printf", 
+    CommandProcessFormatString("")
+)
+
+def command_process_callback_printf(values: list, tags: list[str]) -> None:
+    print(values[0])
+
 command_trees = {
         "if": (command_tree_if, None),
         "while": (command_tree_while, None),
