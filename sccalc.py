@@ -862,7 +862,9 @@ class CommandProcessFormatString(CommandProcessNode):
                     value, errors = FORMAT_SPECIFIER_GETTERS[next_char](phrases[cur_phrase_phrases_index+1])
                     cur_phrase_phrases_index += 1
                     if value == None:
-                        return CommandProcessMatchReturnData([], ["Format string conversion error occurred"].extend(errors), [])
+                        extended_errors = ["Format string conversion error occurred"]
+                        extended_errors.extend(errors)
+                        return CommandProcessMatchReturnData([], extended_errors, [])
                     formatted_string += str(value)
                 else:
                     return CommandProcessMatchReturnData([], [f"Unrecognised format specifier '{next_char}'"], [])
