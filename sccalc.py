@@ -1387,11 +1387,17 @@ def command_process_callback_read(values: list, tags: list[str]) -> None:
     iterator_arrays[output_iterator_name] = deserialzed_numbers
 
 command_tree_printf = CommandProcessTree("printf", 
-    CommandProcessFormatString("")
+    CommandProcessAddition(
+        CommandProcessFormatString(""),
+        CommandProcessText("no-new-line", "-no-new-line")
+    )
 )
 
 def command_process_callback_printf(values: list, tags: list[str]) -> None:
-    print(values[0])
+    end = "\n"
+    if "no-new-line" in tags:
+        end = ""
+    print(values[0], end=end)
 
 command_tree_inputf = CommandProcessTree("inputf",
     CommandProcessFormatString("")
