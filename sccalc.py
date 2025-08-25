@@ -717,7 +717,8 @@ class CommandProcessRepeat(CommandProcessNode):
             if data.has_errors():
                 if len(final_tags) == 0:
                     console_output_debug_msg(" CommandProcessRepeat: Requires at least one valid argument")
-                    return CommandProcessMatchReturnData([], data.errors.extend("Repeat command requires at least one valid argument"), [])
+                    data.errors.extend("Repeat command requires at least one valid argument")
+                    return CommandProcessMatchReturnData([], data.errors, [])
                 return CommandProcessMatchReturnData(final_values, data.errors, final_tags)
             final_values.extend(data.values)
             merge_tags(final_tags, data.tags)
