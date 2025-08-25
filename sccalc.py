@@ -735,11 +735,11 @@ class CommandProcessLiteralNumber(CommandProcessNode):
     def __init__(self, tag: str):
         self.tag = tag
     def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
-        try:
-            return CommandProcessMatchReturnData([decimal.Decimal(float(phrases[0]))], [], [self.tag])
-        except ValueError:
+        converted_value = convert_to_number_or_none(phrases[0])
+        if converted_value == None:
             console_output_debug_msg(" CommandProcessLiteralNumber: Failed to convert")
             return CommandProcessMatchReturnData([], [f"Cannot convert '{phrases[0]}' to a number"], [])
+        return CommandProcessMatchReturnData([decimal.Decimal(float(phrases[0]))], [], [self.tag])
     def get_str(self) -> str:
         return "NUMBER"
 class CommandProcessVariable(CommandProcessNode):
