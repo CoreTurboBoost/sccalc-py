@@ -753,7 +753,7 @@ class CommandProcessVariable(CommandProcessNode):
         if self.io_type == IOType.IOT_IN or self.io_type == IOType.IOT_IN_OUT:
             if not var_exists:
                 console_output_debug_msg(" CommandProcessVariable: use of undefined var")
-                return CommandProcessMatchReturnData([], [f"Varible '{phrases}' is undefined"], [])
+                return CommandProcessMatchReturnData([], [f"Varible '{phrase}' is undefined"], [])
             if self.convert_in_var_to_number and self.io_type == IOType.IOT_IN:
                 phrase = variables.get(phrase)
         return CommandProcessMatchReturnData([phrase], [], [self.tag])
