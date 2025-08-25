@@ -715,7 +715,7 @@ class CommandProcessRepeat(CommandProcessNode):
         for phrasei in range(len(phrases)):
             data = self.node.match(phrases[phrasei:])
             if data.has_errors():
-                if len(final_tags) == 0:
+                if len(final_values) == 0:
                     console_output_debug_msg(" CommandProcessRepeat: Requires at least one valid argument")
                     data.errors.extend("Repeat command requires at least one valid argument")
                     return CommandProcessMatchReturnData([], data.errors, [])
