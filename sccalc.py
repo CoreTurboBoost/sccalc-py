@@ -1429,7 +1429,7 @@ command_trees = {
         "write": (command_tree_write, command_process_callback_write),
         "read": (command_tree_read, command_process_callback_read),
         "printf": (command_tree_printf, command_process_callback_printf),
-        "inputf": (command_tree_inputf, command_process_callback_printf),
+        "inputf": (command_tree_inputf, command_process_callback_inputf),
         }
 
 command_process_descriptions = {
