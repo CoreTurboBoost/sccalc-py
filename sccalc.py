@@ -1403,11 +1403,15 @@ def command_process_callback_printf(values: list, tags: list[str]) -> None:
     print(values[0], end=end)
 
 command_tree_inputf = CommandProcessTree("inputf",
-    CommandProcessFormatString("")
+    CommandProcessRequiredGroup([
+        CommandProcessVariable(IOType.IOT_OUT, "", False),
+        CommandProcessFormatString("")
+    ])
 )
 
 def command_process_callback_inputf(values: list, tags: list[str]) -> None:
-    input(values[0])
+    global variables
+    variables[values[0]] = get_user_number_input(values[1])
 
 command_trees = {
         "if": (command_tree_if, None),
