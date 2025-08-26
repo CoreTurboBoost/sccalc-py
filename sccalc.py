@@ -1594,6 +1594,7 @@ if len(sys.argv) > 1:
         file_handle.write("\nVariables description:\n")
         file_handle.write("   All assigned variables are global variables, there are no local variables.\n")
         file_handle.write("   Variables can only store decimal (or floating point) numbers.\n")
+        file_handle.write("   Variables can not be deleted or undefined, once they have been assigned to.\n")
         file_handle.write("\nVariable assignment:\n")
         file_handle.write("   <Identifier> = <Expression>\n")
         serialized_predefined_variables = " ".join(variables.keys())
