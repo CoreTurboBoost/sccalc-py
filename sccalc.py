@@ -1660,6 +1660,11 @@ if len(sys.argv) > 1:
             serialized_function_group = " ".join(precedence_group)
             file_handle.write(f"   {serialized_function_group}\n")
 
+        serialized_format_specifers = [f"{specifier}  - {format_specifier_descriptions.get(specifier)}" for specifier in FORMAT_SPECIFIER_FUNCTIONALITY_MAPPINGS.keys()]
+        file_handle.write("\nAvailable command format specifiers, in FORMAT_STRING:\n")
+        for format_specifier in serialized_format_specifers:
+            file_handle.write(f"   {format_specifier}")
+
         longest_command_word_len = max([len(cmd[0].get_str()) for cmd in command_trees.values()])
         file_handle.write("\nAvailable commands: \n")
         file_handle.write(f"   !strict\n      Tells the interpreter to exit for any error that occurs\n")
