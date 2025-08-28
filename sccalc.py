@@ -1483,6 +1483,13 @@ command_process_descriptions = {
         "read": "Attempts to write the given iterator to a given file path. The success of the operation is returned into a chosen variable. 0 is success, any other value is a failure. 1 - permission error. 2 - encode error. 3 - de-serialization error. 4 - file not found. 5 - is a directory"
 }
 
+format_specifier_descriptions = {
+    "v": "Variable"
+    "e": "Expression"
+    "i": "Iterator"
+    "n": "Literal number"
+}
+
 binary_function_descriptions = {
     "+":  "Binary addition",
     "-":  "Binary subtraction",
