@@ -1406,7 +1406,15 @@ def command_process_callback_printf(values: list, tags: list[str]) -> None:
 command_tree_inputf = CommandProcessTree("inputf",
     CommandProcessRequiredGroup([
         CommandProcessVariable(IOType.IOT_OUT, "", False),
-        CommandProcessFormatString("")
+        CommandProcessAddition(
+            CommandProcessFormatString(""),
+            CommandProcessXOR([
+                CommandProcessText("only-positive", "-only-positive"),
+                CommandProcessText("only-negative", "-only-negative"),
+                CommandProcessText("non-negative", "-non-negative"),
+                CommandProcessText("non-positive", "-non-positive"),
+            ])
+        )
     ])
 )
 
