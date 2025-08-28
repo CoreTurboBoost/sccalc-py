@@ -1420,7 +1420,24 @@ command_tree_inputf = CommandProcessTree("inputf",
 
 def command_process_callback_inputf(values: list, tags: list[str]) -> None:
     global variables
-    variables[values[0]] = get_user_number_input(values[1])
+    user_input_invalid = True
+    while user_input_invalid:
+        user_input = get_user_number_input(values[1])
+        user_input_invalid = False
+        if "only-positive" in tags and user_input <= decimal.Decimal(0):
+            user_input_invalid = True
+            print("Input must be positive only (> 0)")
+        elif "only-negative" in tags and user_input >= decimal.Decimal(0):
+            user_input_invalid = True
+            print("Input must be negative only (< 0)")
+        elif "non-negative" in tags and user_input < decimal.Decimal(0):
+            user_input_invalid = True
+            print("Input must be zero or positive")
+        elif "non-positive" in tags and user_input > decimal.Decimal(0):
+            user_input_invalid = True
+            print("Input must be zero or negative")
+
+    variables[values[0]] = user_input
 
 command_trees = {
         "if": (command_tree_if, None),
