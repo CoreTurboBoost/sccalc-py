@@ -828,7 +828,7 @@ def get_and_format_iterator_str(iterator_name: str) -> None or str:
 values callback signature
 CHAR: def _(specifier: char) -> list[any or None, list[str]]
 '''
-FORMAT_SPECIFIER_GETTERS = {
+FORMAT_SPECIFIER_FUNCTIONALITY_MAPPINGS = {
     "v": lambda a: [variables.get(a), [f"Variable '{a}' is undefined"]], 
     "e": lambda a: eval_expression(a),
     "i": lambda a: [get_and_format_iterator_str(a), [f"Iterator '{a}' is undefined"]], 
@@ -857,10 +857,10 @@ class CommandProcessFormatString(CommandProcessNode):
                 char_skip_count += 1
                 if next_char == "%":
                     formatted_string += "%"
-                elif next_char in FORMAT_SPECIFIER_GETTERS.keys():
+                elif next_char in FORMAT_SPECIFIER_FUNCTIONALITY_MAPPINGS.keys():
                     if cur_phrase_phrases_index+1 >= len(phrases):
                         return CommandProcessMatchReturnData([], ["Missing some format specifier arguments"], [])
-                    value, errors = FORMAT_SPECIFIER_GETTERS[next_char](phrases[cur_phrase_phrases_index+1])
+                    value, errors = FORMAT_SPECIFIER_FUNCTIONALITY_MAPPINGS[next_char](phrases[cur_phrase_phrases_index+1])
                     cur_phrase_phrases_index += 1
                     if value == None:
                         extended_errors = ["Format string conversion error occurred"]
