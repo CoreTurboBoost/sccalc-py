@@ -829,11 +829,11 @@ values callback signature
 CHAR: def _(specifier: char) -> list[any or None, list[str]]
 '''
 FORMAT_SPECIFIER_GETTERS = {
-        "v": lambda a: [variables.get(a), [f"Variable '{a}' is undefined"]], 
-        "e": lambda a: eval_expression(a),
-        "i": lambda a: [get_and_format_iterator_str(a), [f"Iterator '{a}' is undefined"]], 
-        "n": lambda a: [convert_to_number_or_none(a), [f"'{a}' is not a valid literal number"]]
-        }
+    "v": lambda a: [variables.get(a), [f"Variable '{a}' is undefined"]], 
+    "e": lambda a: eval_expression(a),
+    "i": lambda a: [get_and_format_iterator_str(a), [f"Iterator '{a}' is undefined"]], 
+    "n": lambda a: [convert_to_number_or_none(a), [f"'{a}' is not a valid literal number"]]
+}
 class CommandProcessFormatString(CommandProcessNode):
     def __init__(self, tag: str):
         self.tag = tag
