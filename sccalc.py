@@ -1484,10 +1484,10 @@ command_process_descriptions = {
 }
 
 format_specifier_descriptions = {
-    "v": "Variable"
-    "e": "Expression"
-    "i": "Iterator"
-    "n": "Literal number"
+    "v": "Variable",
+    "e": "Expression",
+    "i": "Iterator",
+    "n": "Literal number",
 }
 
 binary_function_descriptions = {
