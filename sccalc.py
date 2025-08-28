@@ -874,6 +874,7 @@ class CommandProcessFormatString(CommandProcessNode):
                 formatted_string += char
         return_values = [formatted_string]
         return_values.extend([None] * cur_phrase_phrases_index)
+        console_output_debug_msg(f"CommandProcessFormatString.match():    Number of return values:{len(return_values)}, values:{return_values}, phrases:{phrases}")
         return CommandProcessMatchReturnData(return_values, [], [self.tag])
     def get_str(self) -> str:
         return f"FORMAT_STRING [FORMAT_ARGS].."
