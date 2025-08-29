@@ -11,7 +11,7 @@ import string
 import itertools
 
 APP_VERSION_MAJOR = 3
-APP_VERSION_MINOR = 9
+APP_VERSION_MINOR = 10
 APP_SCRIPT_VERSION = 6
 
 CUSTOM_SCRIPT_VERSION = False
@@ -1454,187 +1454,311 @@ def parse_input_for_args(uinput: str) -> list[str]:
         out_args.append(cur_phrase)
     return out_args
 
-is_interactive = False
-if (len(sys.argv) == 1):
-    is_interactive = True
-if len(sys.argv) > 1:
-    if (sys.argv[1] == "--help" or sys.argv[1] == "-h"):
-        print(f"python3 {sys.argv[0]} [expression]")
-        print( "python3 {-v|-h|__VERSION__}")
-        print( "  -v, --version                 print program version and exit")
-        print( "      __VERSION__               output version in specific format")
-        print( "      --license                 print program license")
-        print(f"      --output-script-standard  output the script standard to the file 'script-{APP_SCRIPT_VERSION}-standard'")
-        print( "  -h, --help       print this help page and exit")
-        sys.exit()
-    if (sys.argv[1] == "--version" or sys.argv[1] == "-v"):
-        print(f"VERSION: {APP_VERSION_MAJOR}.{APP_VERSION_MINOR}")
-        print(f"SCRIPT_VERSION: {APP_SCRIPT_VERSION}")
-        sys.exit()
-    if (sys.argv[1] == "__VERSION__"):
-        print(f"{APP_VERSION_MAJOR}.{APP_VERSION_MINOR}")
-        sys.exit()
-    if sys.argv[1] == "--license":
-        print_program_license()
-        sys.exit()
-    if sys.argv[1] == "--output-script-standard":
-        standards_output_path = f"script-{APP_SCRIPT_VERSION}-standard"
-        if CUSTOM_SCRIPT_VERSION:
-            standards_output_path += "-custom"
-        file_handle = open(standards_output_path, "w")
-        file_handle.write("Comments:\n   Commented lines start with a  #  character.\n")
-        file_handle.write("\nCommands description:\n   Command lines start with a  !  character.\n")
-        file_handle.write("   Each command has a unique interface (set of parameters) and have unique functionality.\n")
-        file_handle.write("   Commands allows for text to be surrounded in double quotes (\") to be passed into a single parameter literally.\n")
-        file_handle.write("   Some characters can be escaped by placing a \\ directly in front of them.\n")
-        file_handle.write("\nIdentifiers:\n")
-        file_handle.write("   Used for variable names and iterator names.\n")
-        file_handle.write("   Valid characters: Alphabetic or  _  followed by any number of alphanumeric or  _  .\n")
-        file_handle.write("\nExpression:\n")
-        file_handle.write("   Consists of Identifiers, constants, Unary-operators, Binary-Operators and variable assignments.\n")
-        file_handle.write("   If a line does not begin with a  !  or  #  it is assumed to be a expression.\n")
-        file_handle.write("\nVariables description:\n")
-        file_handle.write("   All assigned variables are global variables, there are no local variables.\n")
-        file_handle.write("   Variables can only store decimal (or floating point) numbers.\n")
-        file_handle.write("   Variables can not be deleted or undefined, once they have been assigned to.\n")
-        file_handle.write("\nVariable assignment:\n")
-        file_handle.write("   <Identifier> = <Expression>\n")
-        serialized_predefined_variables = " ".join(variables.keys())
-        file_handle.write("\nPre-defined variables:\n")
-        file_handle.write(f"   {serialized_predefined_variables}\n")
-        serialized_consts = " ".join(KNOWN_CONSTS.keys())
-        file_handle.write("\nConstants:\n")
-        file_handle.write(f"   {serialized_consts}\n")
-        serialized_comparison_operators = " ".join(comparison_operators.keys())
-        file_handle.write("\nComparison operators (CMP-OP):\n")
-        file_handle.write(f"   {serialized_comparison_operators}\n")
-        longest_unary_fn_name = max([len(fn) for fn in KNOWN_FUNCTIONS.keys()])
-        serialized_unary_functions = "\n".join([f"   {fn:<{longest_unary_fn_name}}  - {unary_function_descriptions.get(fn)}" for fn in KNOWN_FUNCTIONS.keys()])
-        file_handle.write("\nUnary functions:\n")
-        file_handle.write(f"{serialized_unary_functions}\n")
-        longest_binary_fn_name = max([len(fn) for fn in BINARY_FUNCTIONS.keys()])
-        serialized_binary_functions = "\n".join([f"   {fn:<{longest_binary_fn_name}}  - {binary_function_descriptions.get(fn)}" for fn in BINARY_FUNCTIONS.keys()])
-        file_handle.write("\nBinary functions:\n")
-        file_handle.write(f"{serialized_binary_functions}\n")
-        function_precedences = list(map(lambda a: (a.precedence, a.lexeame), BINARY_FUNCTIONS.values()))
-        function_precedences.append((UNARY_FUNCTION_PRECEDENCE_VALUE, "<UNARY-FUNCTIONS>"))
-        function_precedences = sorted(function_precedences, key=lambda a: a[0])
-        console_output_debug_msg(f"{function_precedences=}")
-        grouped_function_precedences = [list(group) for key, group in itertools.groupby(function_precedences, lambda a: a[0])]
-        console_output_debug_msg(f"{grouped_function_precedences=}")
-        grouped_function_precedences = [tuple([item[1] for item in group]) for group in grouped_function_precedences]
-        console_output_debug_msg(f"{grouped_function_precedences=}")
-        file_handle.write("\nFunction precedences (from least to most):\n")
-        for precedence_group in grouped_function_precedences:
-            serialized_function_group = " ".join(precedence_group)
-            file_handle.write(f"   {serialized_function_group}\n")
+if __name__ == "__main__":
+    is_interactive = False
+    if (len(sys.argv) == 1):
+        is_interactive = True
+    if len(sys.argv) > 1:
+        if (sys.argv[1] == "--help" or sys.argv[1] == "-h"):
+            print(f"python3 {sys.argv[0]} [expression]")
+            print( "python3 {-v|-h|__VERSION__}")
+            print( "  -v, --version                 print program version and exit")
+            print( "      __VERSION__               output version in specific format")
+            print( "      --license                 print program license")
+            print(f"      --output-script-standard  output the script standard to the file 'script-{APP_SCRIPT_VERSION}-standard'")
+            print( "  -h, --help       print this help page and exit")
+            sys.exit()
+        if (sys.argv[1] == "--version" or sys.argv[1] == "-v"):
+            print(f"VERSION: {APP_VERSION_MAJOR}.{APP_VERSION_MINOR}")
+            print(f"SCRIPT_VERSION: {APP_SCRIPT_VERSION}")
+            sys.exit()
+        if (sys.argv[1] == "__VERSION__"):
+            print(f"{APP_VERSION_MAJOR}.{APP_VERSION_MINOR}")
+            sys.exit()
+        if sys.argv[1] == "--license":
+            print_program_license()
+            sys.exit()
+        if sys.argv[1] == "--output-script-standard":
+            standards_output_path = f"script-{APP_SCRIPT_VERSION}-standard"
+            if CUSTOM_SCRIPT_VERSION:
+                standards_output_path += "-custom"
+            file_handle = open(standards_output_path, "w")
+            file_handle.write("Comments:\n   Commented lines start with a  #  character.\n")
+            file_handle.write("\nCommands description:\n   Command lines start with a  !  character.\n")
+            file_handle.write("   Each command has a unique interface (set of parameters) and have unique functionality.\n")
+            file_handle.write("   Commands allows for text to be surrounded in double quotes (\") to be passed into a single parameter literally.\n")
+            file_handle.write("   Some characters can be escaped by placing a \\ directly in front of them.\n")
+            file_handle.write("\nIdentifiers:\n")
+            file_handle.write("   Used for variable names and iterator names.\n")
+            file_handle.write("   Valid characters: Alphabetic or  _  followed by any number of alphanumeric or  _  .\n")
+            file_handle.write("\nExpression:\n")
+            file_handle.write("   Consists of Identifiers, constants, Unary-operators, Binary-Operators and variable assignments.\n")
+            file_handle.write("   If a line does not begin with a  !  or  #  it is assumed to be a expression.\n")
+            file_handle.write("\nVariables description:\n")
+            file_handle.write("   All assigned variables are global variables, there are no local variables.\n")
+            file_handle.write("   Variables can only store decimal (or floating point) numbers.\n")
+            file_handle.write("   Variables can not be deleted or undefined, once they have been assigned to.\n")
+            file_handle.write("\nVariable assignment:\n")
+            file_handle.write("   <Identifier> = <Expression>\n")
+            serialized_predefined_variables = " ".join(variables.keys())
+            file_handle.write("\nPre-defined variables:\n")
+            file_handle.write(f"   {serialized_predefined_variables}\n")
+            serialized_consts = " ".join(KNOWN_CONSTS.keys())
+            file_handle.write("\nConstants:\n")
+            file_handle.write(f"   {serialized_consts}\n")
+            serialized_comparison_operators = " ".join(comparison_operators.keys())
+            file_handle.write("\nComparison operators (CMP-OP):\n")
+            file_handle.write(f"   {serialized_comparison_operators}\n")
+            longest_unary_fn_name = max([len(fn) for fn in KNOWN_FUNCTIONS.keys()])
+            serialized_unary_functions = "\n".join([f"   {fn:<{longest_unary_fn_name}}  - {unary_function_descriptions.get(fn)}" for fn in KNOWN_FUNCTIONS.keys()])
+            file_handle.write("\nUnary functions:\n")
+            file_handle.write(f"{serialized_unary_functions}\n")
+            longest_binary_fn_name = max([len(fn) for fn in BINARY_FUNCTIONS.keys()])
+            serialized_binary_functions = "\n".join([f"   {fn:<{longest_binary_fn_name}}  - {binary_function_descriptions.get(fn)}" for fn in BINARY_FUNCTIONS.keys()])
+            file_handle.write("\nBinary functions:\n")
+            file_handle.write(f"{serialized_binary_functions}\n")
+            function_precedences = list(map(lambda a: (a.precedence, a.lexeame), BINARY_FUNCTIONS.values()))
+            function_precedences.append((UNARY_FUNCTION_PRECEDENCE_VALUE, "<UNARY-FUNCTIONS>"))
+            function_precedences = sorted(function_precedences, key=lambda a: a[0])
+            console_output_debug_msg(f"{function_precedences=}")
+            grouped_function_precedences = [list(group) for key, group in itertools.groupby(function_precedences, lambda a: a[0])]
+            console_output_debug_msg(f"{grouped_function_precedences=}")
+            grouped_function_precedences = [tuple([item[1] for item in group]) for group in grouped_function_precedences]
+            console_output_debug_msg(f"{grouped_function_precedences=}")
+            file_handle.write("\nFunction precedences (from least to most):\n")
+            for precedence_group in grouped_function_precedences:
+                serialized_function_group = " ".join(precedence_group)
+                file_handle.write(f"   {serialized_function_group}\n")
 
-        longest_command_word_len = max([len(cmd[0].get_str()) for cmd in command_trees.values()])
-        file_handle.write("\nAvailable commands: \n")
-        file_handle.write(f"   !strict\n      Tells the interpreter to exit for any error that occurs\n")
-        file_handle.write(f"   !debug [on|off|toggle]\n      Enable or disable debug output\n")
-        file_handle.write(f"   !echo [on|off|toggle]\n      Enable or disable per line expression evaluation output\n")
-        file_handle.write(f"   !endif\n      Marks end of a if block\n")
-        file_handle.write(f"   !endwhile\n      Marks end of a while block\n")
-        for command_tree, command_callback in command_trees.values():
-            file_handle.write(f"   {command_tree.get_str()}\n      {command_process_descriptions.get(command_tree.name)}\n")
-        file_handle.close()
-        sys.exit()
-    if (os.path.isfile(sys.argv[1])):
-        # NOTE: This scope is the scripting system. Everything here is only for the scripting part
-        echo_enabled = True
-        exit_on_fail = False
-        errors_count = 0
-        def output_error(line_index: int, message: str) -> None:
-            global errors_count
-            errors_count += 1
-            err_msg = f"[{line_index+1}] Error: {message}"
-            if exit_on_fail:
-                sys.exit(err_msg)
-            else:
-                print(err_msg)
-        fh = open(sys.argv[1])
-        contents = fh.read().split("\n")
-        contents = list(zip(contents, range(0, len(contents))))
-        for i in range(len(contents)):
-            contents[i] = (contents[i][0].strip(), contents[i][1])
-        fh.close()
-        i = 0
-        while i < len(contents):
-            if len(contents[i][0]) == 0:
-                contents.pop(i)
-                continue
-            i += 1
-        i=0
-        while i < len(contents):
-            if contents[i][0][0] == '#':
-                contents.pop(i)
-                continue
-            i += 1
+            longest_command_word_len = max([len(cmd[0].get_str()) for cmd in command_trees.values()])
+            file_handle.write("\nAvailable commands: \n")
+            file_handle.write(f"   !strict\n      Tells the interpreter to exit for any error that occurs\n")
+            file_handle.write(f"   !debug [on|off|toggle]\n      Enable or disable debug output\n")
+            file_handle.write(f"   !echo [on|off|toggle]\n      Enable or disable per line expression evaluation output\n")
+            file_handle.write(f"   !endif\n      Marks end of a if block\n")
+            file_handle.write(f"   !endwhile\n      Marks end of a while block\n")
+            for command_tree, command_callback in command_trees.values():
+                file_handle.write(f"   {command_tree.get_str()}\n      {command_process_descriptions.get(command_tree.name)}\n")
+            file_handle.close()
+            sys.exit()
+        if (os.path.isfile(sys.argv[1])):
+            # NOTE: This scope is the scripting system. Everything here is only for the scripting part
+            echo_enabled = True
+            exit_on_fail = False
+            errors_count = 0
+            def output_error(line_index: int, message: str) -> None:
+                global errors_count
+                errors_count += 1
+                err_msg = f"[{line_index+1}] Error: {message}"
+                if exit_on_fail:
+                    sys.exit(err_msg)
+                else:
+                    print(err_msg)
+            fh = open(sys.argv[1])
+            contents = fh.read().split("\n")
+            contents = list(zip(contents, range(0, len(contents))))
+            for i in range(len(contents)):
+                contents[i] = (contents[i][0].strip(), contents[i][1])
+            fh.close()
+            i = 0
+            while i < len(contents):
+                if len(contents[i][0]) == 0:
+                    contents.pop(i)
+                    continue
+                i += 1
+            i=0
+            while i < len(contents):
+                if contents[i][0][0] == '#':
+                    contents.pop(i)
+                    continue
+                i += 1
 
-        class WhileEmbed:
-            def __init__(self, start_index: int):
-                self.start_index = start_index
-                self.end_index = None
-            def is_end_set(self) -> bool:
-                return self.end_index != None
-        while_embed_objects: list[WhileEmbed] = []
-        dont_inc_expression_this_iteration = False
-        skip_till_next_while_end_count = 0
-        skip_till_if_end_count = 0
-        skip_expression_count = 0
-        expressioni = -1
-        while expressioni+1 < len(contents):
-            if not dont_inc_expression_this_iteration:
-                expressioni += 1
-            else:
-                dont_inc_expression_this_iteration = False
-            (expression, line_index) = contents[expressioni]
-        #for expressioni, (expression, line_index) in enumerate(contents):
-            console_output_debug_msg(f"loop: expressioni:{expressioni} content:{contents[expressioni]}")
-            if skip_expression_count > 0:
-                skip_expression_count -= 1
-                continue
-            if skip_till_if_end_count > 0 or skip_till_next_while_end_count > 0:
-                console_output_debug_msg(" skipping line, due to skip_till_if_end or skip_till_while_end")
+            class WhileEmbed:
+                def __init__(self, start_index: int):
+                    self.start_index = start_index
+                    self.end_index = None
+                def is_end_set(self) -> bool:
+                    return self.end_index != None
+            while_embed_objects: list[WhileEmbed] = []
+            dont_inc_expression_this_iteration = False
+            skip_till_next_while_end_count = 0
+            skip_till_if_end_count = 0
+            skip_expression_count = 0
+            expressioni = -1
+            while expressioni+1 < len(contents):
+                if not dont_inc_expression_this_iteration:
+                    expressioni += 1
+                else:
+                    dont_inc_expression_this_iteration = False
+                (expression, line_index) = contents[expressioni]
+            #for expressioni, (expression, line_index) in enumerate(contents):
+                console_output_debug_msg(f"loop: expressioni:{expressioni} content:{contents[expressioni]}")
+                if skip_expression_count > 0:
+                    skip_expression_count -= 1
+                    continue
+                if skip_till_if_end_count > 0 or skip_till_next_while_end_count > 0:
+                    console_output_debug_msg(" skipping line, due to skip_till_if_end or skip_till_while_end")
+                    expression_split = parse_input_for_args(expression)
+                    if len(expression_split) == 0:
+                        continue
+                    if skip_till_next_while_end_count > 0:
+                        console_output_debug_msg(f"   skip_till_while_end {skip_till_next_while_end_count}")
+                        if expression_split[0] == "!endwhile":
+                            skip_till_next_while_end_count -= 1
+                        if expression_split[0] == "!while":
+                            skip_till_next_while_end_count += 1
+                    if skip_till_if_end_count > 0:
+                        console_output_debug_msg(f"   skip_till_if_end {skip_till_if_end_count}")
+                        if expression_split[0] == "!endif":
+                            skip_till_if_end_count -= 1
+                        if expression_split[0] == "!if":
+                            skip_till_if_end_count += 1
+                    continue
+
                 expression_split = parse_input_for_args(expression)
                 if len(expression_split) == 0:
+                    console_output_debug_msg(" skipping line, expression line empty")
                     continue
-                if skip_till_next_while_end_count > 0:
-                    console_output_debug_msg(f"   skip_till_while_end {skip_till_next_while_end_count}")
-                    if expression_split[0] == "!endwhile":
-                        skip_till_next_while_end_count -= 1
-                    if expression_split[0] == "!while":
-                        skip_till_next_while_end_count += 1
-                if skip_till_if_end_count > 0:
-                    console_output_debug_msg(f"   skip_till_if_end {skip_till_if_end_count}")
+                if expression_split[0] == "!endwhile":
+                    if len(while_embed_objects) == 0:
+                        output_error(line_index, f"endwhile: unmatched !endwhile")
+                        continue
+                    while_object = while_embed_objects.pop()
+                    expressioni = while_object.start_index
+                    dont_inc_expression_this_iteration = True
+                    console_output_debug_msg(f"[{line_index+1}] Found !endwhile. Now jumping back to line {expressioni+1}  expressioni:{expressioni}")
+                    continue
+                if expression_split[0][0] == "!":
                     if expression_split[0] == "!endif":
-                        skip_till_if_end_count -= 1
-                    if expression_split[0] == "!if":
-                        skip_till_if_end_count += 1
-                continue
+                        console_output_debug_msg(f"[{line_index+1}] ignoring an endif command")
+                        continue
+                    if expression_split[0] == "!strict":
+                        exit_on_fail = True
+                        continue
+                    elif expression_split[0] == "!debug":
+                        if len(expression_split) <= 1:
+                            ENABLED_DEBUG_OUTPUT = not ENABLED_DEBUG_OUTPUT
+                            print("ENABLED DEBUG OUTPUT" if ENABLED_DEBUG_OUTPUT else "DISABLED DEBUG OUTPUT")
+                        elif expression_split[1] == "on":
+                            ENABLED_DEBUG_OUTPUT = True
+                        elif expression_split[1] == "off":
+                            ENABLED_DEBUG_OUTPUT = False
+                        elif expression_split[1] == "toggle":
+                            ENABLED_DEBUG_OUTPUT = not ENABLED_DEBUG_OUTPUT
+                        else:
+                            output_error(line_index, "debug: Invalid value for debug option")
+                        continue
+                    elif expression_split[0] == "!echo":
+                        if len(expression_split) <= 1:
+                            echo_enabled = not echo_enabled
+                            print("ENABLED ECHO OUTPUT" if echo_enabled else "DISABLED ECHO OUTPUT")
+                        elif expression_split[1] == "on":
+                            echo_enabled = True
+                        elif expression_split[1] == "off":
+                            echo_enabled = False
+                        elif expression_split[1] == "toggle":
+                            echo_enabled = not echo_enabled
+                        else:
+                            output_error(line_index, "echo: Invalid value for echo option")
+                        continue
+                    if expression_split[0] in ["!if", "!while"]:
+                        for command in ["if", "while"]:
+                            command_match_object = command_trees[command][0].match_and_run(expression_split, line_index+1, None)
+                            if not command_match_object.command_matched:
+                                continue
+                            if not command_match_object.args_matched:
+                                sys.exit(f"Fatal error Missing or invalid arguments for {command} command statement")
+                            if command == "if":
+                                condition_true = command_match_object.values[1](command_match_object.values[0], command_match_object.values[2])
+                                console_output_debug_msg(f"[{line_index+1}] if condition: {expression_split[1]} {expression_split[2]} {expression_split[3]} = {condition_true}")
+                                contains_ifset_data = 'ifset' in command_match_object.tags
+                                if contains_ifset_data:
+                                    if condition_true:
+                                        variables[command_match_object.values[3]] = command_match_object.values[4]
+                                    break
+                                if not condition_true:
+                                    skip_till_if_end_count += 1
+                                break
+                            elif command == "while":
+                                condition_true = command_match_object.values[1](command_match_object.values[0], command_match_object.values[2])
+                                if condition_true:
+                                    while_embed_objects.append(WhileEmbed(expressioni))
+                                else:
+                                    console_output_debug_msg(f"[{line_index+1}] While condition unmet ({expression_split[1]};{command_match_object.values[0]} {expression_split[2]} {expression_split[3]};{command_match_object.values[2]} = {condition_true}). skipping to next endwhile")
+                                    skip_till_next_while_end_count = 1
+                        continue
 
+                    command_matched = False
+                    for command, callback in command_trees.values():
+                        data = command.match_and_run(expression_split, line_index+1, callback)
+                        if data.command_matched and not data.args_matched:
+                            sys.exit(f"Invalid command arguments to command {command.name}")
+                        if data.command_matched and data.args_matched:
+                            command_matched = True
+                            if data.callback_had_errors():
+                                sys.exit(f"Fatal error occurred during command {command.name}, exiting ...")
+                            break
+                    if not command_matched:
+                        output_error(line_index, f"Command: unrecognised command '{expression_split[0]}'")
+                    continue
+                lex_tokens = lex(expression)
+                lex_error_count = print_lex_errors(lex_tokens, f"{line_index+1}: ")
+                if (lex_error_count > 0):
+                    errors_count += 1
+                    #print(f"{line_index+1}: {lex_error_count} error(s)")
+                    if exit_on_fail:
+                        sys.exit(f"Lexer error on line {line_index+1}")
+                    continue
+                evaluated_value, errors = eval_lex_tokens(lex_tokens)
+                if (len(errors) > 0):
+                    errors_count += 1
+                    #print("{line_index+1}: Input had errors, no value returned", file = sys.stderr)
+                    for error in errors:
+                        print(f"{line_index+1}: Error: {error}", file = sys.stderr)
+                    if exit_on_fail:
+                        sys.exit(f"Evaluation error on line {line_index+1}")
+                    continue
+                if echo_enabled:
+                    print(evaluated_value)
+
+            if skip_till_if_end_count > 0:
+                print("Warning: Not all if statements have been closed")
+            sys.exit(errors_count != 0)
+
+    echo_enabled = True
+    while True:
+        if is_interactive:
+            try:
+                expression = input(">> ").strip()
+            except EOFError:
+                print("\r")
+                expression = "q"
+            if len(expression) == 0:
+                continue
+            if expression == "q" or expression == "quit":
+                sys.exit()
+            if expression == "help" or expression == "h":
+                print_constants()
+                print_functions()
+                print_commands()
+                continue
+            #expression_split = expression.strip().split()
+            #while "" in expression_split:
+            #    expression_split.remove("")
             expression_split = parse_input_for_args(expression)
-            if len(expression_split) == 0:
-                console_output_debug_msg(" skipping line, expression line empty")
-                continue
-            if expression_split[0] == "!endwhile":
-                if len(while_embed_objects) == 0:
-                    output_error(line_index, f"endwhile: unmatched !endwhile")
-                    continue
-                while_object = while_embed_objects.pop()
-                expressioni = while_object.start_index
-                dont_inc_expression_this_iteration = True
-                console_output_debug_msg(f"[{line_index+1}] Found !endwhile. Now jumping back to line {expressioni+1}  expressioni:{expressioni}")
-                continue
-            if expression_split[0][0] == "!":
-                if expression_split[0] == "!endif":
-                    console_output_debug_msg(f"[{line_index+1}] ignoring an endif command")
-                    continue
-                if expression_split[0] == "!strict":
-                    exit_on_fail = True
-                    continue
-                elif expression_split[0] == "!debug":
+            if len(expression_split) > 0:
+                #expression_split[0] = expression_split[0].strip()
+                if expression_split[0] == "exit":
+                    exit_code = 0
+                    if len(expression_split) > 1:
+                        try:
+                            exit_code = int(expression_split[1])
+                        except ValueError:
+                            var_val = variables.get(expression_split[1])
+                            if var_val != None:
+                                exit_code = int(var_val)
+                    sys.exit(exit_code)
+                if expression_split[0] == "debug":
                     if len(expression_split) <= 1:
                         ENABLED_DEBUG_OUTPUT = not ENABLED_DEBUG_OUTPUT
                         print("ENABLED DEBUG OUTPUT" if ENABLED_DEBUG_OUTPUT else "DISABLED DEBUG OUTPUT")
@@ -1645,9 +1769,9 @@ if len(sys.argv) > 1:
                     elif expression_split[1] == "toggle":
                         ENABLED_DEBUG_OUTPUT = not ENABLED_DEBUG_OUTPUT
                     else:
-                        output_error(line_index, "debug: Invalid value for debug option")
+                        print("Error: Invalid value for debug option")
                     continue
-                elif expression_split[0] == "!echo":
+                if expression_split[0] == "echo":
                     if len(expression_split) <= 1:
                         echo_enabled = not echo_enabled
                         print("ENABLED ECHO OUTPUT" if echo_enabled else "DISABLED ECHO OUTPUT")
@@ -1658,195 +1782,72 @@ if len(sys.argv) > 1:
                     elif expression_split[1] == "toggle":
                         echo_enabled = not echo_enabled
                     else:
-                        output_error(line_index, "echo: Invalid value for echo option")
+                        print("Error: Invalid value for echo option")
                     continue
-                if expression_split[0] in ["!if", "!while"]:
-                    for command in ["if", "while"]:
-                        command_match_object = command_trees[command][0].match_and_run(expression_split, line_index+1, None)
-                        if not command_match_object.command_matched:
-                            continue
-                        if not command_match_object.args_matched:
-                            sys.exit(f"Fatal error Missing or invalid arguments for {command} command statement")
-                        if command == "if":
-                            condition_true = command_match_object.values[1](command_match_object.values[0], command_match_object.values[2])
-                            console_output_debug_msg(f"[{line_index+1}] if condition: {expression_split[1]} {expression_split[2]} {expression_split[3]} = {condition_true}")
-                            contains_ifset_data = 'ifset' in command_match_object.tags
-                            if contains_ifset_data:
-                                if condition_true:
-                                    variables[command_match_object.values[3]] = command_match_object.values[4]
-                                break
-                            if not condition_true:
-                                skip_till_if_end_count += 1
-                            break
-                        elif command == "while":
-                            condition_true = command_match_object.values[1](command_match_object.values[0], command_match_object.values[2])
-                            if condition_true:
-                                while_embed_objects.append(WhileEmbed(expressioni))
-                            else:
-                                console_output_debug_msg(f"[{line_index+1}] While condition unmet ({expression_split[1]};{command_match_object.values[0]} {expression_split[2]} {expression_split[3]};{command_match_object.values[2]} = {condition_true}). skipping to next endwhile")
-                                skip_till_next_while_end_count = 1
-                    continue
-
-                command_matched = False
-                for command, callback in command_trees.values():
-                    data = command.match_and_run(expression_split, line_index+1, callback)
-                    if data.command_matched and not data.args_matched:
-                        sys.exit(f"Invalid command arguments to command {command.name}")
-                    if data.command_matched and data.args_matched:
-                        command_matched = True
-                        if data.callback_had_errors():
-                            sys.exit(f"Fatal error occurred during command {command.name}, exiting ...")
-                        break
-                if not command_matched:
-                    output_error(line_index, f"Command: unrecognised command '{expression_split[0]}'")
-                continue
-            lex_tokens = lex(expression)
-            lex_error_count = print_lex_errors(lex_tokens, f"{line_index+1}: ")
-            if (lex_error_count > 0):
-                errors_count += 1
-                #print(f"{line_index+1}: {lex_error_count} error(s)")
-                if exit_on_fail:
-                    sys.exit(f"Lexer error on line {line_index+1}")
-                continue
-            evaluated_value, errors = eval_lex_tokens(lex_tokens)
-            if (len(errors) > 0):
-                errors_count += 1
-                #print("{line_index+1}: Input had errors, no value returned", file = sys.stderr)
-                for error in errors:
-                    print(f"{line_index+1}: Error: {error}", file = sys.stderr)
-                if exit_on_fail:
-                    sys.exit(f"Evaluation error on line {line_index+1}")
-                continue
-            if echo_enabled:
-                print(evaluated_value)
-
-        if skip_till_if_end_count > 0:
-            print("Warning: Not all if statements have been closed")
-        sys.exit(errors_count != 0)
-
-echo_enabled = True
-while True:
-    if is_interactive:
-        try:
-            expression = input(">> ").strip()
-        except EOFError:
-            print("\r")
-            expression = "q"
-        if len(expression) == 0:
-            continue
-        if expression == "q" or expression == "quit":
-            sys.exit()
-        if expression == "help" or expression == "h":
-            print_constants()
-            print_functions()
-            print_commands()
-            continue
-        #expression_split = expression.strip().split()
-        #while "" in expression_split:
-        #    expression_split.remove("")
-        expression_split = parse_input_for_args(expression)
-        if len(expression_split) > 0:
-            #expression_split[0] = expression_split[0].strip()
-            if expression_split[0] == "exit":
-                exit_code = 0
-                if len(expression_split) > 1:
-                    try:
-                        exit_code = int(expression_split[1])
-                    except ValueError:
-                        var_val = variables.get(expression_split[1])
-                        if var_val != None:
-                            exit_code = int(var_val)
-                sys.exit(exit_code)
-            if expression_split[0] == "debug":
-                if len(expression_split) <= 1:
-                    ENABLED_DEBUG_OUTPUT = not ENABLED_DEBUG_OUTPUT
-                    print("ENABLED DEBUG OUTPUT" if ENABLED_DEBUG_OUTPUT else "DISABLED DEBUG OUTPUT")
-                elif expression_split[1] == "on":
-                    ENABLED_DEBUG_OUTPUT = True
-                elif expression_split[1] == "off":
-                    ENABLED_DEBUG_OUTPUT = False
-                elif expression_split[1] == "toggle":
-                    ENABLED_DEBUG_OUTPUT = not ENABLED_DEBUG_OUTPUT
-                else:
-                    print("Error: Invalid value for debug option")
-                continue
-            if expression_split[0] == "echo":
-                if len(expression_split) <= 1:
-                    echo_enabled = not echo_enabled
-                    print("ENABLED ECHO OUTPUT" if echo_enabled else "DISABLED ECHO OUTPUT")
-                elif expression_split[1] == "on":
-                    echo_enabled = True
-                elif expression_split[1] == "off":
-                    echo_enabled = False
-                elif expression_split[1] == "toggle":
-                    echo_enabled = not echo_enabled
-                else:
-                    print("Error: Invalid value for echo option")
-                continue
-            if expression_split[0] == "input":
-                prompt = ""
-                if len(expression_split) == 1:
-                    prompt = "INPUT >> "
-                else:
-                    for i, text in enumerate(expression_split[1:]):
-                        if i != 0:
-                            prompt += " "
-                        prompt += text
-                variables["input"] = decimal.Decimal(get_user_number_input(prompt))
-                continue
-            if expression_split[0] == "print":
-                output = ""
-                if len(expression_split) >= 1:
-                    for i, text in enumerate(expression_split[1:]):
-                        if i != 0:
-                            output += " "
-                        output += text
-                print(output)
-                continue
-            if expression_split[0] == "varout":
-                if len(expression_split) > 1:
-                    var_name = expression_split[1]
-                    var_val = variables.get(var_name)
-                    var_output = f"{var_val}"
-                    include_name = False
-                    if len(expression_split) > 2:
-                        if expression_split[2] == "-name":
-                            include_name = True
-                    if include_name:
-                        var_output = f"{var_name}={var_val}"
-                    if var_val == None:
-                        print(f"varout: variable '{var_name}' is not defined")
+                if expression_split[0] == "input":
+                    prompt = ""
+                    if len(expression_split) == 1:
+                        prompt = "INPUT >> "
                     else:
-                        print(var_output)
+                        for i, text in enumerate(expression_split[1:]):
+                            if i != 0:
+                                prompt += " "
+                            prompt += text
+                    variables["input"] = decimal.Decimal(get_user_number_input(prompt))
+                    continue
+                if expression_split[0] == "print":
+                    output = ""
+                    if len(expression_split) >= 1:
+                        for i, text in enumerate(expression_split[1:]):
+                            if i != 0:
+                                output += " "
+                            output += text
+                    print(output)
+                    continue
+                if expression_split[0] == "varout":
+                    if len(expression_split) > 1:
+                        var_name = expression_split[1]
+                        var_val = variables.get(var_name)
+                        var_output = f"{var_val}"
+                        include_name = False
+                        if len(expression_split) > 2:
+                            if expression_split[2] == "-name":
+                                include_name = True
+                        if include_name:
+                            var_output = f"{var_name}={var_val}"
+                        if var_val == None:
+                            print(f"varout: variable '{var_name}' is not defined")
+                        else:
+                            print(var_output)
+                    continue
+
+        else:
+            expression = sys.argv[1]
+        lex_tokens = lex(expression)
+        lex_error_count = print_lex_errors(lex_tokens)
+        if (lex_error_count > 0):
+            if is_interactive:
+                print(f"{lex_error_count} error(s)")
                 continue
+            else:
+                print(f"{lex_error_count} error(s) occured in <expression>")
+                sys.exit()
 
-    else:
-        expression = sys.argv[1]
-    lex_tokens = lex(expression)
-    lex_error_count = print_lex_errors(lex_tokens)
-    if (lex_error_count > 0):
-        if is_interactive:
-            print(f"{lex_error_count} error(s)")
-            continue
-        else:
-            print(f"{lex_error_count} error(s) occured in <expression>")
+        console_output_debug_msg("All lex tokens:")
+        for token_index, token in enumerate(lex_tokens):
+            console_output_debug_msg(f" [{token_index}] {token.lexeame}")
+        console_output_debug_msg("End of tokens")
+        evaluated_value, errors = eval_lex_tokens(lex_tokens)
+        if (len(errors) > 0):
+            print("Input had errors, no value returned", file = sys.stderr)
+            for error in errors:
+                print(f"Error: {error}", file = sys.stderr)
+            if is_interactive:
+                continue
+            else:
+                sys.exit(1)
+        if echo_enabled:
+            print(evaluated_value)
+        previous_answer = evaluated_value
+        if (not is_interactive):
             sys.exit()
-
-    console_output_debug_msg("All lex tokens:")
-    for token_index, token in enumerate(lex_tokens):
-        console_output_debug_msg(f" [{token_index}] {token.lexeame}")
-    console_output_debug_msg("End of tokens")
-    evaluated_value, errors = eval_lex_tokens(lex_tokens)
-    if (len(errors) > 0):
-        print("Input had errors, no value returned", file = sys.stderr)
-        for error in errors:
-            print(f"Error: {error}", file = sys.stderr)
-        if is_interactive:
-            continue
-        else:
-            sys.exit(1)
-    if echo_enabled:
-        print(evaluated_value)
-    previous_answer = evaluated_value
-    if (not is_interactive):
-        sys.exit()
