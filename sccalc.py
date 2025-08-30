@@ -1584,6 +1584,72 @@ def parse_input_for_args(uinput: str) -> list[str]:
         out_args.append(cur_phrase)
     return out_args
 
+def output_script_standard_file(standards_output_path):
+    file_handle = open(standards_output_path, "w")
+    file_handle.write("Comments:\n   Commented lines start with a  #  character.\n")
+    file_handle.write("\nCommands description:\n   Command lines start with a  !  character.\n")
+    file_handle.write("   Each command has a unique interface (set of parameters) and have unique functionality.\n")
+    file_handle.write("   Commands allows for text to be surrounded in double quotes (\") to be passed into a single parameter literally (\\ still behaves the same in or out of comments).\n")
+    file_handle.write("   Some characters can be escaped by placing a \\ directly in front of them.\n")
+    file_handle.write("     Escapable characters are  \"  \\")
+    file_handle.write("\nIdentifiers:\n")
+    file_handle.write("   Used for variable names and iterator names.\n")
+    file_handle.write("   Valid characters: Alphabetic or  _  followed by any number of alphanumeric or  _  .\n")
+    file_handle.write("\nExpression:\n")
+    file_handle.write("   Consists of Identifiers, constants, Unary-operators, Binary-Operators and variable assignments.\n")
+    file_handle.write("   If a line does not begin with a  !  or  #  it is assumed to be a expression.\n")
+    file_handle.write("\nVariables description:\n")
+    file_handle.write("   All assigned variables are global variables, there are no local variables.\n")
+    file_handle.write("   Variables can only store decimal (or floating point) numbers.\n")
+    file_handle.write("   Variables can not be deleted or undefined, once they have been assigned to.\n")
+    file_handle.write("\nVariable assignment:\n")
+    file_handle.write("   <Identifier> = <Expression>\n")
+    serialized_predefined_variables = " ".join(variables.keys())
+    file_handle.write("\nPre-defined variables:\n")
+    file_handle.write(f"   {serialized_predefined_variables}\n")
+    serialized_consts = " ".join(KNOWN_CONSTS.keys())
+    file_handle.write("\nConstants:\n")
+    file_handle.write(f"   {serialized_consts}\n")
+    serialized_comparison_operators = " ".join(comparison_operators.keys())
+    file_handle.write("\nComparison operators (CMP-OP):\n")
+    file_handle.write(f"   {serialized_comparison_operators}\n")
+    longest_unary_fn_name = max([len(fn) for fn in KNOWN_FUNCTIONS.keys()])
+    serialized_unary_functions = "\n".join([f"   {fn:<{longest_unary_fn_name}}  - {unary_function_descriptions.get(fn)}" for fn in KNOWN_FUNCTIONS.keys()])
+    file_handle.write("\nUnary functions:\n")
+    file_handle.write(f"{serialized_unary_functions}\n")
+    longest_binary_fn_name = max([len(fn) for fn in BINARY_FUNCTIONS.keys()])
+    serialized_binary_functions = "\n".join([f"   {fn:<{longest_binary_fn_name}}  - {binary_function_descriptions.get(fn)}" for fn in BINARY_FUNCTIONS.keys()])
+    file_handle.write("\nBinary functions:\n")
+    file_handle.write(f"{serialized_binary_functions}\n")
+    function_precedences = list(map(lambda a: (a.precedence, a.lexeame), BINARY_FUNCTIONS.values()))
+    function_precedences.append((UNARY_FUNCTION_PRECEDENCE_VALUE, "<UNARY-FUNCTIONS>"))
+    function_precedences = sorted(function_precedences, key=lambda a: a[0])
+    console_output_debug_msg(f"{function_precedences=}")
+    grouped_function_precedences = [list(group) for key, group in itertools.groupby(function_precedences, lambda a: a[0])]
+    console_output_debug_msg(f"{grouped_function_precedences=}")
+    grouped_function_precedences = [tuple([item[1] for item in group]) for group in grouped_function_precedences]
+    console_output_debug_msg(f"{grouped_function_precedences=}")
+    file_handle.write("\nFunction precedences (from least to most):\n")
+    for precedence_group in grouped_function_precedences:
+        serialized_function_group = " ".join(precedence_group)
+        file_handle.write(f"   {serialized_function_group}\n")
+
+    serialized_format_specifers = [f"{specifier}  - {format_specifier_descriptions.get(specifier)}" for specifier in FORMAT_SPECIFIER_FUNCTIONALITY_MAPPINGS.keys()]
+    file_handle.write("\nAvailable command format specifiers, in FORMAT_STRING:\n")
+    for format_specifier in serialized_format_specifers:
+        file_handle.write(f"   {format_specifier}\n")
+
+    longest_command_word_len = max([len(cmd[0].get_str()) for cmd in command_trees.values()])
+    file_handle.write("\nAvailable commands: \n")
+    file_handle.write(f"   !strict\n      Tells the interpreter to exit for any error that occurs\n")
+    file_handle.write(f"   !debug [on|off|toggle]\n      Enable or disable debug output\n")
+    file_handle.write(f"   !echo [on|off|toggle]\n      Enable or disable per line expression evaluation output\n")
+    file_handle.write(f"   !endif\n      Marks end of a if block\n")
+    file_handle.write(f"   !endwhile\n      Marks end of a while block\n")
+    for command_tree, command_callback in command_trees.values():
+        file_handle.write(f"   {command_tree.get_str()}\n      {command_process_descriptions.get(command_tree.name)}\n")
+    file_handle.close()
+
 if __name__ == "__main__":
     is_interactive = False
     if (len(sys.argv) == 1):
@@ -1612,70 +1678,7 @@ if __name__ == "__main__":
             standards_output_path = f"script-{APP_SCRIPT_VERSION}-standard"
             if CUSTOM_SCRIPT_VERSION:
                 standards_output_path += "-custom"
-            file_handle = open(standards_output_path, "w")
-            file_handle.write("Comments:\n   Commented lines start with a  #  character.\n")
-            file_handle.write("\nCommands description:\n   Command lines start with a  !  character.\n")
-            file_handle.write("   Each command has a unique interface (set of parameters) and have unique functionality.\n")
-            file_handle.write("   Commands allows for text to be surrounded in double quotes (\") to be passed into a single parameter literally (\\ still behaves the same in or out of comments).\n")
-            file_handle.write("   Some characters can be escaped by placing a \\ directly in front of them.\n")
-            file_handle.write("     Escapable characters are  \"  \\")
-            file_handle.write("\nIdentifiers:\n")
-            file_handle.write("   Used for variable names and iterator names.\n")
-            file_handle.write("   Valid characters: Alphabetic or  _  followed by any number of alphanumeric or  _  .\n")
-            file_handle.write("\nExpression:\n")
-            file_handle.write("   Consists of Identifiers, constants, Unary-operators, Binary-Operators and variable assignments.\n")
-            file_handle.write("   If a line does not begin with a  !  or  #  it is assumed to be a expression.\n")
-            file_handle.write("\nVariables description:\n")
-            file_handle.write("   All assigned variables are global variables, there are no local variables.\n")
-            file_handle.write("   Variables can only store decimal (or floating point) numbers.\n")
-            file_handle.write("   Variables can not be deleted or undefined, once they have been assigned to.\n")
-            file_handle.write("\nVariable assignment:\n")
-            file_handle.write("   <Identifier> = <Expression>\n")
-            serialized_predefined_variables = " ".join(variables.keys())
-            file_handle.write("\nPre-defined variables:\n")
-            file_handle.write(f"   {serialized_predefined_variables}\n")
-            serialized_consts = " ".join(KNOWN_CONSTS.keys())
-            file_handle.write("\nConstants:\n")
-            file_handle.write(f"   {serialized_consts}\n")
-            serialized_comparison_operators = " ".join(comparison_operators.keys())
-            file_handle.write("\nComparison operators (CMP-OP):\n")
-            file_handle.write(f"   {serialized_comparison_operators}\n")
-            longest_unary_fn_name = max([len(fn) for fn in KNOWN_FUNCTIONS.keys()])
-            serialized_unary_functions = "\n".join([f"   {fn:<{longest_unary_fn_name}}  - {unary_function_descriptions.get(fn)}" for fn in KNOWN_FUNCTIONS.keys()])
-            file_handle.write("\nUnary functions:\n")
-            file_handle.write(f"{serialized_unary_functions}\n")
-            longest_binary_fn_name = max([len(fn) for fn in BINARY_FUNCTIONS.keys()])
-            serialized_binary_functions = "\n".join([f"   {fn:<{longest_binary_fn_name}}  - {binary_function_descriptions.get(fn)}" for fn in BINARY_FUNCTIONS.keys()])
-            file_handle.write("\nBinary functions:\n")
-            file_handle.write(f"{serialized_binary_functions}\n")
-            function_precedences = list(map(lambda a: (a.precedence, a.lexeame), BINARY_FUNCTIONS.values()))
-            function_precedences.append((UNARY_FUNCTION_PRECEDENCE_VALUE, "<UNARY-FUNCTIONS>"))
-            function_precedences = sorted(function_precedences, key=lambda a: a[0])
-            console_output_debug_msg(f"{function_precedences=}")
-            grouped_function_precedences = [list(group) for key, group in itertools.groupby(function_precedences, lambda a: a[0])]
-            console_output_debug_msg(f"{grouped_function_precedences=}")
-            grouped_function_precedences = [tuple([item[1] for item in group]) for group in grouped_function_precedences]
-            console_output_debug_msg(f"{grouped_function_precedences=}")
-            file_handle.write("\nFunction precedences (from least to most):\n")
-            for precedence_group in grouped_function_precedences:
-                serialized_function_group = " ".join(precedence_group)
-                file_handle.write(f"   {serialized_function_group}\n")
-
-            serialized_format_specifers = [f"{specifier}  - {format_specifier_descriptions.get(specifier)}" for specifier in FORMAT_SPECIFIER_FUNCTIONALITY_MAPPINGS.keys()]
-            file_handle.write("\nAvailable command format specifiers, in FORMAT_STRING:\n")
-            for format_specifier in serialized_format_specifers:
-                file_handle.write(f"   {format_specifier}\n")
-
-            longest_command_word_len = max([len(cmd[0].get_str()) for cmd in command_trees.values()])
-            file_handle.write("\nAvailable commands: \n")
-            file_handle.write(f"   !strict\n      Tells the interpreter to exit for any error that occurs\n")
-            file_handle.write(f"   !debug [on|off|toggle]\n      Enable or disable debug output\n")
-            file_handle.write(f"   !echo [on|off|toggle]\n      Enable or disable per line expression evaluation output\n")
-            file_handle.write(f"   !endif\n      Marks end of a if block\n")
-            file_handle.write(f"   !endwhile\n      Marks end of a while block\n")
-            for command_tree, command_callback in command_trees.values():
-                file_handle.write(f"   {command_tree.get_str()}\n      {command_process_descriptions.get(command_tree.name)}\n")
-            file_handle.close()
+            output_script_standard_file(standards_output_path)
             sys.exit()
         if (os.path.isfile(sys.argv[1])):
             # NOTE: This scope is the scripting system. Everything here is only for the scripting part
