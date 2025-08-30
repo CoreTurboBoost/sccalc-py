@@ -1655,38 +1655,41 @@ if __name__ == "__main__":
     if (len(sys.argv) == 1):
         is_interactive = True
     if len(sys.argv) > 1:
-        if (sys.argv[1] == "--help" or sys.argv[1] == "-h"):
-            print(f"python3 {sys.argv[0]} [expression]")
-            print( "python3 {sys.argv[0]} [option]")
-            print( "  -v, --version                 print program version and exit")
-            print( "      __VERSION__               output version in specific format")
-            print( "      --license                 print program license")
-            print(f"      --output-script-standard  output the script standard to the file 'script-{APP_SCRIPT_VERSION}-standard'")
-            print( "      --debug                   Enable debugging information from program start (default)")
-            print( "      --no-debug                Disable debugging information from program start")
-            print( "  -h, --help       print this help page and exit")
-            sys.exit()
-        if (sys.argv[1] == "--version" or sys.argv[1] == "-v"):
-            print(f"VERSION: {APP_VERSION_MAJOR}.{APP_VERSION_MINOR}")
-            print(f"SCRIPT_VERSION: {APP_SCRIPT_VERSION}")
-            sys.exit()
-        if (sys.argv[1] == "__VERSION__"):
-            print(f"{APP_VERSION_MAJOR}.{APP_VERSION_MINOR}")
-            sys.exit()
-        if sys.argv[1] == "--license":
-            print_program_license()
-            sys.exit()
-        if sys.argv[1] == "--output-script-standard":
-            standards_output_path = f"script-{APP_SCRIPT_VERSION}-standard"
-            if CUSTOM_SCRIPT_VERSION:
-                standards_output_path += "-custom"
-            output_script_standard_file(standards_output_path)
-            sys.exit()
-        if sys.argv[1] == "--debug":
-            ENABLED_DEBUG_OUTPUT = True
-        if sys.argv[1] == "--no-debug":
-            ENABLED_DEBUG_OUTPUT = False
-        if (os.path.isfile(sys.argv[1])):
+        for argi, arg in enumerate(sys.argv[1:]):
+            if argi == len(sys.argv[1:])-1 and os.path.isfile(sys.argv[-1]):
+                break
+            if (arg == "--help" or arg == "-h"):
+                print(f"python3 {sys.argv[0]} [EXPRESSION]")
+                print( "python3 {sys.argv[0]} [OPTIONS]... [FILE]")
+                print( "  -v, --version                 print program version and exit")
+                print( "      __VERSION__               output version in specific format")
+                print( "      --license                 print program license")
+                print(f"      --output-script-standard  output the script standard to the file 'script-{APP_SCRIPT_VERSION}-standard'")
+                print( "      --debug                   Enable debugging information from program start (default)")
+                print( "      --no-debug                Disable debugging information from program start")
+                print( "  -h, --help       print this help page and exit")
+                sys.exit()
+            if (arg == "--version" or arg == "-v"):
+                print(f"VERSION: {APP_VERSION_MAJOR}.{APP_VERSION_MINOR}")
+                print(f"SCRIPT_VERSION: {APP_SCRIPT_VERSION}")
+                sys.exit()
+            if (arg == "__VERSION__"):
+                print(f"{APP_VERSION_MAJOR}.{APP_VERSION_MINOR}")
+                sys.exit()
+            if arg == "--license":
+                print_program_license()
+                sys.exit()
+            if arg == "--output-script-standard":
+                standards_output_path = f"script-{APP_SCRIPT_VERSION}-standard"
+                if CUSTOM_SCRIPT_VERSION:
+                    standards_output_path += "-custom"
+                output_script_standard_file(standards_output_path)
+                sys.exit()
+            if arg == "--debug":
+                ENABLED_DEBUG_OUTPUT = True
+            if arg == "--no-debug":
+                ENABLED_DEBUG_OUTPUT = False
+        if (len(sys.argv) > 1 and os.path.isfile(sys.argv[-1])):
             # NOTE: This scope is the scripting system. Everything here is only for the scripting part
             echo_enabled = True
             exit_on_fail = False
@@ -1699,7 +1702,7 @@ if __name__ == "__main__":
                     sys.exit(err_msg)
                 else:
                     print(err_msg)
-            fh = open(sys.argv[1])
+            fh = open(sys.argv[-1])
             contents = fh.read().split("\n")
             contents = list(zip(contents, range(0, len(contents))))
             for i in range(len(contents)):
