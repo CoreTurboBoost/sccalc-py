@@ -1662,6 +1662,8 @@ if __name__ == "__main__":
             print( "      __VERSION__               output version in specific format")
             print( "      --license                 print program license")
             print(f"      --output-script-standard  output the script standard to the file 'script-{APP_SCRIPT_VERSION}-standard'")
+            print( "      --debug                   Enable debugging information from program start (default)")
+            print( "      --no-debug                Disable debugging information from program start")
             print( "  -h, --help       print this help page and exit")
             sys.exit()
         if (sys.argv[1] == "--version" or sys.argv[1] == "-v"):
@@ -1680,6 +1682,10 @@ if __name__ == "__main__":
                 standards_output_path += "-custom"
             output_script_standard_file(standards_output_path)
             sys.exit()
+        if sys.argv[1] == "--debug":
+            ENABLED_DEBUG_OUTPUT = True
+        if sys.argv[1] == "--no-debug":
+            ENABLED_DEBUG_OUTPUT = False
         if (os.path.isfile(sys.argv[1])):
             # NOTE: This scope is the scripting system. Everything here is only for the scripting part
             echo_enabled = True
