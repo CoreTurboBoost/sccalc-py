@@ -1657,7 +1657,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         if (sys.argv[1] == "--help" or sys.argv[1] == "-h"):
             print(f"python3 {sys.argv[0]} [expression]")
-            print( "python3 {-v|-h|__VERSION__}")
+            print( "python3 {sys.argv[0]} [option]")
             print( "  -v, --version                 print program version and exit")
             print( "      __VERSION__               output version in specific format")
             print( "      --license                 print program license")
