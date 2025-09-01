@@ -1528,6 +1528,8 @@ unary_function_descriptions = {
     "atan": "Trigonometric arc-tangent function, angle in radians"
 }
 
+if len(command_trees.keys()) != len(command_process_descriptions.keys()):
+    raise Exception("Some command descriptions are missing")
 
 previous_answer = 0
 
