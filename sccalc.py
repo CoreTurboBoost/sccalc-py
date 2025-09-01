@@ -1480,7 +1480,9 @@ command_process_descriptions = {
         "sum": "Higher order function 'map' that operates on iterators. Returns the sum into a chosen output variable",
         "product": "Higher order function 'map' that operates on iterators. Returns the sum into a chosen output variable",
         "write": "Attempts to write the given iterator to a given file path. The success of the operation is returned into a chosen variable. 0 is success, any other value is a failure. 1 - permission error. 2 - decode error. 5 - is a directory",
-        "read": "Attempts to write the given iterator to a given file path. The success of the operation is returned into a chosen variable. 0 is success, any other value is a failure. 1 - permission error. 2 - encode error. 3 - de-serialization error. 4 - file not found. 5 - is a directory"
+        "read": "Attempts to write the given iterator to a given file path. The success of the operation is returned into a chosen variable. 0 is success, any other value is a failure. 1 - permission error. 2 - encode error. 3 - de-serialization error. 4 - file not found. 5 - is a directory",
+        "printf": "Formatted version of the !print command",
+        "inputf": "Formatted version of the !input command, allows takes output variable as a parameter",
 }
 
 format_specifier_descriptions = {
