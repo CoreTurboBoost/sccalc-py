@@ -472,7 +472,7 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
                 console_output_debug_msg(f"running function {token.lexeame} with parameter {operand_a}")
                 try:
                     if not is_number(operand_a):
-                        errors.append(f"{[token.char_index+1]} Expecting a number, not a variable")
+                        errors.append(f"{[token.char_index+1]} Expecting a number, not a undefined variable")
                         break
                     numbers_stack.append(decimal.Decimal(KNOWN_FUNCTIONS[token.lexeame.lower()](operand_a)))
                     continue
