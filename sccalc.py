@@ -80,6 +80,7 @@ class TokenError:
     TYPE_UNKNOWN_CHAR = 1
     TYPE_UNKNOWN_IDENTIFIER = 2
     TYPE_DECIMAL_POINT_COUNT = 3
+    TYPE_MISSING_DIGIT_VALUE = 4
     def __init__(self):
         self.string = ""
         self.type = TokenError.TYPE_NONE
@@ -135,7 +136,7 @@ class Token:
     def __str__(self):
         return f"Token(lexeame: {self.lexeame}, type: {self.get_type_str()}, char_index: {self.char_index}, error_object: {self.error_object})"
 
-def lex(expression : str):
+def lex(expression : str) -> list[Token]:
     # TODO: Refactor to handle lex, rpn-generation, minus-to-negation. Return a
     #   list of error strings, rather than needing an external function. Want to
     #   catch as many formatting errors here, leaving only run-time errors and
@@ -179,6 +180,11 @@ def lex(expression : str):
                     skip_char_count += 1
                 else:
                     break
+            if cur_token.lexeame[-1] == '.':
+                cur_token.type = Token.TYPE_BAD
+                cur_token.error_object = TokenError()
+                cur_token.error_object.type = TokenError.TYPE_MISSING_DIGIT_VALUE
+                cur_token.error_object.string = f"Number is missing a digit after the decimal point"
             tokens.append(cur_token)
         elif (char.isalpha() or char == '_'):
             cur_token = Token()
