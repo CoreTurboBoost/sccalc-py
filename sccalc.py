@@ -880,9 +880,10 @@ class CommandProcessFormatString(CommandProcessNode):
         return f"FORMAT_STRING [FORMAT_ARGS].."
 
 class CommandProcessTreeMatchState:
-    def __init__(self, command_matched: bool, args_matched: bool, callback_errors: list[str], values: list, tags: list[str]):
+    def __init__(self, command_matched: bool, args_matched: bool, command_errors: list[str], callback_errors: list[str], values: list, tags: list[str]):
         self.command_matched = command_matched
         self.args_matched = args_matched
+        self.command_errors = command_errors
         self.callback_errors = callback_errors
         self.values = values
         self.tags = tags
@@ -892,6 +893,11 @@ class CommandProcessTreeMatchState:
             raise TypeError("command_matched must be of type bool")
         if not isinstance(self.args_matched, bool):
             raise TypeError("args_matched must be of type bool")
+        if not isinstance(self.command_errors, list):
+            raise TypeError("command_errors must be of type list[str]")
+        for error in self.command_errors:
+            if not isinstance(error, str):
+                raise TypeError("command_errors must only contain strings")
         if not isinstance(self.callback_errors, list):
             raise TypeError("callback_errors must be of type list[str]")
         for error in self.callback_errors:
@@ -908,6 +914,8 @@ class CommandProcessTreeMatchState:
         return f"CommandProcessMatchState({self.command_matched=}, {self.args_matched=}, {self.callback_had_errors=}, {self.values=}, {self.tags=})"
     def callback_had_errors(self) -> bool:
         return len(self.callback_errors) > 0
+    def command_match_had_errors(self) -> bool:
+        return len(self.command_errors)
 class CommandProcessTree:
     def __init__(self, name: str, root_node: CommandProcessNode):
         self.name = name
@@ -919,10 +927,10 @@ class CommandProcessTree:
         match_args_len_exact = True
         if len(test_phrases) == 0:
             console_output_debug_msg(f"CommandProcessTree.match_and_run(): {self.get_str()}: test_phrases.len()==0")
-            return CommandProcessTreeMatchState(False, False, [], [], [])
+            return CommandProcessTreeMatchState(False, False, ["Given len of test_phrases list is zero"], [], [], [])
         match_name = f"!{self.name}"
         if test_phrases[0] != match_name:
-            return CommandProcessTreeMatchState(False, False, [], [], [])
+            return CommandProcessTreeMatchState(False, False, ["Command provided in test_phrases, does not match the current command name"], [], [], [])
         console_output_debug_msg(f"given phrases: {test_phrases}")
         data = self.root_node.match(test_phrases[1:])
         console_output_debug_msg(f"match_and_run: root_node ({self.root_node}): return ({data=})")
@@ -930,10 +938,10 @@ class CommandProcessTree:
             print(f"[{script_line_number}] Errors occurred for command {self.name}: Expected format '{self.get_str()}'")
             for error in data.errors:
                 print(f"  {error}")
-            return CommandProcessTreeMatchState(True, False, [], [], [])
+            return CommandProcessTreeMatchState(True, False, data.errors, [], [], [])
         if len(data.values) < len(test_phrases)-1 and match_args_len_exact:
-            console_output_debug_msg(f"Early return due to too many arguments")
-            return CommandProcessTreeMatchState(True, False, [], [], [])
+            console_output_debug_msg("Early return due to too many arguments")
+            return CommandProcessTreeMatchState(True, False, ["There are more parameters given in test_phrases then what the command matched"], [], [], [])
         callback_errors = []
         while None in data.values:
             data.values.remove(None)
@@ -943,7 +951,7 @@ class CommandProcessTree:
                 callback_errors = [f"[{script_line_number}] {self.name}: {error}" for error in return_value]
                 for error in callback_errors:
                     print(error)
-        return CommandProcessTreeMatchState(True, True, callback_errors, data.values, data.tags)
+        return CommandProcessTreeMatchState(True, True, [], callback_errors, data.values, data.tags)
 
     def get_str(self) -> str:
         return f"!{self.name} {self.root_node.get_str()}"
