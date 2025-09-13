@@ -1658,7 +1658,7 @@ def output_script_standard_file(standards_output_path):
         file_handle.write(f"   {format_specifier}\n")
 
     longest_command_word_len = max([len(cmd[0].get_str()) for cmd in command_trees.values()])
-    file_handle.write("\nAvailable commands: \n")
+    file_handle.write("\nAvailable commands:\n")
     file_handle.write(f"   !strict\n      Tells the interpreter to exit for any error that occurs\n")
     file_handle.write(f"   !debug [on|off|toggle]\n      Enable or disable debug output\n")
     file_handle.write(f"   !echo [on|off|toggle]\n      Enable or disable per line expression evaluation output\n")
