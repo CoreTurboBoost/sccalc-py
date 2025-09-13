@@ -115,20 +115,20 @@ Available commands:
    !count IN-ITER OUT-VAR
       Returns the number of remaining values within an iterator, into a chosen variable
    !map IN-OUT-ITER EXPRESSION
-      Higher order function 'map' that operates on iterators, given an expression. The current iterated value is the variable with the same name as the iterator
+      Higher order function that changes each value given an expression. The current iterated value is the variable with the same name as the iterator, Iterator is modifed in place
    !filter IN-OUT-ITER <NUMBER|IN-VAR> CMP-OP <NUMBER|IN-VAR>
-      Higher order function 'map' that operates on iterators, given a condition. The current iterated value is the variable with the same name as the iterator
+      Higher order function, removes values from an iterator, given a condition, The current iterated value is the variable with the same name as the iterator. Iterator is modified in place
    !next IN-OUT-ITER
       Assumes iterator is not empty. Pops the next value from the iterator and assigns it to a variable with the same name as the iterator
    !sum IN-ITER OUT-VAR
-      Higher order function 'map' that operates on iterators. Returns the sum into a chosen output variable
+      Higher order function that returns the sum into a chosen output variable, from a given iterator
    !product IN-ITER OUT-VAR
-      Higher order function 'map' that operates on iterators. Returns the sum into a chosen output variable
+      Higher order function that returns the product into a chosen output variable, from a given iterator
    !write TEXT IN-ITER OUT-VAR
       Attempts to write the given iterator to a given file path. The success of the operation is returned into a chosen variable. 0 is success, any other value is a failure. 1 - permission error. 2 - decode error. 5 - is a directory
    !read TEXT OUT-ITER OUT-VAR
       Attempts to write the given iterator to a given file path. The success of the operation is returned into a chosen variable. 0 is success, any other value is a failure. 1 - permission error. 2 - encode error. 3 - de-serialization error. 4 - file not found. 5 - is a directory
    !printf FORMAT_STRING [FORMAT_ARGS].. [-no-new-line]
-      None
+      Formatted version of the !print command
    !inputf OUT-VAR FORMAT_STRING [FORMAT_ARGS].. [<-only-positive|-only-negative|-non-negative|-non-positive>]
-      None
+      Formatted version of the !input command, allows takes output variable as a parameter
