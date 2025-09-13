@@ -11,7 +11,7 @@ import string
 import itertools
 
 APP_VERSION_MAJOR = 3
-APP_VERSION_MINOR = 13
+APP_VERSION_MINOR = 14
 APP_SCRIPT_VERSION = 7
 
 CUSTOM_SCRIPT_VERSION = False
@@ -1678,7 +1678,7 @@ if __name__ == "__main__":
                 break
             if (arg == "--help" or arg == "-h"):
                 print(f"python3 {sys.argv[0]} [EXPRESSION]")
-                print( "python3 {sys.argv[0]} [OPTIONS]... [FILE]")
+                print(f"python3 {sys.argv[0]} [OPTIONS]... [FILE]")
                 print( "  -v, --version                 print program version and exit")
                 print( "      __VERSION__               output version in specific format")
                 print( "      --license                 print program license")
