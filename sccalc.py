@@ -1866,6 +1866,10 @@ def run_interpreter(script_lines: list[str]):
         print("Warning: Not all if statements have been closed")
     sys.exit(g_script_error_count != 0)
 
+def print_interactive_interpreter_start_text() -> None:
+    print(f"sccalc.py  v{APP_VERSION_MAJOR}.{APP_VERSION_MINOR}")
+    print(f"WARNING: v{APP_VERSION_MAJOR}.{APP_VERSION_MAJOR}  is an unstable release. This release WILL contain major bugs and WILL have its interface changed significantly")
+
 if __name__ == "__main__":
     is_interactive = False
     if (len(sys.argv) == 1):
