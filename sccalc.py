@@ -1683,7 +1683,7 @@ class SccalcInterpreter:
 
 g_interpreter = SccalcInterpreter()
 
-def run_interpreter():
+def run_interpreter(script_lines: list[str]):
     global g_enabled_echo_line_eval, g_exit_on_failure, g_script_error_count, g_enabled_debug_output, variables, iterator_arrays
     g_enabled_echo_line_eval = True
     g_exit_on_failure = False
@@ -1696,8 +1696,7 @@ def run_interpreter():
             sys.exit(err_msg)
         else:
             print(err_msg)
-    fh = open(sys.argv[-1])
-    contents = fh.read().split("\n")
+    contents = script_lines
     contents = list(zip(contents, range(0, len(contents))))
     for i in range(len(contents)):
         contents[i] = (contents[i][0].strip(), contents[i][1])
