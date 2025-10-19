@@ -1917,126 +1917,19 @@ if __name__ == "__main__":
 
     while True:
         if is_interactive:
-            try:
-                expression = input(">> ").strip()
-            except EOFError:
-                print("\r")
-                expression = "q"
-            if len(expression) == 0:
-                continue
-            if expression == "q" or expression == "quit":
-                sys.exit()
-            if expression == "help" or expression == "h":
-                print_constants()
-                print_functions()
-                print_commands()
-                continue
-            #expression_split = expression.strip().split()
-            #while "" in expression_split:
-            #    expression_split.remove("")
-            expression_split = parse_input_for_args(expression)
-            if len(expression_split) > 0:
-                #expression_split[0] = expression_split[0].strip()
-                if expression_split[0] == "exit":
-                    exit_code = 0
-                    if len(expression_split) > 1:
-                        try:
-                            exit_code = int(expression_split[1])
-                        except ValueError:
-                            var_val = variables.get(expression_split[1])
-                            if var_val != None:
-                                exit_code = int(var_val)
-                    sys.exit(exit_code)
-                if expression_split[0] == "debug":
-                    if len(expression_split) <= 1:
-                        g_enabled_debug_output = not g_enabled_debug_output
-                        print("ENABLED DEBUG OUTPUT" if g_enabled_debug_output else "DISABLED DEBUG OUTPUT")
-                    elif expression_split[1] == "on":
-                        g_enabled_debug_output = True
-                    elif expression_split[1] == "off":
-                        g_enabled_debug_output = False
-                    elif expression_split[1] == "toggle":
-                        g_enabled_debug_output = not g_enabled_debug_output
-                    else:
-                        print("Error: Invalid value for debug option")
-                    continue
-                if expression_split[0] == "echo":
-                    if len(expression_split) <= 1:
-                        g_enabled_echo_line_eval = not g_enabled_echo_line_eval
-                        print("ENABLED ECHO OUTPUT" if g_enabled_echo_line_eval else "DISABLED ECHO OUTPUT")
-                    elif expression_split[1] == "on":
-                        g_enabled_echo_line_eval = True
-                    elif expression_split[1] == "off":
-                        g_enabled_echo_line_eval = False
-                    elif expression_split[1] == "toggle":
-                        g_enabled_echo_line_eval = not g_enabled_echo_line_eval
-                    else:
-                        print("Error: Invalid value for echo option")
-                    continue
-                if expression_split[0] == "input":
-                    prompt = ""
-                    if len(expression_split) == 1:
-                        prompt = "INPUT >> "
-                    else:
-                        for i, text in enumerate(expression_split[1:]):
-                            if i != 0:
-                                prompt += " "
-                            prompt += text
-                    variables["input"] = decimal.Decimal(get_user_number_input(prompt))
-                    continue
-                if expression_split[0] == "print":
-                    output = ""
-                    if len(expression_split) >= 1:
-                        for i, text in enumerate(expression_split[1:]):
-                            if i != 0:
-                                output += " "
-                            output += text
-                    print(output)
-                    continue
-                if expression_split[0] == "varout":
-                    if len(expression_split) > 1:
-                        var_name = expression_split[1]
-                        var_val = variables.get(var_name)
-                        var_output = f"{var_val}"
-                        include_name = False
-                        if len(expression_split) > 2:
-                            if expression_split[2] == "-name":
-                                include_name = True
-                        if include_name:
-                            var_output = f"{var_name}={var_val}"
-                        if var_val == None:
-                            print(f"varout: variable '{var_name}' is not defined")
-                        else:
-                            print(var_output)
-                    continue
+            def get_user_input_script(prompt: str) -> None:
+                script_has_ended = False
+                user_input: list[str] = []
+                while not script_has_ended:
+                    try:
+                        user_input.append(input(prompt))
+                    except EOFError:
+                        script_has_ended = True
+                return user_input
 
+            print_interactive_interpreter_start_text()
+            print("End script with a EOF character (Ctrl-D on Unix, Ctrl-Z on Windows)")
+            user_input = get_user_input_script(">> ")
+            run_interpreter(user_input)
         else:
-            expression = sys.argv[1]
-        lex_tokens = lex(expression)
-        lex_error_count = print_lex_errors(lex_tokens)
-        if (lex_error_count > 0):
-            if is_interactive:
-                print(f"{lex_error_count} error(s)")
-                continue
-            else:
-                print(f"{lex_error_count} error(s) occured in <expression>")
-                sys.exit()
-
-        console_output_debug_msg("All lex tokens:")
-        for token_index, token in enumerate(lex_tokens):
-            console_output_debug_msg(f" [{token_index}] {token.lexeame}")
-        console_output_debug_msg("End of tokens")
-        evaluated_value, errors = eval_lex_tokens(lex_tokens)
-        if (len(errors) > 0):
-            print("Input had errors, no value returned", file = sys.stderr)
-            for error in errors:
-                print(f"Error: {error}", file = sys.stderr)
-            if is_interactive:
-                continue
-            else:
-                sys.exit(1)
-        if g_enabled_echo_line_eval:
-            print(evaluated_value)
-        previous_answer = evaluated_value
-        if (not is_interactive):
-            sys.exit()
+            run_interpreter([sys.argv[1]])
