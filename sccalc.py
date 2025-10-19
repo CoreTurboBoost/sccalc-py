@@ -744,6 +744,8 @@ class CommandProcessLiteralNumber(CommandProcessNode):
     def __init__(self, tag: str):
         self.tag = tag
     def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
+        if len(phrases) == 0:
+            return CommandProcessMatchReturnData([], ["Missing required arguements"], [])
         converted_value = convert_to_number_or_none(phrases[0])
         if converted_value == None:
             console_output_debug_msg(" CommandProcessLiteralNumber: Failed to convert")
@@ -757,6 +759,8 @@ class CommandProcessVariable(CommandProcessNode):
         self.tag = tag
         self.convert_in_var_to_number = convert_in_var_to_number
     def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
+        if len(phrases) == 0:
+            return CommandProcessMatchReturnData([], ["Missing required arguements"], [])
         phrase = phrases[0]
         var_exists = variables.get(phrase) != None
         if self.io_type == IOType.IOT_IN or self.io_type == IOType.IOT_IN_OUT:
@@ -774,6 +778,8 @@ class CommandProcessIterator(CommandProcessNode):
         self.io_type = io_type
         self.tag = tag
     def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
+        if len(phrases) == 0:
+            return CommandProcessMatchReturnData([], ["Missing required arguements"], [])
         phrase = phrases[0]
         iterator_exists = iterator_arrays.get(phrase) != None
         if self.io_type == IOType.IOT_IN or self.io_type == IOType.IOT_IN_OUT:
@@ -789,6 +795,8 @@ class CommandProcessCmpOperator(CommandProcessNode):
     def __init__(self, tag: str):
         self.tag = tag
     def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
+        if len(phrases) == 0:
+            return CommandProcessMatchReturnData([], ["Missing required arguements"], [])
         phrase = phrases[0]
         operator = comparison_operators.get(phrase)
         if operator == None:
@@ -801,6 +809,8 @@ class CommandProcessExpression(CommandProcessNode):
     def __init__(self, tag: str):
         self.tag = tag
     def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
+        if len(phrases) == 0:
+            return CommandProcessMatchReturnData([], ["Missing required arguements"], [])
         phrase = phrases[0]
         lex_tokens = lex(phrase)
         errors = get_lex_error_strs(lex_tokens)
