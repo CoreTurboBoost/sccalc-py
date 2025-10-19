@@ -1671,6 +1671,28 @@ def output_script_standard_file(standards_output_path):
         file_handle.write(f"   {command_tree.get_str()}\n      {command_process_descriptions.get(command_tree.name)}\n")
     file_handle.close()
 
+class SccalcInterpreter:
+    def __init__(self):
+        self.enabled_echo: bool = True
+        self.enabled_debug_output: bool: True
+        self.error_count: int = 0
+        self.variables: dict[str, decimal.Decimal] = {}
+        self.iterators: dict[str, list[decimal.Decimal]] = {}
+    def set_variable(name: str, value: decimal.Decimal) -> None:
+        self.variables[name] = value
+    def get_variable(name: str) -> decimal.Decimal or None:
+        return self.variables.get(name)
+    def set_iterator(name: str, iterator: list[decimal.Decimal]) -> None:
+        return self.iterators[name] = iterator
+    def get_iterator(name: str) -> list[decimal.Decimal] or None:
+        return self.iterators.get(name)
+    def eval_line(script_line: str) -> None:
+        pass
+    def eval_lines(script_lines: list[str]) -> None:
+        pass
+
+g_interpreter = SccalcInterpreter()
+
 if __name__ == "__main__":
     is_interactive = False
     if (len(sys.argv) == 1):
