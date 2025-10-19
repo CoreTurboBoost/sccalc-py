@@ -16,7 +16,7 @@ APP_SCRIPT_VERSION = 7
 
 CUSTOM_SCRIPT_VERSION = False
 
-variables = {"script_version": APP_SCRIPT_VERSION}
+variables = {"script_version": decimal.Decimal(APP_SCRIPT_VERSION)}
 iterator_arrays = {} # {str: list[decimal.Decimal]}
 
 PROGRAM_LICENSE = """
