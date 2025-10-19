@@ -1867,7 +1867,7 @@ def run_interpreter(script_lines: list[str]):
 
 def print_interactive_interpreter_start_text() -> None:
     print(f"sccalc.py  v{APP_VERSION_MAJOR}.{APP_VERSION_MINOR}")
-    print(f"WARNING: v{APP_VERSION_MAJOR}.{APP_VERSION_MAJOR}  is an unstable release. This release WILL contain major bugs and WILL have its interface changed significantly")
+    print(f"WARNING: v{APP_VERSION_MAJOR}.{APP_VERSION_MINOR}  is an unstable release. This release WILL contain major bugs and WILL have its interface changed significantly")
 
 if __name__ == "__main__":
     is_interactive = False
