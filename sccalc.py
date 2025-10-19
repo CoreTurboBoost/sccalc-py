@@ -1700,7 +1700,6 @@ def run_interpreter(script_lines: list[str]):
     contents = list(zip(contents, range(0, len(contents))))
     for i in range(len(contents)):
         contents[i] = (contents[i][0].strip(), contents[i][1])
-    fh.close()
     i = 0
     while i < len(contents):
         if len(contents[i][0]) == 0:
@@ -1913,6 +1912,7 @@ if __name__ == "__main__":
             # NOTE: This scope is the scripting system. Everything here is only for the scripting part
             fh = open(sys.argv[-1])
             contents = fh.read().split("\n")
+            fh.close()
             run_interpreter(contents)
 
     while True:
