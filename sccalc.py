@@ -1863,7 +1863,6 @@ def run_interpreter(script_lines: list[str]):
 
     if skip_till_if_end_count > 0:
         print("Warning: Not all if statements have been closed")
-    sys.exit(g_script_error_count != 0)
 
 def print_interactive_interpreter_start_text() -> None:
     print(f"sccalc.py  v{APP_VERSION_MAJOR}.{APP_VERSION_MINOR}")
@@ -1914,6 +1913,7 @@ if __name__ == "__main__":
             contents = fh.read().split("\n")
             fh.close()
             run_interpreter(contents)
+            sys.exit(g_script_error_count != 0)
 
     if is_interactive:
         while True:
