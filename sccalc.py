@@ -1911,6 +1911,9 @@ if __name__ == "__main__":
                 g_enabled_debug_output = False
         if (len(sys.argv) > 1 and os.path.isfile(sys.argv[-1])):
             # NOTE: This scope is the scripting system. Everything here is only for the scripting part
+            fh = open(sys.argv[-1])
+            contents = fh.read().split("\n")
+            run_interpreter(contents)
 
     while True:
         if is_interactive:
