@@ -74,6 +74,7 @@ def is_punct(input_str: str) -> bool:
 g_enabled_debug_output = True
 def console_output_debug_msg(message : str, end = "\n"):
     if g_enabled_debug_output: print(f"[debug]: {message}", end = end)
+g_enabled_echo_line_eval = True
 
 class TokenError:
     TYPE_NONE = 0
@@ -1709,7 +1710,7 @@ if __name__ == "__main__":
                 g_enabled_debug_output = False
         if (len(sys.argv) > 1 and os.path.isfile(sys.argv[-1])):
             # NOTE: This scope is the scripting system. Everything here is only for the scripting part
-            echo_enabled = True
+            g_enabled_echo_line_eval = True
             exit_on_fail = False
             errors_count = 0
             def output_error(line_index: int, message: str) -> None:
@@ -1816,14 +1817,14 @@ if __name__ == "__main__":
                         continue
                     elif expression_split[0] == "!echo":
                         if len(expression_split) <= 1:
-                            echo_enabled = not echo_enabled
-                            print("ENABLED ECHO OUTPUT" if echo_enabled else "DISABLED ECHO OUTPUT")
+                            g_enabled_echo_line_eval = not g_enabled_echo_line_eval
+                            print("ENABLED ECHO OUTPUT" if g_enabled_echo_line_eval else "DISABLED ECHO OUTPUT")
                         elif expression_split[1] == "on":
-                            echo_enabled = True
+                            g_enabled_echo_line_eval = True
                         elif expression_split[1] == "off":
-                            echo_enabled = False
+                            g_enabled_echo_line_eval = False
                         elif expression_split[1] == "toggle":
-                            echo_enabled = not echo_enabled
+                            g_enabled_echo_line_eval = not g_enabled_echo_line_eval
                         else:
                             output_error(line_index, "echo: Invalid value for echo option")
                         continue
@@ -1884,14 +1885,14 @@ if __name__ == "__main__":
                     if exit_on_fail:
                         sys.exit(f"Evaluation error on line {line_index+1}")
                     continue
-                if echo_enabled:
+                if g_enabled_echo_line_eval:
                     print(evaluated_value)
 
             if skip_till_if_end_count > 0:
                 print("Warning: Not all if statements have been closed")
             sys.exit(errors_count != 0)
 
-    echo_enabled = True
+    g_enabled_echo_line_eval = True
     while True:
         if is_interactive:
             try:
@@ -1939,14 +1940,14 @@ if __name__ == "__main__":
                     continue
                 if expression_split[0] == "echo":
                     if len(expression_split) <= 1:
-                        echo_enabled = not echo_enabled
-                        print("ENABLED ECHO OUTPUT" if echo_enabled else "DISABLED ECHO OUTPUT")
+                        g_enabled_echo_line_eval = not g_enabled_echo_line_eval
+                        print("ENABLED ECHO OUTPUT" if g_enabled_echo_line_eval else "DISABLED ECHO OUTPUT")
                     elif expression_split[1] == "on":
-                        echo_enabled = True
+                        g_enabled_echo_line_eval = True
                     elif expression_split[1] == "off":
-                        echo_enabled = False
+                        g_enabled_echo_line_eval = False
                     elif expression_split[1] == "toggle":
-                        echo_enabled = not echo_enabled
+                        g_enabled_echo_line_eval = not g_enabled_echo_line_eval
                     else:
                         print("Error: Invalid value for echo option")
                     continue
@@ -2012,7 +2013,7 @@ if __name__ == "__main__":
                 continue
             else:
                 sys.exit(1)
-        if echo_enabled:
+        if g_enabled_echo_line_eval:
             print(evaluated_value)
         previous_answer = evaluated_value
         if (not is_interactive):
