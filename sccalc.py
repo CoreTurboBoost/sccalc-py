@@ -76,6 +76,7 @@ def console_output_debug_msg(message : str, end = "\n"):
     if g_enabled_debug_output: print(f"[debug]: {message}", end = end)
 g_enabled_echo_line_eval = True
 g_exit_on_failure = False
+g_script_error_count = 0
 
 class TokenError:
     TYPE_NONE = 0
@@ -1713,10 +1714,10 @@ if __name__ == "__main__":
             # NOTE: This scope is the scripting system. Everything here is only for the scripting part
             g_enabled_echo_line_eval = True
             g_exit_on_failure = False
-            errors_count = 0
+            g_script_error_count = 0
             def output_error(line_index: int, message: str) -> None:
-                global errors_count
-                errors_count += 1
+                global g_script_error_count
+                g_script_error_count += 1
                 err_msg = f"[{line_index+1}] Error: {message}"
                 if g_exit_on_failure:
                     sys.exit(err_msg)
@@ -1872,14 +1873,14 @@ if __name__ == "__main__":
                 lex_tokens = lex(expression)
                 lex_error_count = print_lex_errors(lex_tokens, f"{line_index+1}: ")
                 if (lex_error_count > 0):
-                    errors_count += 1
+                    g_script_error_count += 1
                     #print(f"{line_index+1}: {lex_error_count} error(s)")
                     if g_exit_on_failure:
                         sys.exit(f"Lexer error on line {line_index+1}")
                     continue
                 evaluated_value, errors = eval_lex_tokens(lex_tokens)
                 if (len(errors) > 0):
-                    errors_count += 1
+                    g_script_error_count += 1
                     #print("{line_index+1}: Input had errors, no value returned", file = sys.stderr)
                     for error in errors:
                         print(f"{line_index+1}: Error: {error}", file = sys.stderr)
@@ -1891,7 +1892,7 @@ if __name__ == "__main__":
 
             if skip_till_if_end_count > 0:
                 print("Warning: Not all if statements have been closed")
-            sys.exit(errors_count != 0)
+            sys.exit(g_script_error_count != 0)
 
     g_enabled_echo_line_eval = True
     while True:
