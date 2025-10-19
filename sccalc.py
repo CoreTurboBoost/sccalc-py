@@ -75,6 +75,7 @@ g_enabled_debug_output = True
 def console_output_debug_msg(message : str, end = "\n"):
     if g_enabled_debug_output: print(f"[debug]: {message}", end = end)
 g_enabled_echo_line_eval = True
+g_exit_on_failure = False
 
 class TokenError:
     TYPE_NONE = 0
@@ -1711,13 +1712,13 @@ if __name__ == "__main__":
         if (len(sys.argv) > 1 and os.path.isfile(sys.argv[-1])):
             # NOTE: This scope is the scripting system. Everything here is only for the scripting part
             g_enabled_echo_line_eval = True
-            exit_on_fail = False
+            g_exit_on_failure = False
             errors_count = 0
             def output_error(line_index: int, message: str) -> None:
                 global errors_count
                 errors_count += 1
                 err_msg = f"[{line_index+1}] Error: {message}"
-                if exit_on_fail:
+                if g_exit_on_failure:
                     sys.exit(err_msg)
                 else:
                     print(err_msg)
@@ -1800,7 +1801,7 @@ if __name__ == "__main__":
                         console_output_debug_msg(f"[{line_index+1}] ignoring an endif command")
                         continue
                     if expression_split[0] == "!strict":
-                        exit_on_fail = True
+                        g_exit_on_failure = True
                         continue
                     elif expression_split[0] == "!debug":
                         if len(expression_split) <= 1:
@@ -1873,7 +1874,7 @@ if __name__ == "__main__":
                 if (lex_error_count > 0):
                     errors_count += 1
                     #print(f"{line_index+1}: {lex_error_count} error(s)")
-                    if exit_on_fail:
+                    if g_exit_on_failure:
                         sys.exit(f"Lexer error on line {line_index+1}")
                     continue
                 evaluated_value, errors = eval_lex_tokens(lex_tokens)
@@ -1882,7 +1883,7 @@ if __name__ == "__main__":
                     #print("{line_index+1}: Input had errors, no value returned", file = sys.stderr)
                     for error in errors:
                         print(f"{line_index+1}: Error: {error}", file = sys.stderr)
-                    if exit_on_fail:
+                    if g_exit_on_failure:
                         sys.exit(f"Evaluation error on line {line_index+1}")
                     continue
                 if g_enabled_echo_line_eval:
