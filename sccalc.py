@@ -1693,6 +1693,190 @@ class SccalcInterpreter:
 
 g_interpreter = SccalcInterpreter()
 
+def run_interpreter():
+    global g_enabled_echo_line_eval, g_exit_on_failure, g_script_error_count, g_enabled_debug_output, variables, iterator_arrays
+    g_enabled_echo_line_eval = True
+    g_exit_on_failure = False
+    g_script_error_count = 0
+    def output_error(line_index: int, message: str) -> None:
+        global g_script_error_count
+        g_script_error_count += 1
+        err_msg = f"[{line_index+1}] Error: {message}"
+        if g_exit_on_failure:
+            sys.exit(err_msg)
+        else:
+            print(err_msg)
+    fh = open(sys.argv[-1])
+    contents = fh.read().split("\n")
+    contents = list(zip(contents, range(0, len(contents))))
+    for i in range(len(contents)):
+        contents[i] = (contents[i][0].strip(), contents[i][1])
+    fh.close()
+    i = 0
+    while i < len(contents):
+        if len(contents[i][0]) == 0:
+            contents.pop(i)
+            continue
+        i += 1
+    i=0
+    while i < len(contents):
+        if contents[i][0][0] == '#':
+            contents.pop(i)
+            continue
+        i += 1
+
+    class WhileEmbed:
+        def __init__(self, start_index: int):
+            self.start_index = start_index
+            self.end_index = None
+        def is_end_set(self) -> bool:
+            return self.end_index != None
+    while_embed_objects: list[WhileEmbed] = []
+    dont_inc_expression_this_iteration = False
+    skip_till_next_while_end_count = 0
+    skip_till_if_end_count = 0
+    skip_expression_count = 0
+    expressioni = -1
+    while expressioni+1 < len(contents):
+        if not dont_inc_expression_this_iteration:
+            expressioni += 1
+        else:
+            dont_inc_expression_this_iteration = False
+        (expression, line_index) = contents[expressioni]
+    #for expressioni, (expression, line_index) in enumerate(contents):
+        console_output_debug_msg(f"loop: expressioni:{expressioni} content:{contents[expressioni]}")
+        if skip_expression_count > 0:
+            skip_expression_count -= 1
+            continue
+        if skip_till_if_end_count > 0 or skip_till_next_while_end_count > 0:
+            console_output_debug_msg(" skipping line, due to skip_till_if_end or skip_till_while_end")
+            expression_split = parse_input_for_args(expression)
+            if len(expression_split) == 0:
+                continue
+            if skip_till_next_while_end_count > 0:
+                console_output_debug_msg(f"   skip_till_while_end {skip_till_next_while_end_count}")
+                if expression_split[0] == "!endwhile":
+                    skip_till_next_while_end_count -= 1
+                if expression_split[0] == "!while":
+                    skip_till_next_while_end_count += 1
+            if skip_till_if_end_count > 0:
+                console_output_debug_msg(f"   skip_till_if_end {skip_till_if_end_count}")
+                if expression_split[0] == "!endif":
+                    skip_till_if_end_count -= 1
+                if expression_split[0] == "!if":
+                    skip_till_if_end_count += 1
+            continue
+
+        expression_split = parse_input_for_args(expression)
+        if len(expression_split) == 0:
+            console_output_debug_msg(" skipping line, expression line empty")
+            continue
+        if expression_split[0] == "!endwhile":
+            if len(while_embed_objects) == 0:
+                output_error(line_index, f"endwhile: unmatched !endwhile")
+                continue
+            while_object = while_embed_objects.pop()
+            expressioni = while_object.start_index
+            dont_inc_expression_this_iteration = True
+            console_output_debug_msg(f"[{line_index+1}] Found !endwhile. Now jumping back to line {expressioni+1}  expressioni:{expressioni}")
+            continue
+        if expression_split[0][0] == "!":
+            if expression_split[0] == "!endif":
+                console_output_debug_msg(f"[{line_index+1}] ignoring an endif command")
+                continue
+            if expression_split[0] == "!strict":
+                g_exit_on_failure = True
+                continue
+            elif expression_split[0] == "!debug":
+                if len(expression_split) <= 1:
+                    g_enabled_debug_output = not g_enabled_debug_output
+                    print("ENABLED DEBUG OUTPUT" if g_enabled_debug_output else "DISABLED DEBUG OUTPUT")
+                elif expression_split[1] == "on":
+                    g_enabled_debug_output = True
+                elif expression_split[1] == "off":
+                    g_enabled_debug_output = False
+                elif expression_split[1] == "toggle":
+                    g_enabled_debug_output = not g_enabled_debug_output
+                else:
+                    output_error(line_index, "debug: Invalid value for debug option")
+                continue
+            elif expression_split[0] == "!echo":
+                if len(expression_split) <= 1:
+                    g_enabled_echo_line_eval = not g_enabled_echo_line_eval
+                    print("ENABLED ECHO OUTPUT" if g_enabled_echo_line_eval else "DISABLED ECHO OUTPUT")
+                elif expression_split[1] == "on":
+                    g_enabled_echo_line_eval = True
+                elif expression_split[1] == "off":
+                    g_enabled_echo_line_eval = False
+                elif expression_split[1] == "toggle":
+                    g_enabled_echo_line_eval = not g_enabled_echo_line_eval
+                else:
+                    output_error(line_index, "echo: Invalid value for echo option")
+                continue
+            if expression_split[0] in ["!if", "!while"]:
+                for command in ["if", "while"]:
+                    command_match_object = command_trees[command][0].match_and_run(expression_split, line_index+1, None)
+                    if not command_match_object.command_matched:
+                        continue
+                    if not command_match_object.args_matched:
+                        sys.exit(f"Fatal error Missing or invalid arguments for {command} command statement")
+                    if command == "if":
+                        condition_true = command_match_object.values[1](command_match_object.values[0], command_match_object.values[2])
+                        console_output_debug_msg(f"[{line_index+1}] if condition: {expression_split[1]} {expression_split[2]} {expression_split[3]} = {condition_true}")
+                        contains_ifset_data = 'ifset' in command_match_object.tags
+                        if contains_ifset_data:
+                            if condition_true:
+                                variables[command_match_object.values[3]] = command_match_object.values[4]
+                            break
+                        if not condition_true:
+                            skip_till_if_end_count += 1
+                        break
+                    elif command == "while":
+                        condition_true = command_match_object.values[1](command_match_object.values[0], command_match_object.values[2])
+                        if condition_true:
+                            while_embed_objects.append(WhileEmbed(expressioni))
+                        else:
+                            console_output_debug_msg(f"[{line_index+1}] While condition unmet ({expression_split[1]};{command_match_object.values[0]} {expression_split[2]} {expression_split[3]};{command_match_object.values[2]} = {condition_true}). skipping to next endwhile")
+                            skip_till_next_while_end_count = 1
+                continue
+
+            command_matched = False
+            for command, callback in command_trees.values():
+                data = command.match_and_run(expression_split, line_index+1, callback)
+                if data.command_matched and not data.args_matched:
+                    sys.exit(f"Invalid command arguments to command {command.name}")
+                if data.command_matched and data.args_matched:
+                    command_matched = True
+                    if data.callback_had_errors():
+                        sys.exit(f"Fatal error occurred during command {command.name}, exiting ...")
+                    break
+            if not command_matched:
+                output_error(line_index, f"Command: unrecognised command '{expression_split[0]}'")
+            continue
+        lex_tokens = lex(expression)
+        lex_error_count = print_lex_errors(lex_tokens, f"{line_index+1}: ")
+        if (lex_error_count > 0):
+            g_script_error_count += 1
+            #print(f"{line_index+1}: {lex_error_count} error(s)")
+            if g_exit_on_failure:
+                sys.exit(f"Lexer error on line {line_index+1}")
+            continue
+        evaluated_value, errors = eval_lex_tokens(lex_tokens)
+        if (len(errors) > 0):
+            g_script_error_count += 1
+            #print("{line_index+1}: Input had errors, no value returned", file = sys.stderr)
+            for error in errors:
+                print(f"{line_index+1}: Error: {error}", file = sys.stderr)
+            if g_exit_on_failure:
+                sys.exit(f"Evaluation error on line {line_index+1}")
+            continue
+        if g_enabled_echo_line_eval:
+            print(evaluated_value)
+
+    if skip_till_if_end_count > 0:
+        print("Warning: Not all if statements have been closed")
+    sys.exit(g_script_error_count != 0)
+
 if __name__ == "__main__":
     is_interactive = False
     if (len(sys.argv) == 1):
@@ -1734,189 +1918,7 @@ if __name__ == "__main__":
                 g_enabled_debug_output = False
         if (len(sys.argv) > 1 and os.path.isfile(sys.argv[-1])):
             # NOTE: This scope is the scripting system. Everything here is only for the scripting part
-            g_enabled_echo_line_eval = True
-            g_exit_on_failure = False
-            g_script_error_count = 0
-            def output_error(line_index: int, message: str) -> None:
-                global g_script_error_count
-                g_script_error_count += 1
-                err_msg = f"[{line_index+1}] Error: {message}"
-                if g_exit_on_failure:
-                    sys.exit(err_msg)
-                else:
-                    print(err_msg)
-            fh = open(sys.argv[-1])
-            contents = fh.read().split("\n")
-            contents = list(zip(contents, range(0, len(contents))))
-            for i in range(len(contents)):
-                contents[i] = (contents[i][0].strip(), contents[i][1])
-            fh.close()
-            i = 0
-            while i < len(contents):
-                if len(contents[i][0]) == 0:
-                    contents.pop(i)
-                    continue
-                i += 1
-            i=0
-            while i < len(contents):
-                if contents[i][0][0] == '#':
-                    contents.pop(i)
-                    continue
-                i += 1
 
-            class WhileEmbed:
-                def __init__(self, start_index: int):
-                    self.start_index = start_index
-                    self.end_index = None
-                def is_end_set(self) -> bool:
-                    return self.end_index != None
-            while_embed_objects: list[WhileEmbed] = []
-            dont_inc_expression_this_iteration = False
-            skip_till_next_while_end_count = 0
-            skip_till_if_end_count = 0
-            skip_expression_count = 0
-            expressioni = -1
-            while expressioni+1 < len(contents):
-                if not dont_inc_expression_this_iteration:
-                    expressioni += 1
-                else:
-                    dont_inc_expression_this_iteration = False
-                (expression, line_index) = contents[expressioni]
-            #for expressioni, (expression, line_index) in enumerate(contents):
-                console_output_debug_msg(f"loop: expressioni:{expressioni} content:{contents[expressioni]}")
-                if skip_expression_count > 0:
-                    skip_expression_count -= 1
-                    continue
-                if skip_till_if_end_count > 0 or skip_till_next_while_end_count > 0:
-                    console_output_debug_msg(" skipping line, due to skip_till_if_end or skip_till_while_end")
-                    expression_split = parse_input_for_args(expression)
-                    if len(expression_split) == 0:
-                        continue
-                    if skip_till_next_while_end_count > 0:
-                        console_output_debug_msg(f"   skip_till_while_end {skip_till_next_while_end_count}")
-                        if expression_split[0] == "!endwhile":
-                            skip_till_next_while_end_count -= 1
-                        if expression_split[0] == "!while":
-                            skip_till_next_while_end_count += 1
-                    if skip_till_if_end_count > 0:
-                        console_output_debug_msg(f"   skip_till_if_end {skip_till_if_end_count}")
-                        if expression_split[0] == "!endif":
-                            skip_till_if_end_count -= 1
-                        if expression_split[0] == "!if":
-                            skip_till_if_end_count += 1
-                    continue
-
-                expression_split = parse_input_for_args(expression)
-                if len(expression_split) == 0:
-                    console_output_debug_msg(" skipping line, expression line empty")
-                    continue
-                if expression_split[0] == "!endwhile":
-                    if len(while_embed_objects) == 0:
-                        output_error(line_index, f"endwhile: unmatched !endwhile")
-                        continue
-                    while_object = while_embed_objects.pop()
-                    expressioni = while_object.start_index
-                    dont_inc_expression_this_iteration = True
-                    console_output_debug_msg(f"[{line_index+1}] Found !endwhile. Now jumping back to line {expressioni+1}  expressioni:{expressioni}")
-                    continue
-                if expression_split[0][0] == "!":
-                    if expression_split[0] == "!endif":
-                        console_output_debug_msg(f"[{line_index+1}] ignoring an endif command")
-                        continue
-                    if expression_split[0] == "!strict":
-                        g_exit_on_failure = True
-                        continue
-                    elif expression_split[0] == "!debug":
-                        if len(expression_split) <= 1:
-                            g_enabled_debug_output = not g_enabled_debug_output
-                            print("ENABLED DEBUG OUTPUT" if g_enabled_debug_output else "DISABLED DEBUG OUTPUT")
-                        elif expression_split[1] == "on":
-                            g_enabled_debug_output = True
-                        elif expression_split[1] == "off":
-                            g_enabled_debug_output = False
-                        elif expression_split[1] == "toggle":
-                            g_enabled_debug_output = not g_enabled_debug_output
-                        else:
-                            output_error(line_index, "debug: Invalid value for debug option")
-                        continue
-                    elif expression_split[0] == "!echo":
-                        if len(expression_split) <= 1:
-                            g_enabled_echo_line_eval = not g_enabled_echo_line_eval
-                            print("ENABLED ECHO OUTPUT" if g_enabled_echo_line_eval else "DISABLED ECHO OUTPUT")
-                        elif expression_split[1] == "on":
-                            g_enabled_echo_line_eval = True
-                        elif expression_split[1] == "off":
-                            g_enabled_echo_line_eval = False
-                        elif expression_split[1] == "toggle":
-                            g_enabled_echo_line_eval = not g_enabled_echo_line_eval
-                        else:
-                            output_error(line_index, "echo: Invalid value for echo option")
-                        continue
-                    if expression_split[0] in ["!if", "!while"]:
-                        for command in ["if", "while"]:
-                            command_match_object = command_trees[command][0].match_and_run(expression_split, line_index+1, None)
-                            if not command_match_object.command_matched:
-                                continue
-                            if not command_match_object.args_matched:
-                                sys.exit(f"Fatal error Missing or invalid arguments for {command} command statement")
-                            if command == "if":
-                                condition_true = command_match_object.values[1](command_match_object.values[0], command_match_object.values[2])
-                                console_output_debug_msg(f"[{line_index+1}] if condition: {expression_split[1]} {expression_split[2]} {expression_split[3]} = {condition_true}")
-                                contains_ifset_data = 'ifset' in command_match_object.tags
-                                if contains_ifset_data:
-                                    if condition_true:
-                                        variables[command_match_object.values[3]] = command_match_object.values[4]
-                                    break
-                                if not condition_true:
-                                    skip_till_if_end_count += 1
-                                break
-                            elif command == "while":
-                                condition_true = command_match_object.values[1](command_match_object.values[0], command_match_object.values[2])
-                                if condition_true:
-                                    while_embed_objects.append(WhileEmbed(expressioni))
-                                else:
-                                    console_output_debug_msg(f"[{line_index+1}] While condition unmet ({expression_split[1]};{command_match_object.values[0]} {expression_split[2]} {expression_split[3]};{command_match_object.values[2]} = {condition_true}). skipping to next endwhile")
-                                    skip_till_next_while_end_count = 1
-                        continue
-
-                    command_matched = False
-                    for command, callback in command_trees.values():
-                        data = command.match_and_run(expression_split, line_index+1, callback)
-                        if data.command_matched and not data.args_matched:
-                            sys.exit(f"Invalid command arguments to command {command.name}")
-                        if data.command_matched and data.args_matched:
-                            command_matched = True
-                            if data.callback_had_errors():
-                                sys.exit(f"Fatal error occurred during command {command.name}, exiting ...")
-                            break
-                    if not command_matched:
-                        output_error(line_index, f"Command: unrecognised command '{expression_split[0]}'")
-                    continue
-                lex_tokens = lex(expression)
-                lex_error_count = print_lex_errors(lex_tokens, f"{line_index+1}: ")
-                if (lex_error_count > 0):
-                    g_script_error_count += 1
-                    #print(f"{line_index+1}: {lex_error_count} error(s)")
-                    if g_exit_on_failure:
-                        sys.exit(f"Lexer error on line {line_index+1}")
-                    continue
-                evaluated_value, errors = eval_lex_tokens(lex_tokens)
-                if (len(errors) > 0):
-                    g_script_error_count += 1
-                    #print("{line_index+1}: Input had errors, no value returned", file = sys.stderr)
-                    for error in errors:
-                        print(f"{line_index+1}: Error: {error}", file = sys.stderr)
-                    if g_exit_on_failure:
-                        sys.exit(f"Evaluation error on line {line_index+1}")
-                    continue
-                if g_enabled_echo_line_eval:
-                    print(evaluated_value)
-
-            if skip_till_if_end_count > 0:
-                print("Warning: Not all if statements have been closed")
-            sys.exit(g_script_error_count != 0)
-
-    g_enabled_echo_line_eval = True
     while True:
         if is_interactive:
             try:
