@@ -1915,9 +1915,10 @@ if __name__ == "__main__":
             fh.close()
             run_interpreter(contents)
 
-    while True:
-        if is_interactive:
-            def get_user_input_script(prompt: str) -> None:
+    if is_interactive:
+        while True:
+            print("End script with a EOF character (Ctrl-D on Unix, Ctrl-Z on Windows)")
+            def get_user_input_script(prompt: str) -> list[str]:
                 script_has_ended = False
                 user_input: list[str] = []
                 while not script_has_ended:
@@ -1928,8 +1929,9 @@ if __name__ == "__main__":
                 return user_input
 
             print_interactive_interpreter_start_text()
-            print("End script with a EOF character (Ctrl-D on Unix, Ctrl-Z on Windows)")
             user_input = get_user_input_script(">> ")
+            if len(user_input) == 0:
+                break;
             run_interpreter(user_input)
-        else:
-            run_interpreter([sys.argv[1]])
+    else:
+        run_interpreter([sys.argv[1]])
