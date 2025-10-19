@@ -1558,16 +1558,6 @@ def print_functions() -> None:
     print("Unary Functions")
     for function in KNOWN_FUNCTIONS.keys():
         print(f" {function}")
-def print_commands() -> None:
-    print("Interactive mode commands")
-    print(" help, h                 - print help page")
-    print(" quit, q                 - exit program")
-    print(" exit [INT|VAR]          - exit program with exit code INT or with value in VAR")
-    print(" debug [on|off|toggle]   - toggle debug output")
-    print(" echo [on|off|toggle]    - toggle echo output")
-    print(" input [PROMPT]          - output PROMPT to stdout and wait input\n    (input put into variable 'input')")
-    print(" print [TEXT]            - output TEXT to stdout")
-    print(" varout <VAR> [-name]    - output variable <VAR> with optional name")
 
 def parse_input_for_args(uinput: str) -> list[str]:
     out_args = []
