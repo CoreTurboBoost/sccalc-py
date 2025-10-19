@@ -71,9 +71,9 @@ comparison_operators = {"==": lambda a,b: a==b, "!=": lambda a,b: a!=b,
 def is_punct(input_str: str) -> bool:
     return all(char in string.punctuation for char in input_str)
 
-ENABLED_DEBUG_OUTPUT = True
+g_enabled_debug_output = True
 def console_output_debug_msg(message : str, end = "\n"):
-    if ENABLED_DEBUG_OUTPUT: print(f"[debug]: {message}", end = end)
+    if g_enabled_debug_output: print(f"[debug]: {message}", end = end)
 
 class TokenError:
     TYPE_NONE = 0
@@ -1704,9 +1704,9 @@ if __name__ == "__main__":
                 output_script_standard_file(standards_output_path)
                 sys.exit()
             if arg == "--debug":
-                ENABLED_DEBUG_OUTPUT = True
+                g_enabled_debug_output = True
             if arg == "--no-debug":
-                ENABLED_DEBUG_OUTPUT = False
+                g_enabled_debug_output = False
         if (len(sys.argv) > 1 and os.path.isfile(sys.argv[-1])):
             # NOTE: This scope is the scripting system. Everything here is only for the scripting part
             echo_enabled = True
@@ -1803,14 +1803,14 @@ if __name__ == "__main__":
                         continue
                     elif expression_split[0] == "!debug":
                         if len(expression_split) <= 1:
-                            ENABLED_DEBUG_OUTPUT = not ENABLED_DEBUG_OUTPUT
-                            print("ENABLED DEBUG OUTPUT" if ENABLED_DEBUG_OUTPUT else "DISABLED DEBUG OUTPUT")
+                            g_enabled_debug_output = not g_enabled_debug_output
+                            print("ENABLED DEBUG OUTPUT" if g_enabled_debug_output else "DISABLED DEBUG OUTPUT")
                         elif expression_split[1] == "on":
-                            ENABLED_DEBUG_OUTPUT = True
+                            g_enabled_debug_output = True
                         elif expression_split[1] == "off":
-                            ENABLED_DEBUG_OUTPUT = False
+                            g_enabled_debug_output = False
                         elif expression_split[1] == "toggle":
-                            ENABLED_DEBUG_OUTPUT = not ENABLED_DEBUG_OUTPUT
+                            g_enabled_debug_output = not g_enabled_debug_output
                         else:
                             output_error(line_index, "debug: Invalid value for debug option")
                         continue
@@ -1926,14 +1926,14 @@ if __name__ == "__main__":
                     sys.exit(exit_code)
                 if expression_split[0] == "debug":
                     if len(expression_split) <= 1:
-                        ENABLED_DEBUG_OUTPUT = not ENABLED_DEBUG_OUTPUT
-                        print("ENABLED DEBUG OUTPUT" if ENABLED_DEBUG_OUTPUT else "DISABLED DEBUG OUTPUT")
+                        g_enabled_debug_output = not g_enabled_debug_output
+                        print("ENABLED DEBUG OUTPUT" if g_enabled_debug_output else "DISABLED DEBUG OUTPUT")
                     elif expression_split[1] == "on":
-                        ENABLED_DEBUG_OUTPUT = True
+                        g_enabled_debug_output = True
                     elif expression_split[1] == "off":
-                        ENABLED_DEBUG_OUTPUT = False
+                        g_enabled_debug_output = False
                     elif expression_split[1] == "toggle":
-                        ENABLED_DEBUG_OUTPUT = not ENABLED_DEBUG_OUTPUT
+                        g_enabled_debug_output = not g_enabled_debug_output
                     else:
                         print("Error: Invalid value for debug option")
                     continue
