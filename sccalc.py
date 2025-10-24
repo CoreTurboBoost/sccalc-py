@@ -1936,8 +1936,9 @@ if __name__ == "__main__":
             sys.exit(g_script_error_count != 0)
 
     if is_interactive:
+        print_interactive_interpreter_start_text()
+        print("End script with a EOF character (Ctrl-D on Unix, Ctrl-Z on Windows)")
         while True:
-            print("End script with a EOF character (Ctrl-D on Unix, Ctrl-Z on Windows)")
             def get_user_input_script(prompt: str) -> list[str]:
                 script_has_ended = False
                 user_input: list[str] = []
@@ -1948,7 +1949,6 @@ if __name__ == "__main__":
                         script_has_ended = True
                 return user_input
 
-            print_interactive_interpreter_start_text()
             user_input = get_user_input_script(">> ")
             if len(user_input) == 0:
                 break;
