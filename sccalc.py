@@ -1769,6 +1769,16 @@ def run_interpreter(script_lines: list[str]):
         if len(expression_split) == 0:
             console_output_debug_msg(" skipping line, expression line empty")
             continue
+        if expression_split[0] == "!help":
+            if len(expression_split) == 1:
+                output_error(line_index, "!help <COMMAND>")
+                continue
+            focused_command = expression_split[1]
+            if not (focused_command in command_process_descriptions.keys()):
+                output_error(line_index, "!help {focused_command} : Command not found")
+                continue
+            print(f"{focused_command} : {command_process_descriptions[focused_command]}")
+            continue
         if expression_split[0] == "!endwhile":
             if len(while_embed_objects) == 0:
                 output_error(line_index, f"endwhile: unmatched !endwhile")
