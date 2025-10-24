@@ -1886,6 +1886,7 @@ def run_interpreter(script_lines: list[str]):
 
 def print_interactive_interpreter_start_text() -> None:
     print(f"sccalc.py  v{APP_VERSION_MAJOR}.{APP_VERSION_MINOR}")
+    print("End script with a EOF character (Ctrl-D on Unix, Ctrl-Z on Windows)")
     print(f"WARNING: v{APP_VERSION_MAJOR}.{APP_VERSION_MINOR}  is an unstable release. This release WILL contain major bugs and WILL have its interface changed significantly")
 
 if __name__ == "__main__":
@@ -1937,7 +1938,6 @@ if __name__ == "__main__":
 
     if is_interactive:
         print_interactive_interpreter_start_text()
-        print("End script with a EOF character (Ctrl-D on Unix, Ctrl-Z on Windows)")
         while True:
             def get_user_input_script(prompt: str) -> list[str]:
                 script_has_ended = False
