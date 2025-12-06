@@ -1923,6 +1923,7 @@ if __name__ == "__main__":
                 if CUSTOM_SCRIPT_VERSION:
                     standards_output_path += "-custom"
                 output_script_standard_file(standards_output_path)
+                print(f"Written script standard output to '{standards_output_path}'")
                 sys.exit()
             if arg == "--debug":
                 g_enabled_debug_output = True
