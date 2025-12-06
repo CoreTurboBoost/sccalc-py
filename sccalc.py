@@ -1673,11 +1673,17 @@ def output_script_standard_file(standards_output_path):
 
 class SccalcInterpreter:
     def __init__(self):
+        self.setup()
+    def setup(self) -> None:
+        '''
+        Can be used to restart the interpreter
+        '''
         self.enabled_echo: bool = True
         self.enabled_debug_output: bool = True
         self.error_count: int = 0
         self.variables: dict[str, decimal.Decimal] = {}
         self.iterators: dict[str, list[decimal.Decimal]] = {}
+        self.has_exited = False
     def set_variable(name: str, value: decimal.Decimal) -> None:
         self.variables[name] = value
     def get_variable(name: str) -> decimal.Decimal or None:
@@ -1687,8 +1693,12 @@ class SccalcInterpreter:
     def get_iterator(name: str) -> list[decimal.Decimal] or None:
         return self.iterators.get(name)
     def eval_line(script_line: str) -> None:
+        if self.has_exited:
+            return None
         pass
     def eval_lines(script_lines: list[str]) -> None:
+        if self.has_exited:
+            return None
         pass
 
 g_interpreter = SccalcInterpreter()
