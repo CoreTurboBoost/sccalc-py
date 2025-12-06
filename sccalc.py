@@ -1903,7 +1903,7 @@ if __name__ == "__main__":
                 print( "  -v, --version                 print program version and exit")
                 print( "      __VERSION__               output version in specific format")
                 print( "      --license                 print program license")
-                print(f"      --output-script-standard  output the script standard to the file 'script-{APP_SCRIPT_VERSION}-standard'")
+                print(f"      --gen-script-std-file     output the script standard to a file")
                 print( "      --debug                   Enable debugging information from program start (default)")
                 print( "      --no-debug                Disable debugging information from program start")
                 print( "  -h, --help       print this help page and exit")
@@ -1918,7 +1918,7 @@ if __name__ == "__main__":
             if arg == "--license":
                 print_program_license()
                 sys.exit()
-            if arg == "--output-script-standard":
+            if arg == "--gen-script-std-file":
                 standards_output_path = f"script-{APP_SCRIPT_VERSION}-standard"
                 if CUSTOM_SCRIPT_VERSION:
                     standards_output_path += "-custom"
