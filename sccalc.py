@@ -534,6 +534,15 @@ def eval_expression(expression: str) -> (decimal.Decimal or None, list[str]):
         return (None, errors)
     return (value, errors)
 
+class SccalcEmbeddedExit(Exception):
+    def __init__(self):
+        super()
+G_IS_EMBEDDED = False
+def exit_script_command(code_or_msg: int or str):
+    if G_IS_EMBEDDED:
+        raise SccalcEmbeddedExit
+    sys.exit(code_or_msg)
+
 class IOType:
     IOT_IN = 0
     IOT_OUT = 1
@@ -965,7 +974,10 @@ class CommandProcessTree:
         while None in data.values:
             data.values.remove(None)
         if on_success_callback != None:
-            return_value = on_success_callback(data.values, data.tags)
+            try:
+                return_value = on_success_callback(data.values, data.tags)
+            except Exception as e:
+                raise e
             if return_value != None and isinstance(return_value, (list, tuple)):
                 callback_errors = [f"[{script_line_number}] {self.name}: {error}" for error in return_value]
                 for error in callback_errors:
@@ -1078,7 +1090,10 @@ def get_user_number_input(prompt, allow_program_exit=False) -> float:
             is_valid = False
         except (EOFError, KeyboardInterrupt):
             if allow_program_exit:
-                sys.exit("Exited by user on input prompt")
+                try:
+                    exit_script_command("Exited by user on input prompt")
+                except SccalcEmbeddedExit:
+                    raise SccalcEmbeddedExit
             print(invalid_input_error_message)
             is_valid = False
     return number
@@ -1143,7 +1158,10 @@ def command_process_callback_input(values: list, tags: list[str]) -> None:
         prompt = " ".join(values)
     else:
         prompt = "INPUT >> "
-    variables["input"] = decimal.Decimal(get_user_number_input(prompt))
+    try:
+        variables["input"] = decimal.Decimal(get_user_number_input(prompt))
+    except SccalcEmbeddedExit:
+        raise SccalcEmbeddedExit
 
 command_tree_print = CommandProcessTree("print",
      CommandProcessOptional(
@@ -1449,7 +1467,10 @@ def command_process_callback_inputf(values: list, tags: list[str]) -> None:
     global variables
     user_input_invalid = True
     while user_input_invalid:
-        user_input = get_user_number_input(values[1])
+        try:
+            user_input = get_user_number_input(values[1])
+        except SccalcEmbeddedExit:
+            raise SccalcEmbeddedExit
         user_input_invalid = False
         if "only-positive" in tags and user_input <= decimal.Decimal(0):
             user_input_invalid = True
@@ -1469,7 +1490,7 @@ def command_process_callback_inputf(values: list, tags: list[str]) -> None:
 command_trees = {
         "if": (command_tree_if, None),
         "while": (command_tree_while, None),
-        "exit": (command_tree_exit, lambda values, tags: sys.exit(int(values[0]) if "code" in tags else 0)),
+        "exit": (command_tree_exit, lambda values, tags: exit_script_command(int(values[0]) if "code" in tags else 0)),
         "input": (command_tree_input, command_process_callback_input),
         "print": (command_tree_print, command_process_callback_print),
         "varout": (command_tree_varout, command_process_callback_varout),
@@ -1713,7 +1734,7 @@ def run_interpreter(script_lines: list[str]):
         g_script_error_count += 1
         err_msg = f"[{line_index+1}] Error: {message}"
         if g_exit_on_failure:
-            sys.exit(err_msg)
+            exit_script_command(err_msg)
         else:
             print(err_msg)
     contents = script_lines
@@ -1837,7 +1858,7 @@ def run_interpreter(script_lines: list[str]):
                     if not command_match_object.command_matched:
                         continue
                     if not command_match_object.args_matched:
-                        sys.exit(f"Fatal error Missing or invalid arguments for {command} command statement")
+                        exit_script_command(f"Fatal error Missing or invalid arguments for {command} command statement")
                     if command == "if":
                         condition_true = command_match_object.values[1](command_match_object.values[0], command_match_object.values[2])
                         console_output_debug_msg(f"[{line_index+1}] if condition: {expression_split[1]} {expression_split[2]} {expression_split[3]} = {condition_true}")
@@ -1862,11 +1883,11 @@ def run_interpreter(script_lines: list[str]):
             for command, callback in command_trees.values():
                 data = command.match_and_run(expression_split, line_index+1, callback)
                 if data.command_matched and not data.args_matched:
-                    sys.exit(f"Invalid command arguments to command {command.name}")
+                    exit_script_command(f"Invalid command arguments to command {command.name}")
                 if data.command_matched and data.args_matched:
                     command_matched = True
                     if data.callback_had_errors():
-                        sys.exit(f"Fatal error occurred during command {command.name}, exiting ...")
+                        exit_script_command(f"Fatal error occurred during command {command.name}, exiting ...")
                     break
             if not command_matched:
                 output_error(line_index, f"Command: unrecognised command '{expression_split[0]}'")
@@ -1877,7 +1898,7 @@ def run_interpreter(script_lines: list[str]):
             g_script_error_count += 1
             #print(f"{line_index+1}: {lex_error_count} error(s)")
             if g_exit_on_failure:
-                sys.exit(f"Lexer error on line {line_index+1}")
+                exit_script_command(f"Lexer error on line {line_index+1}")
             continue
         evaluated_value, errors = eval_lex_tokens(lex_tokens)
         if (len(errors) > 0):
@@ -1886,7 +1907,7 @@ def run_interpreter(script_lines: list[str]):
             for error in errors:
                 print(f"{line_index+1}: Error: {error}", file = sys.stderr)
             if g_exit_on_failure:
-                sys.exit(f"Evaluation error on line {line_index+1}")
+                exit_script_command(f"Evaluation error on line {line_index+1}")
             continue
         if g_enabled_echo_line_eval:
             print(evaluated_value)
@@ -1901,6 +1922,7 @@ def print_interactive_interpreter_start_text() -> None:
 
 if __name__ == "__main__":
     is_interactive = False
+    G_IS_EMBEDDED = True
     if (len(sys.argv) == 1):
         is_interactive = True
     if len(sys.argv) > 1:
@@ -1963,6 +1985,9 @@ if __name__ == "__main__":
             user_input = get_user_input_script(">> ")
             if len(user_input) == 0:
                 break;
-            run_interpreter(user_input)
+            try:
+                run_interpreter(user_input)
+            except SccalcEmbeddedExit:
+                print("Interpreter exited ...")
     else:
         run_interpreter([sys.argv[1]])
