@@ -11,7 +11,7 @@ import string
 import itertools
 
 APP_VERSION_MAJOR = 4
-APP_VERSION_MINOR = 0
+APP_VERSION_MINOR = 1
 APP_SCRIPT_VERSION = 7
 
 CUSTOM_SCRIPT_VERSION = False
@@ -138,6 +138,18 @@ class Token:
         return Token.get_str_from_type_enum(self.type)
     def __str__(self):
         return f"Token(lexeame: {self.lexeame}, type: {self.get_type_str()}, char_index: {self.char_index}, error_object: {self.error_object})"
+
+def is_valid_var(inp: str) -> bool:
+    if len(inp) == 0:
+        return False
+    remaining_chars_valid = True
+    for ch in inp[1:]:
+        if not (ch.isalnum() or ch == '_'):
+            remaining_chars_valid = False
+            break
+    if inp[0].isalpha() or inp[0] == '_':
+        return remaining_chars_valid
+    return False
 
 def lex(expression : str) -> list[Token]:
     # TODO: Refactor to handle lex, rpn-generation, minus-to-negation. Return a
@@ -1961,6 +1973,21 @@ if __name__ == "__main__":
                 g_enabled_debug_output = True
             if arg == "--no-debug":
                 g_enabled_debug_output = False
+            print(f"arg[...]={arg[:len('--new-var=')]}")
+            if arg[:len("--new-var=")] == "--new-var=":
+                split_arg = arg[len("--new-var="):].split(":")
+                if len(split_arg) != 2:
+                    print(f"--new-var format invalid, expected '--new-var=<VAR>:<NUMBER>'")
+                    sys.exit()
+                var, num = split_arg
+                if not is_valid_var(var):
+                    print("--new-var variable is an invalid variable")
+                    sys.exit()
+                num = convert_to_number_or_none(num)
+                if num == None:
+                    print("--new-var number is an invalid number")
+                    sys.exit()
+                variables[var] = num
         if (len(sys.argv) > 1 and os.path.isfile(sys.argv[-1])):
             # NOTE: This scope is the scripting system. Everything here is only for the scripting part
             fh = open(sys.argv[-1])
