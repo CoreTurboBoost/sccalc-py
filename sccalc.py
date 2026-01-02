@@ -1934,7 +1934,6 @@ def print_interactive_interpreter_start_text() -> None:
 
 if __name__ == "__main__":
     is_interactive = False
-    G_IS_EMBEDDED = True
     if (len(sys.argv) == 1):
         is_interactive = True
     if len(sys.argv) > 1:
@@ -1997,6 +1996,7 @@ if __name__ == "__main__":
             sys.exit(g_script_error_count != 0)
 
     if is_interactive:
+        G_IS_EMBEDDED = True
         print_interactive_interpreter_start_text()
         while True:
             def get_user_input_script(prompt: str) -> list[str]:
