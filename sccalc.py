@@ -1972,7 +1972,6 @@ if __name__ == "__main__":
                 g_enabled_debug_output = True
             if arg == "--no-debug":
                 g_enabled_debug_output = False
-            print(f"arg[...]={arg[:len('--new-var=')]}")
             if arg[:len("--new-var=")] == "--new-var=":
                 split_arg = arg[len("--new-var="):].split(":")
                 if len(split_arg) != 2:
