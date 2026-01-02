@@ -550,6 +550,8 @@ class SccalcEmbeddedExit(Exception):
     def __init__(self, code_or_msg: int or str):
         super()
         self.code_or_msg = code_or_msg
+    def get_code_or_msg(self) -> int or str:
+        return self.code_or_msg
     def __repr__(self) -> str:
         return f"SccalcEmbeddedExit(exit_code={self.code_or_msg})"
 G_IS_EMBEDDED = False
@@ -2016,7 +2018,8 @@ if __name__ == "__main__":
                 break;
             try:
                 run_interpreter(user_input)
-            except SccalcEmbeddedExit:
-                print("Interpreter exited ...")
+            except SccalcEmbeddedExit as e:
+                print( "Interpreter exited ...")
+                print(f" Error {e.get_code_or_msg()} occured")
     else:
         run_interpreter([sys.argv[1]])
