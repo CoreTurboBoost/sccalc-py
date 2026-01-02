@@ -11,7 +11,7 @@ import string
 import itertools
 
 APP_VERSION_MAJOR = 4
-APP_VERSION_MINOR = 1
+APP_VERSION_MINOR = 2
 APP_SCRIPT_VERSION = 7
 
 CUSTOM_SCRIPT_VERSION = False
@@ -547,12 +547,15 @@ def eval_expression(expression: str) -> (decimal.Decimal or None, list[str]):
     return (value, errors)
 
 class SccalcEmbeddedExit(Exception):
-    def __init__(self):
+    def __init__(self, code_or_msg: int or str):
         super()
+        self.code_or_msg = code_or_msg
+    def __repr__(self) -> str:
+        return f"SccalcEmbeddedExit(exit_code={self.code_or_msg})"
 G_IS_EMBEDDED = False
 def exit_script_command(code_or_msg: int or str):
     if G_IS_EMBEDDED:
-        raise SccalcEmbeddedExit
+        raise SccalcEmbeddedExit(code_or_msg)
     sys.exit(code_or_msg)
 
 class IOType:
@@ -1104,8 +1107,8 @@ def get_user_number_input(prompt, allow_program_exit=False) -> float:
             if allow_program_exit:
                 try:
                     exit_script_command("Exited by user on input prompt")
-                except SccalcEmbeddedExit:
-                    raise SccalcEmbeddedExit
+                except SccalcEmbeddedExit as e:
+                    raise e
             print(invalid_input_error_message)
             is_valid = False
     return number
@@ -1172,8 +1175,8 @@ def command_process_callback_input(values: list, tags: list[str]) -> None:
         prompt = "INPUT >> "
     try:
         variables["input"] = decimal.Decimal(get_user_number_input(prompt))
-    except SccalcEmbeddedExit:
-        raise SccalcEmbeddedExit
+    except SccalcEmbeddedExit as e:
+        raise e
 
 command_tree_print = CommandProcessTree("print",
      CommandProcessOptional(
@@ -1481,8 +1484,8 @@ def command_process_callback_inputf(values: list, tags: list[str]) -> None:
     while user_input_invalid:
         try:
             user_input = get_user_number_input(values[1])
-        except SccalcEmbeddedExit:
-            raise SccalcEmbeddedExit
+        except SccalcEmbeddedExit as e:
+            raise e
         user_input_invalid = False
         if "only-positive" in tags and user_input <= decimal.Decimal(0):
             user_input_invalid = True
