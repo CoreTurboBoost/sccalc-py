@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+#!/usr/bin/env -S python3 -O
 
 # Script Calc.py
 
@@ -73,7 +74,10 @@ def is_punct(input_str: str) -> bool:
 
 g_enabled_debug_output = True
 def console_output_debug_msg(message : str, end = "\n"):
-    if g_enabled_debug_output: print(f"[debug]: {message}", end = end)
+    if __debug__:
+        if g_enabled_debug_output: print(f"[debug]: {message}", end = end)
+    else:
+        pass
 g_enabled_echo_line_eval = True
 g_exit_on_failure = False
 g_script_error_count = 0
