@@ -640,9 +640,6 @@ class CommandProcessNode: # Abstract
     def reset_iterator(self) -> None:
         pass
     def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
-        '''
-        Return: (values, errors, tags)
-        '''
         pass
     def get_str(self) -> str:
         pass
