@@ -292,6 +292,23 @@ def pre_eval_lex_tokens(tokens: list[Token]) -> list[str]:
     @Param: tokens, modified in-place
     '''
     pass
+def substitute_vars_to_its_val(tokens: list[Token]) -> None:
+    '''
+    @Param: tokens, modified in place
+    @Note: Substitutes all variables for their values, except for a variable
+    that is begin assigned to.
+    '''
+    for i, token in enumerate(tokens):
+        if token.type == Token.TYPE_VAR:
+            next_is_assignment = False
+            if i+1 < len(tokens):
+                next_token = tokens[i+1]
+                if next_token.type == Token.TYPE_ASSIGNMENT:
+                    next_is_assignment = True
+            if (token.lexeame in variables.keys() and not next_is_assignment):
+                tokens[i].type = Token.TYPE_NUMBER
+                tokens[i].lexeame = str(variables[token.lexeame])
+
 def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, list[str]):
     '''
     Returns list(evaluated_value: decimal.Decimal, errors: list[str])
@@ -323,16 +340,7 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
             return True
         return False
 
-    for i, token in enumerate(tokens):
-        if token.type == Token.TYPE_VAR:
-            next_is_assignment = False
-            if i+1 < len(tokens):
-                next_token = tokens[i+1]
-                if next_token.type == Token.TYPE_ASSIGNMENT:
-                    next_is_assignment = True
-            if (token.lexeame in variables.keys() and not next_is_assignment):
-                tokens[i].type = Token.TYPE_NUMBER
-                tokens[i].lexeame = str(variables[token.lexeame])
+    substitute_vars_to_its_val(tokens)
 
     errors = []
     evaluated_value = 0
