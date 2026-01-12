@@ -286,6 +286,12 @@ def print_lex_errors(tokens : typing.List[Token], heading:str="") -> int:
         print(error)
     return len(errors)
 
+def pre_eval_lex_tokens(tokens: list[Token]) -> list[str]:
+    '''
+    Returns (parsed_tokens, errors)
+    @Param: tokens, modified in-place
+    '''
+    pass
 def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, list[str]):
     '''
     Returns list(evaluated_value: decimal.Decimal, errors: list[str])
