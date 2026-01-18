@@ -292,7 +292,7 @@ def pre_eval_lex_tokens(tokens: list[Token]) -> list[str]:
     @Param: tokens, modified in-place
     '''
     pass
-def substitute_vars_to_its_val(tokens: list[Token]) -> None:
+def substitute_vars_to_its_val_ip(tokens: list[Token]) -> None:
     '''
     @Param: tokens, modified in place
     @Note: Substitutes all variables for their values, except for a variable
