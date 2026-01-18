@@ -309,45 +309,17 @@ def substitute_vars_to_its_val_ip(tokens: list[Token]) -> None:
                 tokens[i].type = Token.TYPE_NUMBER
                 tokens[i].lexeame = str(variables[token.lexeame])
 
-def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, list[str]):
+def convert_constants_ip(tokens: list[Token]) -> None:
     '''
-    Returns list(evaluated_value: decimal.Decimal, errors: list[str])
-       evaluated_value : decimal.Decimal() or None on error.
-       errors : list[str], empty list on success.
+    @Param: tokens, modified in-place
     '''
-    tokens = tokens.copy()
-    def get_op_precedence(token : Token):
-        '''
-        get_precedence of operators
-        '''
-        # larger number greater precedence
-        if token.type == token.TYPE_BINARY_FUNCTION:
-            return BINARY_FUNCTIONS[token.lexeame].precedence
-        if (token.type == Token.TYPE_NONE or token.type == Token.TYPE_OPEN_BRACKET):
-            return LOWEST_PRECEDENCE_VALUE
-        if (token.type == Token.TYPE_ASSIGNMENT):
-            return ASSIGNMENT_PRECEDENCE_VALUE
-        if (token.type == Token.TYPE_FUNCTION):
-            return UNARY_FUNCTION_PRECEDENCE_VALUE
-        console_output_debug_msg(f"get_precedence fn param not recognised token_type:{token_type}")
-        return -1
-    def is_operator(token_type : Token):
-        if (token_type == Token.TYPE_BINARY_FUNCTION):
-            return True
-        if (token_type == Token.TYPE_FUNCTION):
-            return True
-        if (token_type == Token.TYPE_ASSIGNMENT):
-            return True
-        return False
+    for cur_token_index in range(len(tokens)):
+        cur_token = tokens[cur_token_index]
+        if (cur_token.type == Token.TYPE_CONST):
+            tokens[cur_token_index].lexeame = str(KNOWN_CONSTS[tokens[cur_token_index].lexeame])
+            tokens[cur_token_index].type = Token.TYPE_NUMBER
 
-    substitute_vars_to_its_val(tokens)
-
-    errors = []
-    evaluated_value = 0
-    operators_stack = []
-    numbers_stack: list[decimal.Decimal or str] = []
-    post_fix_token_list = []
-
+def convert_subtraction_to_negation_ip(tokens: list[Token]) -> None:
     open_bracket_token = Token()
     open_bracket_token.char_index = -1
     open_bracket_token.type = Token.TYPE_OPEN_BRACKET
@@ -361,14 +333,6 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
     zero_token.type = Token.TYPE_NUMBER
     zero_token.lexeame = "0"
 
-    # handle minus signs and convert constants
-    cur_token_index = 0
-    cur_token = None
-    for cur_token_index in range(len(tokens)):
-        cur_token = tokens[cur_token_index]
-        if (cur_token.type == Token.TYPE_CONST):
-            tokens[cur_token_index].lexeame = str(KNOWN_CONSTS[tokens[cur_token_index].lexeame])
-            tokens[cur_token_index].type = Token.TYPE_NUMBER
     cur_token_index = 0
     cur_token = None
     while (cur_token_index < len(tokens)):
@@ -400,6 +364,49 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
                         tokens.insert(cur_token_index+4, close_bracket_token)
                         cur_token_index += 3
         cur_token_index += 1
+
+def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, list[str]):
+    '''
+    Returns list(evaluated_value: decimal.Decimal, errors: list[str])
+       evaluated_value : decimal.Decimal() or None on error.
+       errors : list[str], empty list on success.
+    '''
+    tokens = tokens.copy()
+    def get_op_precedence(token : Token):
+        '''
+        get_precedence of operators
+        '''
+        # larger number greater precedence
+        if token.type == token.TYPE_BINARY_FUNCTION:
+            return BINARY_FUNCTIONS[token.lexeame].precedence
+        if (token.type == Token.TYPE_NONE or token.type == Token.TYPE_OPEN_BRACKET):
+            return LOWEST_PRECEDENCE_VALUE
+        if (token.type == Token.TYPE_ASSIGNMENT):
+            return ASSIGNMENT_PRECEDENCE_VALUE
+        if (token.type == Token.TYPE_FUNCTION):
+            return UNARY_FUNCTION_PRECEDENCE_VALUE
+        console_output_debug_msg(f"get_precedence fn param not recognised token_type:{token_type}")
+        return -1
+    def is_operator(token_type : Token):
+        if (token_type == Token.TYPE_BINARY_FUNCTION):
+            return True
+        if (token_type == Token.TYPE_FUNCTION):
+            return True
+        if (token_type == Token.TYPE_ASSIGNMENT):
+            return True
+        return False
+
+    substitute_vars_to_its_val_ip(tokens)
+
+    errors = []
+    evaluated_value = 0
+    operators_stack = []
+    numbers_stack: list[decimal.Decimal or str] = []
+    post_fix_token_list = []
+
+    # handle minus signs and convert constants
+    convert_constants_ip(tokens)
+    convert_subtraction_to_negation_ip(tokens)
 
     console_output_debug_msg(f"Printing partial processed tokens:")
     debug_token_str = " ".join([token.lexeame for token in tokens])
