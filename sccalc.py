@@ -11,6 +11,12 @@ import os
 import string
 import itertools
 
+G_BYTECODE_AVAILABLE = True
+try:
+    import ByteCodeVM
+except ModuleNotFoundError:
+    G_BYTECODE_AVAILABLE = False
+
 APP_VERSION_MAJOR = 5
 APP_VERSION_MINOR = 0
 APP_SCRIPT_VERSION = 7
