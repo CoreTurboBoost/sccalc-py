@@ -19,11 +19,16 @@ except ModuleNotFoundError:
 
 APP_VERSION_MAJOR = 5
 APP_VERSION_MINOR = 0
-APP_SCRIPT_VERSION = 7
+APP_SCRIPT_VERSION = 8
 
 CUSTOM_SCRIPT_VERSION = False
 
-variables = {"script_version": decimal.Decimal(APP_SCRIPT_VERSION)}
+variables = {"script_version": decimal.Decimal(APP_SCRIPT_VERSION),
+             "is_custom": decimal.Decimal(CUSTOM_SCRIPT_VERSION==True)}
+initial_variables_descriptions = {
+        "script_version": "The supported script version of the languages interpreter",
+        "is_custom": "1 if sccalc has been modified from the standard, else 0"
+        }
 iterator_arrays = {} # {str: list[decimal.Decimal]}
 
 PROGRAM_LICENSE = """
@@ -1683,15 +1688,27 @@ def output_script_standard_file(standards_output_path):
     file_handle.write("   Used for variable names and iterator names.\n")
     file_handle.write("   Valid characters: Alphabetic or  _  followed by any number of alphanumeric or  _  .\n")
     file_handle.write("\nExpression:\n")
+    file_handle.write("   In 'in fix' format, the operator in placed between the operands.\n")
     file_handle.write("   Consists of Identifiers, constants, Unary-operators, Binary-Operators and variable assignments.\n")
     file_handle.write("   If a line does not begin with a  !  or  #  it is assumed to be a expression.\n")
+    file_handle.write("   Any '(' must have a matching ')' and vice versa.\n")
+    file_handle.write("   '(' and ')' prioritise the evaluation to inner expression(s).\n")
     file_handle.write("\nVariables description:\n")
     file_handle.write("   All assigned variables are global variables, there are no local variables.\n")
     file_handle.write("   Variables can only store decimal (or floating point) numbers.\n")
     file_handle.write("   Variables can not be deleted or undefined, once they have been assigned to.\n")
     file_handle.write("\nVariable assignment:\n")
     file_handle.write("   <Identifier> = <Expression>\n")
-    serialized_predefined_variables = " ".join(variables.keys())
+    def serialize_predefined_variables() -> list[str]:
+        serialized_vars = []
+        max_var_len = max(map(lambda a: len(a), variables.keys()))
+        for var in variables.keys():
+            var_description = initial_variables_descriptions.get(var)
+            if var_description == None:
+                raise ValueError(f"'initial_variables_descriptions' is missing a variable entry '{var}'")
+            serialized_vars.append(f"{var:<{max_var_len}} - {var_description}")
+        return serialized_vars
+    serialized_predefined_variables = "\n   ".join(serialize_predefined_variables())
     file_handle.write("\nPre-defined variables:\n")
     file_handle.write(f"   {serialized_predefined_variables}\n")
     serialized_consts = " ".join(KNOWN_CONSTS.keys())
@@ -1729,12 +1746,14 @@ def output_script_standard_file(standards_output_path):
     longest_command_word_len = max([len(cmd[0].get_str()) for cmd in command_trees.values()])
     file_handle.write("\nAvailable commands:\n")
     file_handle.write(f"   !strict\n      Tells the interpreter to exit for any error that occurs\n")
-    file_handle.write(f"   !debug [on|off|toggle]\n      Enable or disable debug output\n")
+    file_handle.write(f"   !debug [on|off|toggle]\n      Enable or disable debug output (Maybe ignored, in which case no program debug information is output)\n")
     file_handle.write(f"   !echo [on|off|toggle]\n      Enable or disable per line expression evaluation output\n")
     file_handle.write(f"   !endif\n      Marks end of a if block\n")
     file_handle.write(f"   !endwhile\n      Marks end of a while block\n")
     for command_tree, command_callback in command_trees.values():
         file_handle.write(f"   {command_tree.get_str()}\n      {command_process_descriptions.get(command_tree.name)}\n")
+    file_handle.write(f"\nNotes:\n")
+    file_handle.write("   Output Debug information is implementation defined")
     file_handle.close()
 
 class SccalcInterpreter:
