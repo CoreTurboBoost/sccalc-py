@@ -1575,6 +1575,53 @@ def command_process_callback_scan(values: list, tags: list[str]) -> list[str]:
         i += 1
     return []
 
+
+command_tree_take_while = CommandProcessTree("takewhile",
+    CommandProcessRequiredGroup([
+        CommandProcessIterator(IOType.IOT_IN_OUT, ""),
+        CommandProcessVariable(IOType.IOT_OUT, "", False),
+        CommandProcessExpression("")
+    ])
+)
+
+def command_process_callback_take_while(values: list, tags: list[str]) -> list[str]:
+    global iterator_arrays, variables
+    target_iterator_name = values[0]
+    chosen_variable_identifier = values[1]
+    for i, val in enumerate(iterator_arrays[target_iterator_name]):
+        variables[chosen_variable_identifier] = val
+        value, errors = eval_expression(values[2])
+        if len(errors) > 0:
+            return errors
+        if value == 0:
+            iterator_arrays[target_iterator_name][i:] = []
+            break
+    return []
+
+command_tree_drop_while = CommandProcessTree("dropwhile",
+    CommandProcessRequiredGroup([
+        CommandProcessIterator(IOType.IOT_IN_OUT, ""),
+        CommandProcessVariable(IOType.IOT_OUT, "", False),
+        CommandProcessExpression("")
+    ])
+)
+
+def command_process_callback_drop_while(values: list, tags: list[str]) -> list[str]:
+    global iterator_arrays, variables
+    target_iterator_name = values[0]
+    chosen_variable_identifier = values[1]
+    for i, val in enumerate(iterator_arrays[target_iterator_name]):
+        variables[chosen_variable_identifier] = val
+        value, errors = eval_expression(values[2])
+        if len(errors) > 0:
+            return errors
+        if value != 0:
+            iterator_arrays[target_iterator_name][:i] = []
+            break
+    else:
+        iterator_arrays[target_iterator_name] = []
+    return []
+
 command_trees = {
         "if": (command_tree_if, None),
         "while": (command_tree_while, None),
@@ -1597,6 +1644,8 @@ command_trees = {
         "printf": (command_tree_printf, command_process_callback_printf),
         "inputf": (command_tree_inputf, command_process_callback_inputf),
         "scan": (command_tree_scan, command_process_callback_scan),
+        "takewhile": (command_tree_take_while, command_process_callback_take_while),
+        "dropwhile": (command_tree_drop_while, command_process_callback_drop_while),
         }
 
 command_process_descriptions = {
@@ -1620,7 +1669,9 @@ command_process_descriptions = {
         "read": "Attempts to write the given iterator to a given file path. The success of the operation is returned into a chosen variable. 0 is success, any other value is a failure. 1 - permission error. 2 - encode error. 3 - de-serialization error. 4 - file not found. 5 - is a directory",
         "printf": "Formatted version of the !print command",
         "inputf": "Formatted version of the !input command, allows takes output variable as a parameter",
-        "scan": "Performs the higher order function, scan, on an iterator. Given the Iterator, Initial Value, Current Value Variable Name, Total Value Variable Name and an expression. The given Iterator would be modified in-place"
+        "scan": "Performs the higher order function, scan, on an iterator. Given the Iterator, Initial Value, Current Value Variable Name, Total Value Variable Name and an expression. The given Iterator would be modified in-place",
+        "takewhile": "Performs the higher order function, take-while, on an iterator. Given the Iterator, Current Value Variable Name and an expression. The given Iterator would be modified in-place",
+        "dropwhile": "Performs the higher order function, drop-while, on and iterator. Given the Iterator, Current Value Variable Name and an expression. The given Iterator would be modified in-place",
 }
 
 format_specifier_descriptions = {
