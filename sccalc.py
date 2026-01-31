@@ -1099,7 +1099,7 @@ KNOWN_CONSTS = {"pi": math.pi, "e": math.e, "deg2rad": (math.pi/180), "rad2deg":
 '''
 NOTE: These functions take a single decimal.Decimal as input and returns a single Decimal.Decimal
 '''
-KNOWN_FUNCTIONS = {"negate": negate, "ceil": math.ceil, "floor": math.floor, "round": round, "sqrt": math.sqrt, "log10": log10, "log2": log2, "cos": math.cos, "sin": math.sin, "tan": math.tan, "cosec": cosec, "sec": sec, "cot": cot, "acos": math.acos, "asin": math.asin, "atan": math.atan}
+KNOWN_FUNCTIONS = {"not": lambda x: decimal.Decimal(not bool(x)), "negate": negate, "ceil": math.ceil, "floor": math.floor, "round": round, "sqrt": math.sqrt, "log10": log10, "log2": log2, "cos": math.cos, "sin": math.sin, "tan": math.tan, "cosec": cosec, "sec": sec, "cot": cot, "acos": math.acos, "asin": math.asin, "atan": math.atan}
 
 
 BINARY_FUNCTIONS = {"+": BinaryFunction('+', 10, lambda a,b: a+b, None), 
