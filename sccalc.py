@@ -1351,7 +1351,10 @@ def command_process_callback_filter(values: list, tags: list[str]) -> None:
     iterator_arrays[values[0]] = filtered_list
 
 command_tree_next = CommandProcessTree("next",
-    CommandProcessIterator(IOType.IOT_IN_OUT, "")
+    CommandProcessAddition(
+        CommandProcessIterator(IOType.IOT_IN_OUT, ""),
+        CommandProcessVariable(IOType.IOT_OUT, "out_var", False)
+    )
 )
 
 def command_process_callback_next(values: list, tags: list[str]) -> None:
@@ -1360,7 +1363,10 @@ def command_process_callback_next(values: list, tags: list[str]) -> None:
     if len(iterator_arrays[iterator_name]) == 0:
         console_output_debug_msg(f"next callback: Iterator {iterator_name} is empty")
         return None
-    variables[iterator_name] = iterator_arrays[iterator_name].pop()
+    if "out_var" in tags:
+        variables[values[1]] = iterator_arrays[iterator_name].pop()
+    else:
+        variables[iterator_name] = iterator_arrays[iterator_name].pop()
     console_output_debug_msg("next callback: Assigned new value to variable {values[0]}={variables[values[0]]}")
 
 command_tree_sum = CommandProcessTree("sum",
