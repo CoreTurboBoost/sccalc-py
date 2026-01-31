@@ -1543,6 +1543,40 @@ def command_process_callback_inputf(values: list, tags: list[str]) -> None:
 
     variables[values[0]] = user_input
 
+command_tree_scan = CommandProcessTree("scan",
+   CommandProcessRequiredGroup([
+       CommandProcessIterator(IOType.IOT_IN_OUT, ""),
+       CommandProcessXOR([
+           CommandProcessLiteralNumber(""),
+           CommandProcessVariable(IOType.IOT_IN, "", True),
+       ]),
+       CommandProcessVariable(IOType.IOT_OUT, "", False),
+       CommandProcessVariable(IOType.IOT_OUT, "", False),
+       CommandProcessExpression("")
+   ])
+)
+
+def command_process_callback_scan(values: list, tags: list[str]) -> list[str]:
+    global variables, iterator_arrays
+    command_errors = []
+    initial_val = values[1]
+    total_val = initial_val
+    variable_name_cur_val = values[2]
+    variable_name_total = values[3]
+    target_iterator_name = values[0]
+    target_iterator_len = len(iterator_arrays[target_iterator_name])
+    i = 0
+    while i < target_iterator_len:
+        variables[variable_name_cur_val] = iterator_arrays[target_iterator_name][i]
+        variables[variable_name_total] = total_val
+        total_val, eval_errors = eval_expression(values[4])
+        if len(eval_errors) > 0 or total_val == None:
+            command_errors.extend(eval_errors)
+            continue
+        iterator_arrays[target_iterator_name][i] = total_val
+        i += 1
+    return command_errors
+
 command_trees = {
         "if": (command_tree_if, None),
         "while": (command_tree_while, None),
@@ -1564,6 +1598,7 @@ command_trees = {
         "read": (command_tree_read, command_process_callback_read),
         "printf": (command_tree_printf, command_process_callback_printf),
         "inputf": (command_tree_inputf, command_process_callback_inputf),
+        "scan": (command_tree_scan, command_process_callback_scan),
         }
 
 command_process_descriptions = {
@@ -1587,6 +1622,7 @@ command_process_descriptions = {
         "read": "Attempts to write the given iterator to a given file path. The success of the operation is returned into a chosen variable. 0 is success, any other value is a failure. 1 - permission error. 2 - encode error. 3 - de-serialization error. 4 - file not found. 5 - is a directory",
         "printf": "Formatted version of the !print command",
         "inputf": "Formatted version of the !input command, allows takes output variable as a parameter",
+        "scan": "Performs the higher order function, scan, on an iterator. Given the Iterator, Initial Value, Current Value Variable Name, Total Value Variable Name and an expression. The given Iterator would be modified in-place"
 }
 
 format_specifier_descriptions = {
