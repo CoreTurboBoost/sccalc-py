@@ -29,7 +29,7 @@ initial_variables_descriptions = {
         "script_version": "The supported script version of the languages interpreter",
         "is_custom": "1 if sccalc has been modified from the standard, else 0"
         }
-iterator_arrays = {} # {str: list[decimal.Decimal]}
+iterator_arrays: typing.Dict[str, list[decimal.Decimal]] = {}
 
 PROGRAM_LICENSE = """
 Copyright 2025 CoreTurboBoost
