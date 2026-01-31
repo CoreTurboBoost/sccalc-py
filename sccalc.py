@@ -1689,7 +1689,7 @@ def output_script_standard_file(standards_output_path):
     file_handle.write("   Each command has a unique interface (set of parameters) and have unique functionality.\n")
     file_handle.write("   Commands allows for text to be surrounded in double quotes (\") to be passed into a single parameter literally (\\ still behaves the same in or out of comments).\n")
     file_handle.write("   Some characters can be escaped by placing a \\ directly in front of them.\n")
-    file_handle.write("     Escapable characters are  \"  \\")
+    file_handle.write("     Escapable characters are  \"  \\\n")
     file_handle.write("\nIdentifiers:\n")
     file_handle.write("   Used for variable names and iterator names.\n")
     file_handle.write("   Valid characters: Alphabetic or  _  followed by any number of alphanumeric or  _  .\n")
