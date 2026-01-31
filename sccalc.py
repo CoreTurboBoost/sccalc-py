@@ -1558,7 +1558,6 @@ command_tree_scan = CommandProcessTree("scan",
 
 def command_process_callback_scan(values: list, tags: list[str]) -> list[str]:
     global variables, iterator_arrays
-    command_errors = []
     initial_val = values[1]
     total_val = initial_val
     variable_name_cur_val = values[2]
@@ -1571,11 +1570,10 @@ def command_process_callback_scan(values: list, tags: list[str]) -> list[str]:
         variables[variable_name_total] = total_val
         total_val, eval_errors = eval_expression(values[4])
         if len(eval_errors) > 0 or total_val == None:
-            command_errors.extend(eval_errors)
-            continue
+            return eval_errors
         iterator_arrays[target_iterator_name][i] = total_val
         i += 1
-    return command_errors
+    return []
 
 command_trees = {
         "if": (command_tree_if, None),
