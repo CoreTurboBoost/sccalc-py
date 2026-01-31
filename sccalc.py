@@ -752,7 +752,7 @@ class CommandProcessAddition(CommandProcessNode):
     def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
         if len(phrases) == 0:
             console_output_debug_msg(" CommandProcessAddition: Missing required arguments")
-            return CommandProcessMatchReturnData([], ["Missing required arguements"], [])
+            return CommandProcessMatchReturnData([], ["Missing required arguments"], [])
         phrases_index = 0
         data = self.main_node.match(phrases[phrases_index:])
         if data.has_errors():
@@ -804,7 +804,7 @@ class CommandProcessLiteralNumber(CommandProcessNode):
         self.tag = tag
     def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
         if len(phrases) == 0:
-            return CommandProcessMatchReturnData([], ["Missing required arguements"], [])
+            return CommandProcessMatchReturnData([], ["Missing required arguments"], [])
         converted_value = convert_to_number_or_none(phrases[0])
         if converted_value == None:
             console_output_debug_msg(" CommandProcessLiteralNumber: Failed to convert")
@@ -819,13 +819,13 @@ class CommandProcessVariable(CommandProcessNode):
         self.convert_in_var_to_number = convert_in_var_to_number
     def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
         if len(phrases) == 0:
-            return CommandProcessMatchReturnData([], ["Missing required arguements"], [])
+            return CommandProcessMatchReturnData([], ["Missing required arguments"], [])
         phrase = phrases[0]
         var_exists = variables.get(phrase) != None
         if self.io_type == IOType.IOT_IN or self.io_type == IOType.IOT_IN_OUT:
             if not var_exists:
                 console_output_debug_msg(" CommandProcessVariable: use of undefined var")
-                return CommandProcessMatchReturnData([], [f"Varible '{phrase}' is undefined"], [])
+                return CommandProcessMatchReturnData([], [f"Variable '{phrase}' is undefined"], [])
             if self.convert_in_var_to_number and self.io_type == IOType.IOT_IN:
                 phrase = variables.get(phrase)
         return CommandProcessMatchReturnData([phrase], [], [self.tag])
@@ -838,7 +838,7 @@ class CommandProcessIterator(CommandProcessNode):
         self.tag = tag
     def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
         if len(phrases) == 0:
-            return CommandProcessMatchReturnData([], ["Missing required arguements"], [])
+            return CommandProcessMatchReturnData([], ["Missing required arguments"], [])
         phrase = phrases[0]
         iterator_exists = iterator_arrays.get(phrase) != None
         if self.io_type == IOType.IOT_IN or self.io_type == IOType.IOT_IN_OUT:
@@ -855,7 +855,7 @@ class CommandProcessCmpOperator(CommandProcessNode):
         self.tag = tag
     def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
         if len(phrases) == 0:
-            return CommandProcessMatchReturnData([], ["Missing required arguements"], [])
+            return CommandProcessMatchReturnData([], ["Missing required arguments"], [])
         phrase = phrases[0]
         operator = comparison_operators.get(phrase)
         if operator == None:
@@ -869,7 +869,7 @@ class CommandProcessExpression(CommandProcessNode):
         self.tag = tag
     def match(self, phrases: list[str]) -> CommandProcessMatchReturnData:
         if len(phrases) == 0:
-            return CommandProcessMatchReturnData([], ["Missing required arguements"], [])
+            return CommandProcessMatchReturnData([], ["Missing required arguments"], [])
         phrase = phrases[0]
         lex_tokens = lex(phrase)
         errors = get_lex_error_strs(lex_tokens)
