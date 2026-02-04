@@ -379,10 +379,10 @@ def convert_subtraction_to_negation_ip(tokens: list[Token]) -> None:
                         cur_token_index += 3
         cur_token_index += 1
 
-def convert_infix_to_postfix_expr_ip(tokens: list[Token]) -> list[str]:
+def convert_infix_to_postfix_expr_ip(tokens: list[Token]) -> tuple[list[Token], list[str]]:
     '''
     @Param: tokens, modified in-place
-    @Return: errors as a list of str
+    @Return: tuple of postfix tokens and a list of errors as a string
     '''
     #infix to postfix
     errors: list[str] = []
@@ -458,6 +458,7 @@ def convert_infix_to_postfix_expr_ip(tokens: list[Token]) -> list[str]:
 
     if (open_bracket_count > 0):
         errors.append(f"Bracket mismatch. Some brackets dont have \')\', {open_bracket_count} unclosed brackets remaining")
+    return post_fix_token_list, errors
 
 def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, list[str]):
     '''
