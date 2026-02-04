@@ -388,10 +388,11 @@ def convert_infix_to_postfix_expr_ip(tokens: list[Token]) -> list[str]:
     open_bracket_count = 0
     for token_index, token in enumerate(tokens):
 
-        post_fix_str = ""
-        for o in post_fix_token_list:
-            post_fix_str += str(o.lexeame) + " "
-        console_output_debug_msg(f"[{token_index}] post fix expression: \'{post_fix_str}\'")
+        if __debug__:
+            post_fix_str = ""
+            for o in post_fix_token_list:
+                post_fix_str += str(o.lexeame) + " "
+            console_output_debug_msg(f"[{token_index}] post fix expression: \'{post_fix_str}\'")
 
         if (token.type == Token.TYPE_IDENTIFIER or token.type == Token.TYPE_CONST or token.type == Token.TYPE_VAR):
             post_fix_token_list.append(token)
