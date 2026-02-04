@@ -390,15 +390,13 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
             operators_stack.append(token)
         elif (token.type == Token.TYPE_CLOSE_BRACKET):
             open_bracket_count -= 1
-            if (len(operators_stack) == 0):
-                errors.append("Unmatched brackets, no matching \'(\' found")
-                continue
-            cur_token = operators_stack[-1]
-            while (cur_token.type != Token.TYPE_OPEN_BRACKET):
+            cur_token = None
+            while (cur_token == None or cur_token.type != Token.TYPE_OPEN_BRACKET):
+                if cur_token != None:
+                    post_fix_token_list.append(operators_stack.pop())
                 if (len(operators_stack) == 0):
-                    errors.append("Unmatched brackets, no matching \'(\' found")
+                    errors.append(f"Unmatched brackets, no matching \'(\' found for bracket at character [{token.char_index+1}]")
                     break
-                post_fix_token_list.append(operators_stack.pop())
                 cur_token = operators_stack[-1]
             if (len(operators_stack) > 0):
                 operators_stack.pop() 
