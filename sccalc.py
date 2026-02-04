@@ -435,7 +435,7 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
                 if cur_token != None:
                     post_fix_token_list.append(operators_stack.pop())
                 if (len(operators_stack) == 0):
-                    errors.append(f"Unmatched brackets, no matching \'(\' found for bracket at character [{token.char_index+1}]")
+                    errors.append(f"Unmatched brackets, no matching \'(\' found")
                     break
                 cur_token = operators_stack[-1]
             if (len(operators_stack) > 0):
