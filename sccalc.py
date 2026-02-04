@@ -379,53 +379,11 @@ def convert_subtraction_to_negation_ip(tokens: list[Token]) -> None:
                         cur_token_index += 3
         cur_token_index += 1
 
-def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, list[str]):
+def convert_infix_to_postfix_expr_ip(tokens: list[Token]) -> list[str]:
     '''
-    Returns list(evaluated_value: decimal.Decimal, errors: list[str])
-       evaluated_value : decimal.Decimal() or None on error.
-       errors : list[str], empty list on success.
+    @Param: tokens, modified in-place
+    @Return: errors as a list of str
     '''
-    tokens = tokens.copy()
-    def get_op_precedence(token : Token):
-        '''
-        get_precedence of operators
-        '''
-        # larger number greater precedence
-        if token.type == token.TYPE_BINARY_FUNCTION:
-            return BINARY_FUNCTIONS[token.lexeame].precedence
-        if (token.type == Token.TYPE_NONE or token.type == Token.TYPE_OPEN_BRACKET):
-            return LOWEST_PRECEDENCE_VALUE
-        if (token.type == Token.TYPE_ASSIGNMENT):
-            return ASSIGNMENT_PRECEDENCE_VALUE
-        if (token.type == Token.TYPE_FUNCTION):
-            return UNARY_FUNCTION_PRECEDENCE_VALUE
-        console_output_debug_msg(f"get_precedence fn param not recognised token_type:{token_type}")
-        return -1
-    def is_operator(token_type : Token):
-        if (token_type == Token.TYPE_BINARY_FUNCTION):
-            return True
-        if (token_type == Token.TYPE_FUNCTION):
-            return True
-        if (token_type == Token.TYPE_ASSIGNMENT):
-            return True
-        return False
-
-    substitute_vars_to_its_val_ip(tokens)
-
-    errors = []
-    evaluated_value = 0
-    operators_stack = []
-    numbers_stack: list[decimal.Decimal or str] = []
-    post_fix_token_list = []
-
-    # handle minus signs and convert constants
-    convert_constants_ip(tokens)
-    convert_subtraction_to_negation_ip(tokens)
-
-    console_output_debug_msg(f"Printing partial processed tokens:")
-    debug_token_str = " ".join([token.lexeame for token in tokens])
-    console_output_debug_msg(debug_token_str)
-
     #infix to postfix
     open_bracket_count = 0
     for token_index, token in enumerate(tokens):
@@ -496,6 +454,54 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
 
     if (open_bracket_count > 0):
         errors.append(f"Bracket mismatch. Some brackets dont have \')\', {open_bracket_count} unclosed brackets remaining")
+
+def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, list[str]):
+    '''
+    Returns list(evaluated_value: decimal.Decimal, errors: list[str])
+       evaluated_value : decimal.Decimal() or None on error.
+       errors : list[str], empty list on success.
+    '''
+    tokens = tokens.copy()
+    def get_op_precedence(token : Token):
+        '''
+        get_precedence of operators
+        '''
+        # larger number greater precedence
+        if token.type == token.TYPE_BINARY_FUNCTION:
+            return BINARY_FUNCTIONS[token.lexeame].precedence
+        if (token.type == Token.TYPE_NONE or token.type == Token.TYPE_OPEN_BRACKET):
+            return LOWEST_PRECEDENCE_VALUE
+        if (token.type == Token.TYPE_ASSIGNMENT):
+            return ASSIGNMENT_PRECEDENCE_VALUE
+        if (token.type == Token.TYPE_FUNCTION):
+            return UNARY_FUNCTION_PRECEDENCE_VALUE
+        console_output_debug_msg(f"get_precedence fn param not recognised token_type:{token_type}")
+        return -1
+    def is_operator(token_type : Token):
+        if (token_type == Token.TYPE_BINARY_FUNCTION):
+            return True
+        if (token_type == Token.TYPE_FUNCTION):
+            return True
+        if (token_type == Token.TYPE_ASSIGNMENT):
+            return True
+        return False
+
+    substitute_vars_to_its_val_ip(tokens)
+
+    errors = []
+    evaluated_value = 0
+    operators_stack = []
+    numbers_stack: list[decimal.Decimal or str] = []
+    post_fix_token_list = []
+
+    # handle minus signs and convert constants
+    convert_constants_ip(tokens)
+    convert_subtraction_to_negation_ip(tokens)
+
+    console_output_debug_msg(f"Printing partial processed tokens:")
+    debug_token_str = " ".join([token.lexeame for token in tokens])
+    console_output_debug_msg(debug_token_str)
+
 
     # debug
     post_fix_str = ""
