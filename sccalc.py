@@ -331,6 +331,9 @@ def convert_constants_ip(tokens: list[Token]) -> None:
             tokens[cur_token_index].type = Token.TYPE_NUMBER
 
 def convert_subtraction_to_negation_ip(tokens: list[Token]) -> None:
+    '''
+    @Param: tokens, modified in-place
+    '''
     open_bracket_token = Token()
     open_bracket_token.char_index = -1
     open_bracket_token.type = Token.TYPE_OPEN_BRACKET
