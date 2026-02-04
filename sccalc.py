@@ -385,6 +385,9 @@ def convert_infix_to_postfix_expr_ip(tokens: list[Token]) -> list[str]:
     @Return: errors as a list of str
     '''
     #infix to postfix
+    errors: list[str] = []
+    post_fix_token_list: list[Token] = []
+    operators_stack: list[Token] = []
     open_bracket_count = 0
     for token_index, token in enumerate(tokens):
 
@@ -489,11 +492,8 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
 
     substitute_vars_to_its_val_ip(tokens)
 
-    errors = []
     evaluated_value = 0
-    operators_stack = []
     numbers_stack: list[decimal.Decimal or str] = []
-    post_fix_token_list = []
 
     # handle minus signs and convert constants
     convert_constants_ip(tokens)
