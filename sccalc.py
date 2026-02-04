@@ -430,6 +430,9 @@ def convert_infix_to_postfix_expr_ip(tokens: list[Token]) -> tuple[list[Token], 
             operators_stack.append(token)
         elif (token.type == Token.TYPE_CLOSE_BRACKET):
             open_bracket_count -= 1
+            if (len(operators_stack) == 0):
+                errors.append("Unmatched brackets, no matching \'(\' found")
+                continue
             cur_token = operators_stack[-1]
             while (cur_token.type != Token.TYPE_OPEN_BRACKET):
                 if (len(operators_stack) == 0):
