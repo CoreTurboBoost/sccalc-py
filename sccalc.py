@@ -379,6 +379,30 @@ def convert_subtraction_to_negation_ip(tokens: list[Token]) -> None:
                         cur_token_index += 3
         cur_token_index += 1
 
+def get_op_precedence(token : Token):
+    '''
+    get_precedence of operators
+    '''
+    # larger number greater precedence
+    if token.type == token.TYPE_BINARY_FUNCTION:
+        return BINARY_FUNCTIONS[token.lexeame].precedence
+    if (token.type == Token.TYPE_NONE or token.type == Token.TYPE_OPEN_BRACKET):
+        return LOWEST_PRECEDENCE_VALUE
+    if (token.type == Token.TYPE_ASSIGNMENT):
+        return ASSIGNMENT_PRECEDENCE_VALUE
+    if (token.type == Token.TYPE_FUNCTION):
+        return UNARY_FUNCTION_PRECEDENCE_VALUE
+    console_output_debug_msg(f"get_precedence fn param not recognised token_type:{token_type}")
+    return -1
+def is_operator(token_type : Token):
+    if (token_type == Token.TYPE_BINARY_FUNCTION):
+        return True
+    if (token_type == Token.TYPE_FUNCTION):
+        return True
+    if (token_type == Token.TYPE_ASSIGNMENT):
+        return True
+    return False
+
 def convert_infix_to_postfix_expr_ip(tokens: list[Token]) -> tuple[list[Token], list[str]]:
     '''
     @Param: tokens, modified in-place
@@ -467,29 +491,6 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
        errors : list[str], empty list on success.
     '''
     tokens = tokens.copy()
-    def get_op_precedence(token : Token):
-        '''
-        get_precedence of operators
-        '''
-        # larger number greater precedence
-        if token.type == token.TYPE_BINARY_FUNCTION:
-            return BINARY_FUNCTIONS[token.lexeame].precedence
-        if (token.type == Token.TYPE_NONE or token.type == Token.TYPE_OPEN_BRACKET):
-            return LOWEST_PRECEDENCE_VALUE
-        if (token.type == Token.TYPE_ASSIGNMENT):
-            return ASSIGNMENT_PRECEDENCE_VALUE
-        if (token.type == Token.TYPE_FUNCTION):
-            return UNARY_FUNCTION_PRECEDENCE_VALUE
-        console_output_debug_msg(f"get_precedence fn param not recognised token_type:{token_type}")
-        return -1
-    def is_operator(token_type : Token):
-        if (token_type == Token.TYPE_BINARY_FUNCTION):
-            return True
-        if (token_type == Token.TYPE_FUNCTION):
-            return True
-        if (token_type == Token.TYPE_ASSIGNMENT):
-            return True
-        return False
 
     substitute_vars_to_its_val_ip(tokens)
 
