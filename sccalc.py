@@ -505,7 +505,7 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
     debug_token_str = " ".join([token.lexeame for token in tokens])
     console_output_debug_msg(debug_token_str)
 
-    postfix_token_list, errors = convert_infix_to_postfix_expr_ip(tokens)
+    post_fix_token_list, errors = convert_infix_to_postfix_expr_ip(tokens)
 
     # debug
     post_fix_str = ""
