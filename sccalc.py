@@ -1662,7 +1662,7 @@ command_process_descriptions = {
         "count": "Returns the number of remaining values within an iterator, into a chosen variable",
         "map": "Higher order function that changes each value given an expression. The current iterated value is the variable with the same name as the iterator, Iterator is modifed in place",
         "filter": "Higher order function, removes values from an iterator, given a condition, The current iterated value is the variable with the same name as the iterator. Iterator is modified in place",
-        "next": "Assumes iterator is not empty. Pops the next value from the iterator and assigns it to a variable with the same name as the iterator",
+        "next": "Assumes iterator is not empty. Pops the next value from the iterator and assigns it to the optional output variable, or a variable with the same name as the iterator, if the optional output variable is not provided",
         "sum": "Higher order function that returns the sum into a chosen output variable, from a given iterator",
         "product": "Higher order function that returns the product into a chosen output variable, from a given iterator",
         "write": "Attempts to write the given iterator to a given file path. The success of the operation is returned into a chosen variable. 0 is success, any other value is a failure. 1 - permission error. 2 - decode error. 5 - is a directory",
