@@ -535,15 +535,8 @@ def gen_rpn_tokens_from_lex_tokens(tokens: list[Token]) -> (list[Token] or None,
     '''
     @Return Tuple of generated RPN tokens as a list and a list of errors in string form
     '''
-    rpn_eval_error = get_rpn_tokens_error(tokens)
-    if rpn_eval_error != None:
-        return [rpn_eval_error, ]
-    tokens = tokens.copy()
 
-    substitute_vars_to_its_val_ip(tokens)
-
-    evaluated_value = 0
-    numbers_stack: list[decimal.Decimal or str] = []
+    handle_assignment_replacement_ip(tokens)
 
     # handle minus signs and convert constants
     convert_constants_ip(tokens)
@@ -553,8 +546,12 @@ def gen_rpn_tokens_from_lex_tokens(tokens: list[Token]) -> (list[Token] or None,
     debug_token_str = " ".join([token.lexeame for token in tokens])
     console_output_debug_msg(debug_token_str)
 
-    post_fix_token_list, errors = convert_infix_to_postfix_expr_ip(tokens)
-    return post_fix_token_list
+    post_fix_token_list, errors = convert_infix_to_postfix_expr(tokens)
+    rpn_eval_error = get_rpn_tokens_error(post_fix_token_list)
+    if rpn_eval_error != None:
+        return None, [rpn_eval_error, ]
+    tokens = tokens.copy()
+    return post_fix_token_list, []
 
 def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, list[str]):
     '''
@@ -562,7 +559,10 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
        evaluated_value : decimal.Decimal() or None on error.
        errors : list[str], empty list on success.
     '''
-    post_fix_token_list = gen_rpn_tokens_from_lex_tokens(tokens)
+    post_fix_token_list, rpn_errors = gen_rpn_tokens_from_lex_tokens(tokens)
+    if len(rpn_errors) > 0:
+        return (None, rpn_errors)
+    substitute_vars_to_its_val_ip(post_fix_token_list)
 
     # debug
     post_fix_str = ""
@@ -573,8 +573,9 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
 
     console_output_debug_msg(f"RPN Errors from function: {get_rpn_tokens_error(post_fix_token_list)}")
 
-    if (len(errors) > 0):
-        return (None, errors)
+    evaluated_value = 0
+    numbers_stack: list[decimal.Decimal or str] = []
+    errors: list[str] = []
 
     def is_number(a) -> bool:
         return isinstance(a, decimal.Decimal)
