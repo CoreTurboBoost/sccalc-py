@@ -422,9 +422,9 @@ def is_operator(token_type : Token):
         return True
     return False
 
-def convert_infix_to_postfix_expr_ip(tokens: list[Token]) -> tuple[list[Token], list[str]]:
+def convert_infix_to_postfix_expr(tokens: list[Token]) -> tuple[list[Token], list[str]]:
     '''
-    @Param: tokens, modified in-place
+    @Param: tokens, list of lexical tokens to convert into rpn notation
     @Return: tuple of postfix tokens and a list of errors as a string
     '''
     #infix to postfix
