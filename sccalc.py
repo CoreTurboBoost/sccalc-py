@@ -644,6 +644,12 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
         return (None, ["Remaining value is not a number"])
     return (numbers_stack[0], errors)
 
+def rpn_tokens_to_bytecode(rpn_tokens: list[Token]) -> ByteCodeVM.AssemblyScript or str:
+    '''
+    @Return 'ByteCodeVM.AssemblyScript' on success, else an error string
+    '''
+    pass
+
 def eval_expression(expression: str) -> (decimal.Decimal or None, list[str]):
     lex_tokens = lex(expression)
     errors = get_lex_error_strs(lex_tokens)
