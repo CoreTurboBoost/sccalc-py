@@ -493,6 +493,34 @@ def convert_infix_to_postfix_expr_ip(tokens: list[Token]) -> tuple[list[Token], 
         errors.append(f"Bracket mismatch. Some brackets dont have \')\', {open_bracket_count} unclosed brackets remaining")
     return post_fix_token_list, errors
 
+def get_rpn_tokens_error(tokens: list[Token]) -> None or str:
+    '''
+    @Param: tokens  Assume only contains valid RPN tokens (
+     Token.TYPE_NUMBER, Token.TYPE_VAR, Token.TYPE_FUNCTION, Token.TYPE_FUNCTION)
+    @Return:  Returns None if no errors occured, else a str
+    '''
+    VALID_RPN_TOKENS = [Token.TYPE_CONST, Token.TYPE_NUMBER, Token.TYPE_VAR,
+                        Token.TYPE_BINARY_FUNCTION, Token.TYPE_FUNCTION,
+                        Token.TYPE_ASSIGNMENT]
+    cur_operand_count = 0
+    for token in tokens:
+        if __debug__ and (not (token.type in VALID_RPN_TOKENS)):
+            raise TypeError(f"RPN tokens contains invalid token types, found token, {token}")
+
+        if token.type == Token.TYPE_VAR:
+            continue # Ignore VAR's as they usually are only kept for assignment
+        if token.type == Token.TYPE_FUNCTION or token.type == Token.TYPE_ASSIGNMENT:
+            cur_operand_count -= 1
+        if token.type == Token.TYPE_BINARY_FUNCTION:
+            cur_operand_count -= 2
+        if cur_operand_count < 0:
+            return f"Operator at character index [{token.char_index}] is missing operands"
+        cur_operand_count += 1
+    if cur_operand_count != 1:
+        print(f"{cur_operand_count=}")
+        return f"Too {'many' if cur_operand_count>1 else 'few'} operands for the number of operators"
+    return None
+
 def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, list[str]):
     '''
     Returns list(evaluated_value: decimal.Decimal, errors: list[str])
@@ -522,6 +550,8 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
         post_fix_str += " " + str(o.lexeame)
     console_output_debug_msg(f"post fix expression: {post_fix_str}")
     # /debug
+
+    console_output_debug_msg(f"RPN Errors from function: {get_rpn_tokens_error(post_fix_token_list)}")
 
     if (len(errors) > 0):
         return (None, errors)
