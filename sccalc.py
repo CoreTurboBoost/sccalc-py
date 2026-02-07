@@ -83,6 +83,8 @@ comparison_operators = {"==": lambda a,b: a==b, "!=": lambda a,b: a!=b,
 def is_punct(input_str: str) -> bool:
     return all(char in string.punctuation for char in input_str)
 
+g_use_bytecode_vm = False
+
 g_enabled_debug_output = True
 def console_output_debug_msg(message : str, end = "\n"):
     if __debug__:
@@ -2111,6 +2113,7 @@ if __name__ == "__main__":
                 print( "      --debug                   Enable debugging information from program start (default)")
                 print( "      --no-debug                Disable debugging information from program start")
                 print( "      --new-var=<NAME>:<NUM>    Declare and assign number <NUM> to a variable <NAME>")
+                print( "  -b  --bytecode-vm             Enable and use the Byte Code Virtual Machine")
                 print( "  -h, --help       print this help page and exit")
                 sys.exit()
             if (arg == "--version" or arg == "-v"):
@@ -2148,6 +2151,8 @@ if __name__ == "__main__":
                     print("--new-var number is an invalid number")
                     sys.exit()
                 variables[var] = num
+            if arg == "--bytecode-vm" or arg == "-b":
+                g_use_bytecode_vm = True
         if (len(sys.argv) > 1 and os.path.isfile(sys.argv[-1])):
             # NOTE: This scope is the scripting system. Everything here is only for the scripting part
             fh = open(sys.argv[-1])
