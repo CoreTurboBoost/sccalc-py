@@ -17,7 +17,11 @@ try:
 except ModuleNotFoundError:
     G_BYTECODE_AVAILABLE = False
     class ByteCodeVM:
-        pass
+        ArrayList = None
+        ByteCodeGenerator = None
+        AssemblyScript = None
+        ByteCodeVM = None
+
 
 APP_VERSION_MAJOR = 5
 APP_VERSION_MINOR = 0
