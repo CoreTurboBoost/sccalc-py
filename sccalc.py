@@ -521,12 +521,13 @@ def get_rpn_tokens_error(tokens: list[Token]) -> None or str:
         return f"Too {'many' if cur_operand_count>1 else 'few'} operands for the number of operators"
     return None
 
-def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, list[str]):
+def gen_rpn_tokens_from_lex_tokens(tokens: list[Token]) -> (list[Token], list[str]):
     '''
-    Returns list(evaluated_value: decimal.Decimal, errors: list[str])
-       evaluated_value : decimal.Decimal() or None on error.
-       errors : list[str], empty list on success.
+    @Return Tuple of generated RPN tokens as a list and a list of errors in string form
     '''
+    rpn_eval_error = get_rpn_tokens_error(tokens)
+    if rpn_eval_error != None:
+        return [rpn_eval_error, ]
     tokens = tokens.copy()
 
     substitute_vars_to_its_val_ip(tokens)
@@ -543,6 +544,15 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
     console_output_debug_msg(debug_token_str)
 
     post_fix_token_list, errors = convert_infix_to_postfix_expr_ip(tokens)
+    return post_fix_token_list
+
+def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, list[str]):
+    '''
+    Returns list(evaluated_value: decimal.Decimal, errors: list[str])
+       evaluated_value : decimal.Decimal() or None on error.
+       errors : list[str], empty list on success.
+    '''
+    post_fix_token_list = gen_rpn_tokens_from_lex_tokens(tokens)
 
     # debug
     post_fix_str = ""
