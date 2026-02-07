@@ -1905,6 +1905,14 @@ class SccalcInterpreter:
 
 g_interpreter = SccalcInterpreter()
 
+def gen_bytecode_asm(script_lines: list[str]) -> ByteCodeVM.AssemblyScript or None:
+    '''
+    Return None if the ByteCodeVM module is unavailable else
+     return a ByteCodeVM.AssemblyScript object
+    '''
+    if not G_BYTECODE_AVAILABLE:
+        return None
+
 def run_interpreter(script_lines: list[str]):
     global g_enabled_echo_line_eval, g_exit_on_failure, g_script_error_count, g_enabled_debug_output, variables, iterator_arrays
     g_enabled_echo_line_eval = True
