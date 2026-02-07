@@ -125,6 +125,7 @@ class Token:
     TYPE_FUNCTION = 11
     TYPE_VAR = 12
     TYPE_ASSIGNMENT = 13
+    TYPE_ASSIGNED_TO_VAR = 14
     def get_str_from_type_enum(enum_type: TYPE_NONE):
         if (enum_type == Token.TYPE_BAD):
             return "Bad"
