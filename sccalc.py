@@ -2150,6 +2150,9 @@ if __name__ == "__main__":
                 variables[var] = num
             if arg == "--bytecode-vm" or arg == "-b":
                 g_use_bytecode_vm = True
+                if not G_BYTECODE_AVAILABLE:
+                    print("Warning: --bytecode-vm  ByteCodeVM module is not available, disabling Byte Code VM", file=sys.stderr)
+                    g_use_bytecode_vm = False
         if (len(sys.argv) > 1 and os.path.isfile(sys.argv[-1])):
             # NOTE: This scope is the scripting system. Everything here is only for the scripting part
             fh = open(sys.argv[-1])
