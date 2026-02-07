@@ -1957,21 +1957,25 @@ def run_interpreter(script_lines: list[str]):
         else:
             print(err_msg)
     contents = script_lines
-    contents = list(zip(contents, range(0, len(contents))))
-    for i in range(len(contents)):
-        contents[i] = (contents[i][0].strip(), contents[i][1])
-    i = 0
-    while i < len(contents):
-        if len(contents[i][0]) == 0:
-            contents.pop(i)
-            continue
-        i += 1
-    i=0
-    while i < len(contents):
-        if contents[i][0][0] == '#':
-            contents.pop(i)
-            continue
-        i += 1
+    contents = zip(contents, range(len(contents)))
+    INPUT_LINE_INDEX, INPUT_LINE_NUMBER_INDEX = 0, 1
+
+    def strip_line(line: tuple[str, int]) -> tuple[str, int]:
+        return (line[INPUT_LINE_INDEX].strip(), line[INPUT_LINE_NUMBER_INDEX])
+    contents = filter(strip_line, contents)
+
+    def is_non_empty_line(line: tuple[str, int]) -> bool:
+        if len(line[INPUT_LINE_INDEX]) == 0:
+            return False
+        return True
+    contents = filter(is_non_empty_line, contents)
+
+    def is_non_line_comment(line: tuple[str, int]) -> bool:
+        FIRST_CHAR_INDEX = 0
+        if line[INPUT_LINE_INDEX][FIRST_CHAR_INDEX] == '#':
+            return False
+        return True
+    contents = list(filter(is_non_line_comment, contents))
 
     class WhileEmbed:
         def __init__(self, start_index: int):
