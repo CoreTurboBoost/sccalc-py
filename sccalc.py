@@ -312,22 +312,32 @@ def pre_eval_lex_tokens(tokens: list[Token]) -> list[str]:
     @Param: tokens, modified in-place
     '''
     pass
-def substitute_vars_to_its_val_ip(tokens: list[Token]) -> None:
+def handle_assignment_replacement_ip(lex_tokens: list[Token]) -> None:
+    '''
+    @Param: lex_tokens  is modified in-place
+    '''
+    for lex_token_index, lex_token in enumerate(lex_tokens):
+        if lex_token.type != Token.TYPE_VAR:
+            continue
+        next_token = lex_tokens[lex_token_index+1] if lex_token_index+1 < len(lex_tokens) else None
+        if next_token != None:
+            if next_token.type == Token.TYPE_ASSIGNMENT:
+                lex_tokens[lex_token_index].type == Token.TYPE_ASSIGNED_TO_VAR
+def substitute_vars_to_its_val_ip(tokens: list[Token]) -> list[Token]:
     '''
     @Param: tokens, modified in place
+    @Return:  list of used undefined variables
     @Note: Substitutes all variables for their values, except for a variable
     that is begin assigned to.
     '''
+    used_undefined_variables: list[Token] = []
     for i, token in enumerate(tokens):
         if token.type == Token.TYPE_VAR:
-            next_is_assignment = False
-            if i+1 < len(tokens):
-                next_token = tokens[i+1]
-                if next_token.type == Token.TYPE_ASSIGNMENT:
-                    next_is_assignment = True
-            if (token.lexeame in variables.keys() and not next_is_assignment):
+            if token.lexeame in variables.keys():
                 tokens[i].type = Token.TYPE_NUMBER
                 tokens[i].lexeame = str(variables[token.lexeame])
+            else:
+                used_undefined_variables.append(tokens)
 
 def convert_constants_ip(tokens: list[Token]) -> None:
     '''
