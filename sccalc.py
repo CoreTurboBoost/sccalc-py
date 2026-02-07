@@ -661,6 +661,20 @@ def eval_expression(expression: str) -> (decimal.Decimal or None, list[str]):
         return (None, errors)
     return (value, errors)
 
+class InterpreterParseState:
+    def __init__(self):
+        self.declared_variables: list[decimal.Decimal] = []
+        self.enabled_debug = True
+        self.enabled_echo = True
+        self.enabled_exit_on_failure = False
+        self.script_error_count = 0
+class InterpreterEvalState:
+    def __init__(self, parse_state: InterpreterParseState):
+        self.enabled_debug: bool = parse_state.enabled_debug
+        self.enabled_echo: bool = parse_state.enabled_echo
+        self.enabled_exit_on_failure: bool = parse_state.enabled_exit_on_failure
+        self.script_error_count
+
 class SccalcEmbeddedExit(Exception):
     def __init__(self, code_or_msg: int or str):
         super()
