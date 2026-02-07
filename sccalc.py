@@ -2110,6 +2110,7 @@ if __name__ == "__main__":
                 print(f"      --gen-script-std-file     output the script standard to a file")
                 print( "      --debug                   Enable debugging information from program start (default)")
                 print( "      --no-debug                Disable debugging information from program start")
+                print( "      --new-var=<NAME>:<NUM>    Declare and assign number <NUM> to a variable <NAME> for the script to access")
                 print( "  -h, --help       print this help page and exit")
                 sys.exit()
             if (arg == "--version" or arg == "-v"):
