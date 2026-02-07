@@ -433,14 +433,7 @@ def convert_infix_to_postfix_expr(tokens: list[Token]) -> tuple[list[Token], lis
     operators_stack: list[Token] = []
     open_bracket_count = 0
     for token_index, token in enumerate(tokens):
-
-        if __debug__:
-            post_fix_str = ""
-            for o in post_fix_token_list:
-                post_fix_str += str(o.lexeame) + " "
-            console_output_debug_msg(f"[{token_index}] post fix expression: \'{post_fix_str}\'")
-
-        if (token.type == Token.TYPE_IDENTIFIER or token.type == Token.TYPE_CONST or token.type == Token.TYPE_VAR):
+        if (token.type == Token.TYPE_IDENTIFIER or token.type == Token.TYPE_CONST or token.type == Token.TYPE_VAR or token.type == Token.TYPE_ASSIGNED_TO_VAR):
             post_fix_token_list.append(token)
         elif (token.type == Token.TYPE_NUMBER):
             post_fix_token_list.append(token)
@@ -493,6 +486,12 @@ def convert_infix_to_postfix_expr(tokens: list[Token]) -> tuple[list[Token], lis
         else:
             error_string = f"[char_index:{token.char_index}] Token list contains unknown or bad token type"
             errors.append(error_string)
+
+        if __debug__:
+            post_fix_str = " ".join(map(lambda a: a.lexeame, post_fix_token_list))
+            #for o in post_fix_token_list:
+            #    post_fix_str += str(o.lexeame) + " "
+            console_output_debug_msg(f"[{token_index}] post fix expression: \'{post_fix_str}\'")
     
     if (len(operators_stack) > 0):
         console_output_debug_msg(f"Adding remaining operators on stack to post-fix list, len:{len(operators_stack)}")
