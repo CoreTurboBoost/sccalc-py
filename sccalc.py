@@ -16,6 +16,8 @@ try:
     import ByteCodeVM
 except ModuleNotFoundError:
     G_BYTECODE_AVAILABLE = False
+    class ByteCodeVM:
+        pass
 
 APP_VERSION_MAJOR = 5
 APP_VERSION_MINOR = 0
