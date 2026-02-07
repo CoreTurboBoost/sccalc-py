@@ -2140,16 +2140,13 @@ if __name__ == "__main__":
             if arg[:len("--new-var=")] == "--new-var=":
                 split_arg = arg[len("--new-var="):].split(":")
                 if len(split_arg) != 2:
-                    print(f"--new-var format invalid, expected '--new-var=<VAR>:<NUMBER>'")
-                    sys.exit()
+                    sys.exit(f"--new-var format invalid, expected '--new-var=<VAR>:<NUMBER>'")
                 var, num = split_arg
                 if not is_valid_var(var):
-                    print("--new-var variable is an invalid variable")
-                    sys.exit()
+                    sys.exit("--new-var variable is an invalid variable")
                 num = convert_to_number_or_none(num)
                 if num == None:
-                    print("--new-var number is an invalid number")
-                    sys.exit()
+                    sys.exit("--new-var number is an invalid number")
                 variables[var] = num
             if arg == "--bytecode-vm" or arg == "-b":
                 g_use_bytecode_vm = True
