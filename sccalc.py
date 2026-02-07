@@ -1727,6 +1727,41 @@ command_trees = {
     "dropwhile": (command_tree_drop_while, command_process_callback_drop_while),
 }
 
+def command_gen_bytecode_exit(values: list, tags: list[str]) -> ByteCodeVM.AssemblyScript:
+    assembly = ByteCodeVM.AssemblyScript()
+    if "code" in tags:
+        assembly.append_instruction(ByteCodeVM.OpCode.PROGRAM_EXIT, int(values[0]))
+    else:
+        assembly.append_instruction(ByteCodeVM.OpCode.PROGRAM_EXIT, 0)
+    return assembly
+
+
+command_process_gen_bytecode_asm = {
+    "if":        None,
+    "while":     None,
+    "exit":      command_gen_bytecode_exit,
+    "input":     None,
+    "print":     None,
+    "varout":    None,
+    "repeat":    None,
+    "yield":     None,
+    "clear":     None,
+    "dup":       None,
+    "count":     None,
+    "map":       None,
+    "filter":    None,
+    "next":      None,
+    "sum":       None,
+    "product":   None,
+    "write":     None,
+    "read":      None,
+    "printf":    None,
+    "inputf":    None,
+    "scan":      None,
+    "takewhile": None,
+    "dropwhile": None,
+}
+
 command_process_descriptions = {
         "if": "Compare the two variables or literal numbers and either assign to a variable (if provided) or start a if statement block, end block with !endif command",
         "while": "Compare two variables or literal numbers and run the while block while the condition is true, end block with !endwhile command",
