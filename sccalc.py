@@ -531,7 +531,7 @@ def get_rpn_tokens_error(tokens: list[Token]) -> None or str:
         return f"Too {'many' if cur_operand_count>1 else 'few'} operands for the number of operators"
     return None
 
-def gen_rpn_tokens_from_lex_tokens(tokens: list[Token]) -> (list[Token], list[str]):
+def gen_rpn_tokens_from_lex_tokens(tokens: list[Token]) -> (list[Token] or None, list[str]):
     '''
     @Return Tuple of generated RPN tokens as a list and a list of errors in string form
     '''
