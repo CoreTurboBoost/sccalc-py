@@ -1956,26 +1956,35 @@ def run_interpreter(script_lines: list[str]):
             exit_script_command(err_msg)
         else:
             print(err_msg)
-    contents = script_lines
-    contents = zip(contents, range(len(contents)))
-    INPUT_LINE_INDEX, INPUT_LINE_NUMBER_INDEX = 0, 1
+    def pre_lex_lines(lines: list[str]) -> list[str]:
+        '''
+        Remove leading and ending spaces,
+        Remove empty lines,
+        Remove commented out lines
+        '''
+        parsed_lines = lines
+        parsed_lines = zip(parsed_lines, range(len(parsed_lines)))
+        INPUT_LINE_INDEX, INPUT_LINE_NUMBER_INDEX = 0, 1
 
-    def strip_line(line: tuple[str, int]) -> tuple[str, int]:
-        return (line[INPUT_LINE_INDEX].strip(), line[INPUT_LINE_NUMBER_INDEX])
-    contents = filter(strip_line, contents)
+        def strip_line(line: tuple[str, int]) -> tuple[str, int]:
+            return (line[INPUT_LINE_INDEX].strip(), line[INPUT_LINE_NUMBER_INDEX])
+        parsed_lines = filter(strip_line, parsed_lines)
 
-    def is_non_empty_line(line: tuple[str, int]) -> bool:
-        if len(line[INPUT_LINE_INDEX]) == 0:
-            return False
-        return True
-    contents = filter(is_non_empty_line, contents)
+        def is_non_empty_line(line: tuple[str, int]) -> bool:
+            if len(line[INPUT_LINE_INDEX]) == 0:
+                return False
+            return True
+        parsed_lines = filter(is_non_empty_line, parsed_lines)
 
-    def is_non_line_comment(line: tuple[str, int]) -> bool:
-        FIRST_CHAR_INDEX = 0
-        if line[INPUT_LINE_INDEX][FIRST_CHAR_INDEX] == '#':
-            return False
-        return True
-    contents = list(filter(is_non_line_comment, contents))
+        def is_non_line_comment(line: tuple[str, int]) -> bool:
+            FIRST_CHAR_INDEX = 0
+            if line[INPUT_LINE_INDEX][FIRST_CHAR_INDEX] == '#':
+                return False
+            return True
+        parsed_lines = list(filter(is_non_line_comment, parsed_lines))
+        return parsed_lines
+
+    contents = pre_lex_lines(script_lines)
 
     class WhileEmbed:
         def __init__(self, start_index: int):
