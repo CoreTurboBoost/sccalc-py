@@ -584,7 +584,7 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
     for token in post_fix_token_list:
         if (token.type == Token.TYPE_NUMBER):
             numbers_stack.append(decimal.Decimal(token.lexeame))
-        if (token.type == Token.TYPE_VAR):
+        if (token.type == Token.TYPE_ASSIGNED_TO_VAR or token.type == Token.TYPE_VAR):
             console_output_debug_msg(f"Adding variable token {token} to the numbers stack")
             numbers_stack.append(token.lexeame)
         elif (is_operator(token.type)):
