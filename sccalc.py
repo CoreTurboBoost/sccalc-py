@@ -511,17 +511,17 @@ def get_rpn_tokens_error(tokens: list[Token]) -> None or str:
     '''
     VALID_RPN_TOKENS = [Token.TYPE_CONST, Token.TYPE_NUMBER, Token.TYPE_VAR,
                         Token.TYPE_BINARY_FUNCTION, Token.TYPE_FUNCTION,
-                        Token.TYPE_ASSIGNMENT]
+                        Token.TYPE_ASSIGNMENT, Token.TYPE_ASSIGNED_TO_VAR]
     cur_operand_count = 0
     for token in tokens:
         if __debug__ and (not (token.type in VALID_RPN_TOKENS)):
             raise TypeError(f"RPN tokens contains invalid token types, found token, {token}")
 
-        if token.type == Token.TYPE_VAR:
-            continue # Ignore VAR's as they usually are only kept for assignment
-        if token.type == Token.TYPE_FUNCTION or token.type == Token.TYPE_ASSIGNMENT:
+        if token.type == Token.TYPE_ASSIGNED_TO_VAR:
+            continue
+        if token.type == Token.TYPE_FUNCTION:
             cur_operand_count -= 1
-        if token.type == Token.TYPE_BINARY_FUNCTION:
+        if token.type == Token.TYPE_BINARY_FUNCTION or token.type == Token.TYPE_ASSIGNMENT:
             cur_operand_count -= 2
         if cur_operand_count < 0:
             return f"Operator at character index [{token.char_index}] is missing operands"
