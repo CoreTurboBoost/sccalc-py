@@ -2054,7 +2054,7 @@ def run_interpreter(script_lines: list[str]):
 
         def strip_line(line: tuple[str, int]) -> tuple[str, int]:
             return (line[INPUT_LINE_INDEX].strip(), line[INPUT_LINE_NUMBER_INDEX])
-        parsed_lines = filter(strip_line, parsed_lines)
+        parsed_lines = map(strip_line, parsed_lines)
 
         def is_non_empty_line(line: tuple[str, int]) -> bool:
             if len(line[INPUT_LINE_INDEX]) == 0:
