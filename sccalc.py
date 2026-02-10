@@ -514,7 +514,7 @@ def convert_infix_to_postfix_expr(tokens: list[Token]) -> tuple[list[Token], lis
         errors.append(f"Bracket mismatch. Some brackets dont have \')\', {open_bracket_count} unclosed brackets remaining")
     return post_fix_token_list, errors
 
-def get_rpn_tokens_error(tokens: list[Token]) -> None or str:
+def get_rpn_tokens_eval_error(tokens: list[Token]) -> None or str:
     '''
     @Param: tokens  Assume only contains valid RPN tokens (
      Token.TYPE_NUMBER, Token.TYPE_VAR, Token.TYPE_FUNCTION, Token.TYPE_FUNCTION)
@@ -557,7 +557,7 @@ def gen_rpn_tokens_from_lex_tokens(tokens: list[Token]) -> (list[Token] or None,
     console_output_debug_msg(debug_token_str)
 
     post_fix_token_list, errors = convert_infix_to_postfix_expr(tokens)
-    rpn_eval_error = get_rpn_tokens_error(post_fix_token_list)
+    rpn_eval_error = get_rpn_tokens_eval_error(post_fix_token_list)
     if rpn_eval_error != None:
         return None, [rpn_eval_error, ]
     tokens = tokens.copy()
@@ -581,7 +581,7 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
     console_output_debug_msg(f"eval_lex_tokens: post fix expression: {post_fix_str}")
     # /debug
 
-    console_output_debug_msg(f"RPN Errors from function: {get_rpn_tokens_error(post_fix_token_list)}")
+    console_output_debug_msg(f"RPN Errors from function: {get_rpn_tokens_eval_error(post_fix_token_list)}")
 
     evaluated_value = 0
     numbers_stack: list[decimal.Decimal or str] = []
