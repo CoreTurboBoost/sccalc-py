@@ -324,7 +324,7 @@ def handle_assignment_replacement_ip(lex_tokens: list[Token]) -> None:
         next_token = lex_tokens[lex_token_index+1] if lex_token_index+1 < len(lex_tokens) else None
         if next_token != None:
             if next_token.type == Token.TYPE_ASSIGNMENT:
-                lex_tokens[lex_token_index].type == Token.TYPE_ASSIGNED_TO_VAR
+                lex_tokens[lex_token_index].type = Token.TYPE_ASSIGNED_TO_VAR
 def substitute_vars_to_its_val_ip(tokens: list[Token]) -> list[Token]:
     '''
     @Param: tokens, modified in place
