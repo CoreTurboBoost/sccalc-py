@@ -528,8 +528,6 @@ def get_rpn_tokens_error(tokens: list[Token]) -> None or str:
         if __debug__ and (not (token.type in VALID_RPN_TOKENS)):
             raise TypeError(f"RPN tokens contains invalid token types, found token, {token}")
 
-        if token.type == Token.TYPE_ASSIGNED_TO_VAR:
-            continue
         if token.type == Token.TYPE_FUNCTION:
             cur_operand_count -= 1
         if token.type == Token.TYPE_BINARY_FUNCTION or token.type == Token.TYPE_ASSIGNMENT:
