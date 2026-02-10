@@ -461,7 +461,7 @@ def convert_infix_to_postfix_expr(tokens: list[Token]) -> tuple[list[Token], lis
                 cur_token = operators_stack[-1]
             if (len(operators_stack) > 0):
                 operators_stack.pop() 
-        elif (is_operator(token.type) and token.type == Token.TYPE_FUNCTION):
+        elif (token.type == Token.TYPE_FUNCTION):
             cur_func_prec = get_op_precedence(token)
             if len(operators_stack) > 0:
                 stack_top_op_precedence = get_op_precedence(operators_stack[-1])
