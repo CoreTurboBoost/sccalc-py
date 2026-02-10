@@ -383,7 +383,14 @@ def convert_subtraction_to_negation_ip(tokens: list[Token]) -> None:
             else:
                 if (cur_token_index+1 < len(tokens)):
                     console_output_debug_msg(f"cur_token_index:{cur_token_index} last token type:\'{Token.get_str_from_type_enum(tokens[cur_token_index-1].type)}\', next token type:\'{Token.get_str_from_type_enum(tokens[cur_token_index+1].type)}\'")
-                    if ((tokens[cur_token_index-1].type != Token.TYPE_NUMBER and tokens[cur_token_index-1].type != Token.TYPE_CONST and tokens[cur_token_index-1].type != Token.TYPE_IDENTIFIER and tokens[cur_token_index-1].type != Token.TYPE_CLOSE_BRACKET) and (tokens[cur_token_index+1].type == Token.TYPE_NUMBER or tokens[cur_token_index+1].type == Token.TYPE_CONST or tokens[cur_token_index+1].type == Token.TYPE_IDENTIFIER)):
+                    if ((tokens[cur_token_index-1].type != Token.TYPE_NUMBER
+                         and tokens[cur_token_index-1].type != Token.TYPE_CONST
+                         and tokens[cur_token_index-1].type != Token.TYPE_IDENTIFIER
+                         and tokens[cur_token_index-1].type != Token.TYPE_CLOSE_BRACKET
+                         and tokens[cur_token_index-1].type != Token.TYPE_VAR)
+                        and (tokens[cur_token_index+1].type == Token.TYPE_NUMBER or
+                         tokens[cur_token_index+1].type == Token.TYPE_CONST or
+                         tokens[cur_token_index+1].type == Token.TYPE_IDENTIFIER)):
                         console_output_debug_msg(f"((tokens[cur_token_index-1].type != Token.TYPE_NUMBER:{tokens[cur_token_index-1].type != Token.TYPE_NUMBER}")
                         console_output_debug_msg(f"tokens[cur_token_index-1].type != Token.TYPE_CONST:{tokens[cur_token_index-1].type != Token.TYPE_CONST}")
                         console_output_debug_msg(f"tokens[cur_token_index-1] != Token.TYPE_IDENTIFIER:{tokens[cur_token_index-1].type != Token.TYPE_IDENTIFIER}")
