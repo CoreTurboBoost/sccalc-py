@@ -322,6 +322,7 @@ def handle_assignment_replacement_ip(lex_tokens: list[Token]) -> None:
         if lex_token.type != Token.TYPE_VAR:
             continue
         next_token = lex_tokens[lex_token_index+1] if lex_token_index+1 < len(lex_tokens) else None
+        console_output_debug_msg(f"handle_assignment_replacement_ip: cur_token: {lex_token}, next_token: {next_token}")
         if next_token != None:
             if next_token.type == Token.TYPE_ASSIGNMENT:
                 lex_tokens[lex_token_index].type = Token.TYPE_ASSIGNED_TO_VAR
@@ -332,6 +333,7 @@ def substitute_vars_to_its_val_ip(tokens: list[Token]) -> list[Token]:
     @Note: Substitutes all variables for their values, except for a variable
     that is begin assigned to.
     '''
+    console_output_debug_msg("Substituting variables for their respective values")
     used_undefined_variables: list[Token] = []
     for i, token in enumerate(tokens):
         if token.type == Token.TYPE_VAR:
@@ -546,6 +548,7 @@ def gen_rpn_tokens_from_lex_tokens(tokens: list[Token]) -> (list[Token] or None,
     '''
 
     handle_assignment_replacement_ip(tokens)
+    console_output_debug_msg(" ".join([str(token) for token in tokens]))
 
     # handle minus signs and convert constants
     convert_constants_ip(tokens)
@@ -577,7 +580,7 @@ def eval_lex_tokens(tokens : typing.List[Token]) -> (decimal.Decimal or None, li
     post_fix_str = ""
     for o in post_fix_token_list:
         post_fix_str += " " + str(o.lexeame)
-    console_output_debug_msg(f"post fix expression: {post_fix_str}")
+    console_output_debug_msg(f"eval_lex_tokens: post fix expression: {post_fix_str}")
     # /debug
 
     console_output_debug_msg(f"RPN Errors from function: {get_rpn_tokens_error(post_fix_token_list)}")
