@@ -149,6 +149,8 @@ class Token:
             return "Variable"
         elif (enum_type == Token.TYPE_ASSIGNMENT):
             return "Assignment"
+        elif (enum_type == Token.TYPE_ASSIGNED_TO_VAR):
+              return "Assigned to Variable"
         else:
             return "Unknown"
 
